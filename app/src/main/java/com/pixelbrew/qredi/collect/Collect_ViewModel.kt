@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.pixelbrew.qredi.network.api.ApiService
+import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.RouteModel
 
 class CollectViewModel(
@@ -12,6 +13,9 @@ class CollectViewModel(
 
     private val _routes = mutableStateOf<List<RouteModel>>(emptyList())
     val routes: List<RouteModel> get() = _routes.value
+
+    private val _downloadedRoutes = mutableStateOf<List<DownloadModel>>(emptyList())
+    val downloadedRoutes: List<DownloadModel> get() = _downloadedRoutes.value
 
     suspend fun loaduser() {
         try {
@@ -34,9 +38,21 @@ class CollectViewModel(
     suspend fun downloadRoute(id: String) {
         try {
             val response = apiService.downloadRoute(id)
-            Log.d("API_RESPONSE", response.toString())
+            _downloadedRoutes.value = response
         } catch (e: Exception) {
             Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+        }
+    }
+
+    fun formatNumber(number: Double): String {
+        return "%,.2f".format(number)
+    }
+
+    fun formatCedula(cedula: String): String {
+        return if (cedula.length == 11) {
+            "${cedula.substring(0, 3)}-${cedula.substring(3, 10)}-${cedula.substring(10)}"
+        } else {
+            cedula // Return original if not 11 digits
         }
     }
 }

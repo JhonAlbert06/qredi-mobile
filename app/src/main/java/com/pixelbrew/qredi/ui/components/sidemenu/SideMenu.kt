@@ -179,7 +179,7 @@ fun DrawerContent(
             selected = currentScreen is Screen.Admin,
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.multimedia_options_setting_settings_gear_icon),
+                    painter = painterResource(id = R.drawable.gear_solid),
                     contentDescription = "Administrar",
                     modifier = Modifier
                         .size(32.dp)
@@ -194,7 +194,7 @@ fun DrawerContent(
             selected = currentScreen is Screen.Collect,
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.cash_money_payment_wallet_icon),
+                    painter = painterResource(id = R.drawable.wallet_solid),
                     contentDescription = "Cobrar",
                     modifier = Modifier.size(32.dp)
                 )
@@ -208,7 +208,7 @@ fun DrawerContent(
             selected = currentScreen is Screen.Reprint,
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.print_outline_icon),
+                    painter = painterResource(id = R.drawable.print_solid),
                     contentDescription = "Reimprimir",
                     modifier = Modifier.size(32.dp)
                 )
@@ -222,7 +222,7 @@ fun DrawerContent(
             selected = currentScreen is Screen.Statistics,
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.analysis_bar_chart_graph_icon),
+                    painter = painterResource(id = R.drawable.chart_simple_solid),
                     contentDescription = "Estadísticas",
                     modifier = Modifier.size(32.dp)
                 )
@@ -236,7 +236,7 @@ fun DrawerContent(
             selected = currentScreen is Screen.Settings,
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.approve_check_cog_gear_pass_icon),
+                    painter = painterResource(id = R.drawable.gears_solid),
                     contentDescription = "Configuración",
                     modifier = Modifier.size(32.dp)
                 )

@@ -10,27 +10,39 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import com.pixelbrew.qredi.R
+import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.RouteModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun CollectScreen(viewModel: CollectViewModel, modifier: Modifier = Modifier) {
+fun CollectScreen(
+    viewModel: CollectViewModel,
+    modifier: Modifier = Modifier
+) {
     val routes = viewModel.routes
 
     Box(
@@ -40,32 +52,104 @@ fun CollectScreen(viewModel: CollectViewModel, modifier: Modifier = Modifier) {
     ) {
         Collect(viewModel, modifier)
         Spacer(modifier = Modifier.height(8.dp))
-        RoutesList(routes, modifier, viewModel)
-
-
     }
 }
 
 @Composable
-fun Collect(viewModel: CollectViewModel, modifier: Modifier) {
+fun Collect(
+    viewModel: CollectViewModel,
+    modifier: Modifier
+) {
     DownloadRoute(viewModel)
-    Spacer(Modifier.height(8.dp))
-    RoutesList(viewModel.routes, modifier, viewModel)
+
+    LoansList(
+        loans = viewModel.downloadedRoutes,
+        viewModel = viewModel,
+        modifier = modifier
+    )
 }
 
 @Composable
-fun RoutesList(routes: List<RouteModel>, modifier: Modifier, viewModel: CollectViewModel) {
+fun LoansList(
+    loans: List<DownloadModel>,
+    viewModel: CollectViewModel,
+    modifier: Modifier
+) {
+    LazyColumn {
+        items(loans) { loan ->
+            Card(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        // Handle click event
+                    }
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+
+                    LoanLabel(
+                        icon = ImageVector.vectorResource(id = R.drawable.user_solid),
+                        text = "${loan.customer.firstName} ${loan.customer.lastName}"
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LoanLabel(
+                        icon = ImageVector.vectorResource(id = R.drawable.address_card_solid),
+                        text = viewModel.formatCedula(loan.customer.cedula)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LoanLabel(
+                        icon = ImageVector.vectorResource(id = R.drawable.coins_solid),
+                        text = "${viewModel.formatNumber(loan.amount)} $"
+                    )
+
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LoanLabel(
+    icon: ImageVector,
+    text: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = "Loan Icon",
+            modifier = Modifier.size(24.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = 8.dp)
+        )
+    }
+}
+
+@Composable
+fun RoutesList(
+    routes: List<RouteModel>,
+    viewModel: CollectViewModel,
+    onRouteSelected: () -> Unit
+) {
     val coroutineScope = rememberCoroutineScope()
 
     LazyColumn {
         items(routes) { route ->
             Card(
-                modifier = modifier
+                modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth()
                     .clickable {
                         coroutineScope.launch {
                             viewModel.downloadRoute(route.id)
+                            onRouteSelected()
                         }
                     }
             ) {
@@ -78,10 +162,13 @@ fun RoutesList(routes: List<RouteModel>, modifier: Modifier, viewModel: CollectV
 
 }
 
-
 @Composable
-fun DownloadRoute(viewModel: CollectViewModel) {
+fun DownloadRoute(
+    viewModel: CollectViewModel,
+
+    ) {
     val coroutineScope = rememberCoroutineScope()
+    var showDialog by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -94,6 +181,7 @@ fun DownloadRoute(viewModel: CollectViewModel) {
         )
         Button(
             onClick = {
+                showDialog = true
                 coroutineScope.launch {
                     viewModel.getRoutes()
                 }
@@ -110,11 +198,42 @@ fun DownloadRoute(viewModel: CollectViewModel) {
         ) {
             Text("Descargar")
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                imageVector = ImageVector.vectorResource(id = R.drawable.download_solid),
                 contentDescription = "Download Route",
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(20.dp)
             )
         }
 
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            title = {
+                Text(text = "Selecciona una ruta")
+            },
+            text = {
+                RoutesList(
+                    routes = viewModel.routes,
+                    viewModel = viewModel,
+                    onRouteSelected = { showDialog = false }
+                )
+            },
+            onDismissRequest = {
+                showDialog = false
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
