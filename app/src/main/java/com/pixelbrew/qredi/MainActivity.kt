@@ -28,7 +28,8 @@ class MainActivity : ComponentActivity() {
                     SideMenu(
                         modifier = Modifier.padding(innerPadding),
                         sessionManager = sessionManager,
-                        apiService = networkModule
+                        apiService = networkModule,
+                        context = this
                     )
                 }
             }

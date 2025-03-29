@@ -1,21 +1,42 @@
 package com.pixelbrew.qredi.collect
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.RouteModel
+import com.pixelbrew.qredi.ui.components.services.SessionManager
 
 class CollectViewModel(
     private val apiService: ApiService,
+    private val sessionManager: SessionManager,
+    context: MainActivity
 ) : ViewModel() {
+
+    var text = "Hello toast!"
+    val duration = Toast.LENGTH_SHORT
+
+    var toast: Toast = Toast.makeText(context, text, duration)
 
     private val _routes = mutableStateOf<List<RouteModel>>(emptyList())
     val routes: List<RouteModel> get() = _routes.value
 
     private val _downloadedRoutes = mutableStateOf<List<DownloadModel>>(emptyList())
     val downloadedRoutes: List<DownloadModel> get() = _downloadedRoutes.value
+
+    init {
+        _downloadedRoutes.value = sessionManager.fetchLoanData()!!
+
+    }
+
+    fun setToastText(text: String) {
+        this.text = text
+        toast.setText(text)
+        toast.show()
+    }
 
     suspend fun loaduser() {
         try {
@@ -30,17 +51,24 @@ class CollectViewModel(
         try {
             val response = apiService.getRoutes()
             _routes.value = response
+
+            setToastText("Routes loaded successfully")
         } catch (e: Exception) {
             Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+            setToastText(e.message.toString())
         }
     }
 
     suspend fun downloadRoute(id: String) {
         try {
             val response = apiService.downloadRoute(id)
-            _downloadedRoutes.value = response
+            sessionManager.saveLoanData(response)
+
+            _downloadedRoutes.value = sessionManager.fetchLoanData()!!
+            setToastText("Route downloaded successfully")
         } catch (e: Exception) {
             Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+            setToastText(e.message.toString())
         }
     }
 

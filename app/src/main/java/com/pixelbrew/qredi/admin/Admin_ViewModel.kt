@@ -2,17 +2,25 @@ package com.pixelbrew.qredi.admin
 
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.LoginRequest
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 
 class AdminViewModel(
     private val apiService: ApiService,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    context: MainActivity
 ) : ViewModel() {
+
+    var text = "Hello toast!"
+    val duration = Toast.LENGTH_SHORT
+
+    var toast: Toast = Toast.makeText(context, text, duration)
 
     private val _email = MutableLiveData<String>("")
     val email: LiveData<String> = _email
@@ -41,6 +49,12 @@ class AdminViewModel(
         return username.isNotEmpty()
     }
 
+    fun setToastText(text: String) {
+        this.text = text
+        toast.setText(text)
+        toast.show()
+    }
+
     suspend fun onLoginSelected() {
 
         _isLoading.value = true
@@ -58,12 +72,15 @@ class AdminViewModel(
 
             // save token
             sessionManager.saveAuthToken(response.token)
-
             _isLoading.value = false
+            setToastText("Login successful")
         } catch (e: Exception) {
             Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
             _isLoading.value = false
+            setToastText("Error logging in")
         }
+
+
     }
 
 }

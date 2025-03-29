@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.admin.AdminScreen
 import com.pixelbrew.qredi.admin.AdminViewModel
@@ -72,7 +73,8 @@ object ScreenSaver : Saver<Screen, String> {
 fun SideMenu(
     modifier: Modifier = Modifier,
     apiService: ApiService,
-    sessionManager: SessionManager
+    sessionManager: SessionManager,
+    context: MainActivity
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -109,10 +111,10 @@ fun SideMenu(
             }
         ) { padding ->
             when (currentScreen) {
-                Screen.Admin -> AdminScreen(AdminViewModel(apiService, sessionManager))
+                Screen.Admin -> AdminScreen(AdminViewModel(apiService, sessionManager, context))
                 Screen.Collect -> CollectScreen(
-                    CollectViewModel(apiService),
-                    modifier = modifier.padding(padding),
+                    CollectViewModel(apiService, sessionManager, context),
+                    modifier = modifier.padding(top = 20.dp),
                 )
 
                 Screen.Reprint -> ReprintScreen(modifier = modifier.padding(padding))

@@ -17,6 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,13 +61,21 @@ fun Collect(
     viewModel: CollectViewModel,
     modifier: Modifier
 ) {
-    DownloadRoute(viewModel)
-
-    LoansList(
-        loans = viewModel.downloadedRoutes,
-        viewModel = viewModel,
+    Column(
         modifier = modifier
-    )
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        DownloadRoute(viewModel, modifier)
+
+        LoansList(
+            loans = viewModel.downloadedRoutes,
+            viewModel = viewModel,
+            modifier = modifier
+        )
+
+    }
+
 }
 
 @Composable
@@ -79,7 +88,7 @@ fun LoansList(
         items(loans) { loan ->
             Card(
                 modifier = modifier
-                    .fillMaxWidth()
+
                     .clickable {
                         // Handle click event
                     }
@@ -138,6 +147,15 @@ fun RoutesList(
     viewModel: CollectViewModel,
     onRouteSelected: () -> Unit
 ) {
+
+    if (routes.isEmpty()) {
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        }
+    }
+
     val coroutineScope = rememberCoroutineScope()
 
     LazyColumn {
@@ -165,13 +183,13 @@ fun RoutesList(
 @Composable
 fun DownloadRoute(
     viewModel: CollectViewModel,
-
-    ) {
+    modifier: Modifier = Modifier
+) {
     val coroutineScope = rememberCoroutineScope()
     var showDialog by remember { mutableStateOf(false) }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -179,6 +197,7 @@ fun DownloadRoute(
             "Rutas",
             style = MaterialTheme.typography.headlineMedium
         )
+
         Button(
             onClick = {
                 showDialog = true
@@ -194,8 +213,9 @@ fun DownloadRoute(
                 contentColor = Color.Black,
                 disabledContainerColor = Color(0x2C00BCD4),
                 disabledContentColor = Color(0xFF0C0C0C)
-            )
-        ) {
+            ),
+
+            ) {
             Text("Descargar")
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.download_solid),
