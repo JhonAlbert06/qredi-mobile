@@ -3,6 +3,8 @@ package com.pixelbrew.qredi.collect
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.network.api.ApiService
@@ -24,12 +26,26 @@ class CollectViewModel(
     private val _routes = mutableStateOf<List<RouteModel>>(emptyList())
     val routes: List<RouteModel> get() = _routes.value
 
-    private val _downloadedRoutes = mutableStateOf<List<DownloadModel>>(emptyList())
+    private var _downloadedRoutes = mutableStateOf<List<DownloadModel>>(
+        emptyList()
+    )
     val downloadedRoutes: List<DownloadModel> get() = _downloadedRoutes.value
 
-    init {
-        _downloadedRoutes.value = sessionManager.fetchLoanData()!!
+    private val _downloadRouteSelected = MutableLiveData<DownloadModel>()
+    val downloadRouteSelected: LiveData<DownloadModel> = _downloadRouteSelected
 
+    private val _amount = MutableLiveData<String>("")
+    var amount: LiveData<String> = _amount
+
+    init {
+    }
+
+    fun setDownloadRouteSelected(downloadRoute: DownloadModel) {
+        _downloadRouteSelected.value = downloadRoute
+    }
+
+    fun onAmontChange(amount: String) {
+        _amount.value = amount
     }
 
     fun setToastText(text: String) {
@@ -53,9 +69,8 @@ class CollectViewModel(
     suspend fun downloadRoute(id: String) {
         try {
             val response = apiService.downloadRoute(id)
-            sessionManager.saveLoanData(response)
+            _downloadedRoutes.value = response
 
-            _downloadedRoutes.value = sessionManager.fetchLoanData()!!
             setToastText("Route downloaded successfully")
         } catch (e: Exception) {
             Log.e("API_ERROR", "Error al obtener datos: ${e.message}")

@@ -137,20 +137,23 @@ class Fee {
 class Payment {
     var id: String = ""
     var paidAmount: Double = 0.0
-    var paidDate: DateClass = DateClass()
-    var user: UserModel = UserModel()
+    var date: DateClass = DateClass()
 
     constructor() {}
 
-    constructor(
-        id: String,
-        paidAmount: Double,
-        paidDate: DateClass,
-        user: UserModel
-    ) {
+    constructor(id: String, paidAmount: Double, date: DateClass) {
         this.id = id
         this.paidAmount = paidAmount
-        this.paidDate = paidDate
-        this.user = user
+        this.date = date
     }
+
+    fun copy(
+        id: String = this.id,
+        paidAmount: Double = this.paidAmount,
+        date: DateClass = this.date
+    ): Payment {
+        return Payment(id, paidAmount, date)
+    }
+
 }
+

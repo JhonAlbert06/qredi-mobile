@@ -115,7 +115,6 @@ fun LoginButton(modifier: Modifier, isLoginEnabled: Boolean, onLoginSelected: ()
             color = Color.White
         )
     }
-
 }
 
 @Composable

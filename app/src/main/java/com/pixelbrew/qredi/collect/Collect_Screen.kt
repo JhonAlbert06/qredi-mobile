@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -22,8 +23,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,6 +38,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.network.model.DownloadModel
@@ -44,8 +52,6 @@ fun CollectScreen(
     viewModel: CollectViewModel,
     modifier: Modifier = Modifier
 ) {
-
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -63,7 +69,6 @@ fun Collect(
 ) {
     Column {
         DownloadRoute(viewModel, modifier)
-
         LoansList(
             loans = viewModel.downloadedRoutes,
             viewModel = viewModel,
@@ -71,64 +76,169 @@ fun Collect(
     }
 }
 
+
 @Composable
-fun LoansList(
-    loans: List<DownloadModel>,
+fun FeeItems(
     viewModel: CollectViewModel,
+    loan: DownloadModel
 ) {
+    val amount: String by viewModel.amount.observeAsState(initial = "")
+
+    var showDialogCollect by remember { mutableStateOf(false) }
+    var totalLoanPaid = 0.0
+
+    loan.fees.forEach { fee ->
+        fee.payments.forEach { payment ->
+            totalLoanPaid += payment.paidAmount
+        }
+    }
+
+    FeeLabel(
+        "Cobrado:",
+        "${viewModel.formatNumber(totalLoanPaid)}$ / ${viewModel.formatNumber(loan.amount)}$"
+    )
+
     LazyColumn {
-        items(loans) { loan ->
+        items(loan.fees) { fee ->
+
+            var totalFeePayments by remember { mutableDoubleStateOf(0.0) }
+            fee.payments.forEach { payment ->
+                totalFeePayments += payment.paidAmount
+            }
+
+            var cuote by remember { mutableDoubleStateOf(0.0) }
+            cuote = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
+
             Card(
                 modifier = Modifier
-                    .clickable {
-                        // Handle click event
-                    }
+                    .padding(bottom = 8.dp)
+                    .fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
 
-                    LoanLabel(
-                        icon = ImageVector.vectorResource(id = R.drawable.user_solid),
-                        text = "${loan.customer.firstName} ${loan.customer.lastName}"
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    FeeLabel(
+                        "${fee.number}/${loan.feesQuantity}",
+                        "${fee.expectedDate.day}/${fee.expectedDate.month}/${fee.expectedDate.year}"
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    LoanLabel(
-                        icon = ImageVector.vectorResource(id = R.drawable.address_card_solid),
-                        text = viewModel.formatCedula(loan.customer.cedula)
+                    FeeLabel(
+                        "${
+                            viewModel.formatNumber(totalFeePayments)
+                        }$ / ${
+                            viewModel.formatNumber(
+                                cuote
+                            )
+                        }$",
+                        ""
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    LoanLabel(
-                        icon = ImageVector.vectorResource(id = R.drawable.coins_solid),
-                        text = "${viewModel.formatNumber(loan.amount)} $"
-                    )
+                    Button(
+                        onClick = {
+                            showDialogCollect = true
+                            // open dialog collect
+                        },
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF00BCD4),
+                            contentColor = Color.Black,
+                            disabledContainerColor = Color(0x2C00BCD4),
+                            disabledContentColor = Color(0xFF0C0C0C)
+                        ),
+                        enabled = totalFeePayments < cuote
+                    ) {
+                        Text("Cobrar")
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.coins_solid),
+                            contentDescription = "",
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .size(20.dp)
+                        )
+                    }
 
                 }
             }
         }
     }
+
+    if (showDialogCollect) {
+        AlertDialog(
+            title = {
+                Text(text = "Cobrar")
+            },
+            text = {
+                AmountField(amount) {
+                    viewModel.onAmontChange(it)
+                }
+            },
+            onDismissRequest = {
+                showDialogCollect = false
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        // set new payment
+                        showDialogCollect = false
+                    },
+                    enabled = amount.isNotEmpty()
+                ) {
+                    Text("Cobrar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDialogCollect = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+
 }
 
 @Composable
-fun LoanLabel(
-    icon: ImageVector,
-    text: String
-) {
+fun AmountField(amount: String, onValueChange: (String) -> Unit) {
+    TextField(
+        value = amount,
+        onValueChange = { onValueChange(it) },
+        modifier = Modifier.fillMaxWidth(),
+        placeholder = {
+            Text(
+                text = "Monto",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        singleLine = true,
+        maxLines = 1,
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+        )
+    )
+}
+
+@Composable
+fun FeeLabel(x0: String, x1: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = "Loan Icon",
-            modifier = Modifier.size(24.dp)
-        )
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 8.dp)
-        )
+        Text(x0)
+        Text(x1)
     }
 }
 
@@ -141,6 +251,7 @@ fun RoutesList(
 
     if (routes.isEmpty()) {
         Box(
+            modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -168,6 +279,136 @@ fun RoutesList(
             }
         }
     }
+}
+
+@Composable
+fun LoanLabel(
+    icon: ImageVector,
+    text: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = "Loan Icon",
+            modifier = Modifier.size(24.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = 8.dp),
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun LoanItem(
+    loan: DownloadModel,
+    viewModel: CollectViewModel
+) {
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.user_solid),
+            text = "${loan.customer.firstName} ${loan.customer.lastName}"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.address_card_solid),
+            text = viewModel.formatCedula(loan.customer.cedula)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.coins_solid),
+            text = "${viewModel.formatNumber(loan.amount)} $"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.hashtag_solid),
+            text = "${loan.feesQuantity} cuotas"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.percent_solid),
+            text = "${viewModel.formatNumber(loan.interest)} interes"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.wallet_solid),
+            text = "${viewModel.formatNumber(loan.amount + ((loan.interest / 100) * loan.amount) * loan.feesQuantity)} $"
+        )
+
+    }
+
+}
+
+@Composable
+fun LoansList(
+    loans: List<DownloadModel>,
+    viewModel: CollectViewModel,
+) {
+    var showDialogLoan by remember { mutableStateOf(false) }
+    var loanSelected by remember { mutableStateOf(DownloadModel()) }
+
+    LazyColumn {
+        items(loans) { loan ->
+            Card(
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .clickable {
+                        viewModel.setDownloadRouteSelected(loan)
+                        showDialogLoan = true
+                    }
+            ) {
+                LoanItem(loan, viewModel)
+            }
+        }
+    }
+
+    if (showDialogLoan) {
+        AlertDialog(
+
+            title = {
+                Text(text = "Prestamo")
+            },
+            text = {
+                Column {
+                    LoanItem(
+                        loan = loanSelected,
+                        viewModel = viewModel
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    FeeItems(
+
+                        viewModel = viewModel,
+                        loan = loanSelected
+                    )
+                }
+            },
+            onDismissRequest = {
+                showDialogLoan = false
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDialogLoan = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
 }
 
@@ -177,7 +418,7 @@ fun DownloadRoute(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialogRoute by remember { mutableStateOf(false) }
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -191,7 +432,7 @@ fun DownloadRoute(
 
         Button(
             onClick = {
-                showDialog = true
+                showDialogRoute = true
                 coroutineScope.launch {
                     viewModel.getRoutes()
                 }
@@ -219,7 +460,7 @@ fun DownloadRoute(
 
     }
 
-    if (showDialog) {
+    if (showDialogRoute) {
         AlertDialog(
             title = {
                 Text(text = "Selecciona una ruta")
@@ -228,17 +469,17 @@ fun DownloadRoute(
                 RoutesList(
                     routes = viewModel.routes,
                     viewModel = viewModel,
-                    onRouteSelected = { showDialog = false }
+                    onRouteSelected = { showDialogRoute = false }
                 )
             },
             onDismissRequest = {
-                showDialog = false
+                showDialogRoute = false
             },
             confirmButton = {},
             dismissButton = {
                 TextButton(
                     onClick = {
-                        showDialog = false
+                        showDialogRoute = false
                     }
                 ) {
                     Text("Cancelar")
