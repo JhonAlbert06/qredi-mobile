@@ -61,11 +61,7 @@ fun Collect(
     viewModel: CollectViewModel,
     modifier: Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+    Column {
         DownloadRoute(viewModel, modifier)
 
         LoansList(
@@ -87,8 +83,7 @@ fun LoansList(
     LazyColumn {
         items(loans) { loan ->
             Card(
-                modifier = modifier
-
+                modifier = Modifier
                     .clickable {
                         // Handle click event
                     }

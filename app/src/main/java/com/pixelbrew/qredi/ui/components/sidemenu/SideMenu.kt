@@ -114,7 +114,7 @@ fun SideMenu(
                 Screen.Admin -> AdminScreen(AdminViewModel(apiService, sessionManager, context))
                 Screen.Collect -> CollectScreen(
                     CollectViewModel(apiService, sessionManager, context),
-                    modifier = modifier.padding(top = 20.dp),
+                    modifier = modifier.padding(top = 25.dp),
                 )
 
                 Screen.Reprint -> ReprintScreen(modifier = modifier.padding(padding))
