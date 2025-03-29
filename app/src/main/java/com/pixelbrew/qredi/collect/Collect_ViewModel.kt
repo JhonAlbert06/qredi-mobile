@@ -38,15 +38,6 @@ class CollectViewModel(
         toast.show()
     }
 
-    suspend fun loaduser() {
-        try {
-            val response = apiService.loadUser()
-            Log.d("API_RESPONSE", response.toString())
-        } catch (e: Exception) {
-            Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
-        }
-    }
-
     suspend fun getRoutes() {
         try {
             val response = apiService.getRoutes()

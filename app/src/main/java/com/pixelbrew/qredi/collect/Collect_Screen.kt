@@ -44,7 +44,7 @@ fun CollectScreen(
     viewModel: CollectViewModel,
     modifier: Modifier = Modifier
 ) {
-    val routes = viewModel.routes
+
 
     Box(
         modifier = modifier
@@ -67,18 +67,14 @@ fun Collect(
         LoansList(
             loans = viewModel.downloadedRoutes,
             viewModel = viewModel,
-            modifier = modifier
         )
-
     }
-
 }
 
 @Composable
 fun LoansList(
     loans: List<DownloadModel>,
     viewModel: CollectViewModel,
-    modifier: Modifier
 ) {
     LazyColumn {
         items(loans) { loan ->

@@ -161,7 +161,6 @@ fun TopBar(onOpenDrawer: () -> Unit) {
 
 @Composable
 fun DrawerContent(
-    modifier: Modifier = Modifier,
     onItemSelected: (Screen) -> Unit,
     currentScreen: Screen
 ) {
