@@ -1,5 +1,6 @@
 package com.pixelbrew.qredi.collect
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -42,15 +44,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.RouteModel
 import kotlinx.coroutines.launch
 
+
 @Composable
 fun CollectScreen(
     viewModel: CollectViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    context: MainActivity
 ) {
     Box(
         modifier = modifier
@@ -60,6 +65,15 @@ fun CollectScreen(
         Collect(viewModel, modifier)
         Spacer(modifier = Modifier.height(8.dp))
     }
+
+    val viewModel: CollectViewModel = viewModel
+    val toastMessage by viewModel.toastMessage.observeAsState()
+
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 }
 
 @Composable
@@ -67,10 +81,13 @@ fun Collect(
     viewModel: CollectViewModel,
     modifier: Modifier
 ) {
+
+    val loans by viewModel.downloadedRoutes.observeAsState(emptyList())
+    
     Column {
         DownloadRoute(viewModel, modifier)
         LoansList(
-            loans = viewModel.downloadedRoutes,
+            loans = loans,
             viewModel = viewModel,
         )
     }
@@ -167,7 +184,7 @@ fun FeeItems(
             },
             text = {
                 AmountField(amount) {
-                    viewModel.onAmontChange(it)
+                    viewModel.onAmountChange(it)
                 }
             },
             onDismissRequest = {
@@ -415,6 +432,8 @@ fun DownloadRoute(
     val coroutineScope = rememberCoroutineScope()
     var showDialogRoute by remember { mutableStateOf(false) }
 
+    val routes by viewModel.routes.observeAsState(emptyList())
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -462,7 +481,7 @@ fun DownloadRoute(
             },
             text = {
                 RoutesList(
-                    routes = viewModel.routes,
+                    routes = routes,
                     viewModel = viewModel,
                     onRouteSelected = { showDialogRoute = false }
                 )

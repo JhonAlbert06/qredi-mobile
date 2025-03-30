@@ -1,5 +1,6 @@
 package com.pixelbrew.qredi.admin
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,11 +35,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import kotlinx.coroutines.launch
 
 @Composable
-fun AdminScreen(viewModel: AdminViewModel, modifier: Modifier = Modifier) {
+fun AdminScreen(viewModel: AdminViewModel, modifier: Modifier = Modifier, context: MainActivity) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -45,6 +48,15 @@ fun AdminScreen(viewModel: AdminViewModel, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Login(viewModel, modifier.align(Alignment.Center))
+    }
+
+    val viewModel: AdminViewModel = viewModel
+    val toastMessage by viewModel.toastMessage.observeAsState()
+
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
     }
 }
 

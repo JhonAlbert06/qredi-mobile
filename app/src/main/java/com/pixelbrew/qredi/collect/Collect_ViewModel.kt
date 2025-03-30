@@ -1,80 +1,71 @@
 package com.pixelbrew.qredi.collect
 
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.pixelbrew.qredi.MainActivity
+import androidx.lifecycle.viewModelScope
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.RouteModel
-import com.pixelbrew.qredi.ui.components.services.SessionManager
+import kotlinx.coroutines.launch
 
 class CollectViewModel(
-    private val apiService: ApiService,
-    private val sessionManager: SessionManager,
-    context: MainActivity
+    private val apiService: ApiService
 ) : ViewModel() {
 
-    var text = "Hello toast!"
-    val duration = Toast.LENGTH_SHORT
+    private val _routes = MutableLiveData<List<RouteModel>>(emptyList())
+    val routes: LiveData<List<RouteModel>> get() = _routes
 
-    var toast: Toast = Toast.makeText(context, text, duration)
-
-    private val _routes = mutableStateOf<List<RouteModel>>(emptyList())
-    val routes: List<RouteModel> get() = _routes.value
-
-    private var _downloadedRoutes = mutableStateOf<List<DownloadModel>>(
-        emptyList()
-    )
-    val downloadedRoutes: List<DownloadModel> get() = _downloadedRoutes.value
+    private val _downloadedRoutes = MutableLiveData<List<DownloadModel>>()
+    val downloadedRoutes: LiveData<List<DownloadModel>> get() = _downloadedRoutes
 
     private val _downloadRouteSelected = MutableLiveData<DownloadModel>()
     val downloadRouteSelected: LiveData<DownloadModel> = _downloadRouteSelected
 
-    private val _amount = MutableLiveData<String>("")
-    var amount: LiveData<String> = _amount
+    private val _amount = MutableLiveData<String>()
+    val amount: LiveData<String> get() = _amount
 
-    init {
-    }
+    private val _toastMessage = MutableLiveData<String>()
+    val toastMessage: LiveData<String> get() = _toastMessage
 
     fun setDownloadRouteSelected(downloadRoute: DownloadModel) {
         _downloadRouteSelected.value = downloadRoute
     }
 
-    fun onAmontChange(amount: String) {
+    fun onAmountChange(amount: String) {
         _amount.value = amount
     }
 
-    fun setToastText(text: String) {
-        this.text = text
-        toast.setText(text)
-        toast.show()
+    private fun showToast(message: String) {
+        _toastMessage.value = message
     }
 
-    suspend fun getRoutes() {
-        try {
-            val response = apiService.getRoutes()
-            _routes.value = response
+    fun getRoutes() {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getRoutes()
 
-            setToastText("Routes loaded successfully")
-        } catch (e: Exception) {
-            Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
-            setToastText(e.message.toString())
+                _routes.value = response
+
+                showToast("Routes loaded successfully")
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+                showToast(e.message.toString())
+            }
         }
     }
 
-    suspend fun downloadRoute(id: String) {
-        try {
-            val response = apiService.downloadRoute(id)
-            _downloadedRoutes.value = response
-
-            setToastText("Route downloaded successfully")
-        } catch (e: Exception) {
-            Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
-            setToastText(e.message.toString())
+    fun downloadRoute(id: String) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.downloadRoute(id)
+                _downloadedRoutes.postValue(response)
+                showToast("Route downloaded successfully")
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+                showToast(e.message.toString())
+            }
         }
     }
 
@@ -86,7 +77,7 @@ class CollectViewModel(
         return if (cedula.length == 11) {
             "${cedula.substring(0, 3)}-${cedula.substring(3, 10)}-${cedula.substring(10)}"
         } else {
-            cedula // Return original if not 11 digits
+            cedula
         }
     }
 }

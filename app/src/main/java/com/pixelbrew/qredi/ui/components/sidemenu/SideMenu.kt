@@ -74,7 +74,7 @@ fun SideMenu(
     modifier: Modifier = Modifier,
     apiService: ApiService,
     sessionManager: SessionManager,
-    context: MainActivity
+    context: MainActivity,
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -111,10 +111,16 @@ fun SideMenu(
             }
         ) { padding ->
             when (currentScreen) {
-                Screen.Admin -> AdminScreen(AdminViewModel(apiService, sessionManager, context))
+                Screen.Admin -> AdminScreen(
+                    AdminViewModel(apiService, sessionManager),
+                    modifier,
+                    context
+                )
+
                 Screen.Collect -> CollectScreen(
-                    CollectViewModel(apiService, sessionManager, context),
+                    CollectViewModel(apiService),
                     modifier = modifier.padding(top = 25.dp),
+                    context
                 )
 
                 Screen.Reprint -> ReprintScreen(modifier = modifier.padding(padding))
