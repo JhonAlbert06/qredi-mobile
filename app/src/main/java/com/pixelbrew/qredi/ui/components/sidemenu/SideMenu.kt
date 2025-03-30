@@ -74,7 +74,7 @@ fun SideMenu(
     modifier: Modifier = Modifier,
     apiService: ApiService,
     sessionManager: SessionManager,
-    context: MainActivity,
+    context: MainActivity
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()

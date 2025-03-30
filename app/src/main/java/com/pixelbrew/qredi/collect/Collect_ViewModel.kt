@@ -11,7 +11,7 @@ import com.pixelbrew.qredi.network.model.RouteModel
 import kotlinx.coroutines.launch
 
 class CollectViewModel(
-    private val apiService: ApiService
+    private val apiService: ApiService,
 ) : ViewModel() {
 
     private val _routes = MutableLiveData<List<RouteModel>>(emptyList())
@@ -61,6 +61,8 @@ class CollectViewModel(
             try {
                 val response = apiService.downloadRoute(id)
                 _downloadedRoutes.postValue(response)
+
+
                 showToast("Route downloaded successfully")
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al obtener datos: ${e.message}")

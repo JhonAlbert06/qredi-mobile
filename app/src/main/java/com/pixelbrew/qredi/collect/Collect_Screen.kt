@@ -83,7 +83,7 @@ fun Collect(
 ) {
 
     val loans by viewModel.downloadedRoutes.observeAsState(emptyList())
-    
+
     Column {
         DownloadRoute(viewModel, modifier)
         LoansList(
