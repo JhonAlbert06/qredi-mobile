@@ -88,9 +88,7 @@ fun FeeItems(
     var totalLoanPaid = 0.0
 
     loan.fees.forEach { fee ->
-        fee.payments.forEach { payment ->
-            totalLoanPaid += payment.paidAmount
-        }
+        totalLoanPaid += fee.paymentAmount
     }
 
     FeeLabel(
@@ -100,11 +98,6 @@ fun FeeItems(
 
     LazyColumn {
         items(loan.fees) { fee ->
-
-            var totalFeePayments by remember { mutableDoubleStateOf(0.0) }
-            fee.payments.forEach { payment ->
-                totalFeePayments += payment.paidAmount
-            }
 
             var cuote by remember { mutableDoubleStateOf(0.0) }
             cuote = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
@@ -120,13 +113,13 @@ fun FeeItems(
 
                     FeeLabel(
                         "${fee.number}/${loan.feesQuantity}",
-                        "${fee.expectedDate.day}/${fee.expectedDate.month}/${fee.expectedDate.year}"
+                        "${fee.date.day}/${fee.date.month}/${fee.date.year}"
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
                     FeeLabel(
                         "${
-                            viewModel.formatNumber(totalFeePayments)
+                            viewModel.formatNumber(fee.paymentAmount)
                         }$ / ${
                             viewModel.formatNumber(
                                 cuote
@@ -150,7 +143,7 @@ fun FeeItems(
                             disabledContainerColor = Color(0x2C00BCD4),
                             disabledContentColor = Color(0xFF0C0C0C)
                         ),
-                        enabled = totalFeePayments < cuote
+                        enabled = fee.paymentAmount < cuote
                     ) {
                         Text("Cobrar")
                         Icon(
@@ -314,7 +307,7 @@ fun LoanItem(
     Column(modifier = Modifier.padding(16.dp)) {
         LoanLabel(
             icon = ImageVector.vectorResource(id = R.drawable.user_solid),
-            text = "${loan.customer.firstName} ${loan.customer.lastName}"
+            text = loan.customer.name
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -357,7 +350,9 @@ fun LoansList(
     viewModel: CollectViewModel,
 ) {
     var showDialogLoan by remember { mutableStateOf(false) }
-    var loanSelected by remember { mutableStateOf(DownloadModel()) }
+    val loanSelectedState =
+        viewModel.downloadRouteSelected.observeAsState(initial = DownloadModel())
+    val loanSelected: DownloadModel = loanSelectedState.value
 
     LazyColumn {
         items(loans) { loan ->
