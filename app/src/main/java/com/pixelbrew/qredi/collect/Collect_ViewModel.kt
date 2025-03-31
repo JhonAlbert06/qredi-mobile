@@ -6,11 +6,17 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pixelbrew.qredi.data.converter.LoanMapper
+import com.pixelbrew.qredi.data.entities.FeeEntity
+import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.DownloadModel
+import com.pixelbrew.qredi.network.model.Fee
 import com.pixelbrew.qredi.network.model.RouteModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CollectViewModel(
     private val loanRepository: LoanRepository,
@@ -26,11 +32,18 @@ class CollectViewModel(
     private val _downloadRouteSelected = MutableLiveData<DownloadModel>()
     val downloadRouteSelected: LiveData<DownloadModel> = _downloadRouteSelected
 
+    private val _selectedFee = MutableLiveData<Fee>()
+    val selectedFee: LiveData<Fee> get() = _selectedFee
+
     private val _amount = MutableLiveData<String>()
     val amount: LiveData<String> get() = _amount
 
     private val _toastMessage = MutableLiveData<String>()
     val toastMessage: LiveData<String> get() = _toastMessage
+
+    init {
+        getLoansFromDatabase()
+    }
 
     fun setDownloadRouteSelected(downloadRoute: DownloadModel) {
         _downloadRouteSelected.value = downloadRoute
@@ -44,6 +57,33 @@ class CollectViewModel(
         _toastMessage.value = message
     }
 
+    fun setFeeSelected(fee: Fee) {
+        _selectedFee.value = fee
+    }
+
+    fun collectFee() {
+        Log.d("DEBUG_AMOUNT", "Valor de _amount antes de conversión: ${_amount.value}")
+        val amountValue = _amount.value?.toDoubleOrNull() ?: 0.0
+        Log.d("DEBUG_AMOUNT", "Valor de paymentAmount después de conversión: $amountValue")
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                var newFeeEntity = NewFeeEntity(
+                    id = 0,
+                    feeId = _selectedFee.value?.id ?: "",
+                    loanId = downloadRouteSelected.value?.id ?: "",
+                    paymentAmount = amountValue,
+                    number = _selectedFee.value?.number ?: 0
+                )
+                loanRepository.insertNewFee(newFeeEntity)
+                getLoansFromDatabase()
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+                showToast(e.message.toString())
+            }
+        }
+
+    }
+
     fun getRoutes() {
         viewModelScope.launch {
             try {
@@ -55,28 +95,92 @@ class CollectViewModel(
                 showToast(e.message.toString())
             }
         }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            loanRepository.deleteAllLoans()
+            loanRepository.deleteAllFees()
+        }
+    }
+
+    fun saveLoansOnDatabase(loan: DownloadModel) {
+        viewModelScope.launch(Dispatchers.IO) { // ← Mover a IO
+            try {
+                val newLoan = LoanMapper.loanModelToEntity(loan)
+                loanRepository.insertLoan(newLoan)
+
+                loan.fees.forEach { fee ->
+                    val newFee = LoanMapper.feeModelToEntity(fee, newLoan.id)
+                    loanRepository.insertFee(newFee)
+                }
+            } catch (e: Exception) {
+                Log.e("DB_ERROR", "Error al guardar datos: ${e.message}")
+                showToast(e.message.toString())
+            }
+        }
+    }
+
+    fun getLoansFromDatabase() {
+        Log.d("ROOM_DB", "Ejecutando getLoansFromDatabase()...")
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val downloadedRoutesAux =
+                    loanRepository.getAllLoans().first() // Usamos first() en lugar de collect()
+
+                Log.d("ROOM_DB", "Cantidad de préstamos recuperados: ${downloadedRoutesAux.size}")
+
+                val newLoans = downloadedRoutesAux.map { loan ->
+
+                    val feesDB = loanRepository.getFeesByLoanId(loan.id)
+                        .first()
+
+                    val feesNewDB = loanRepository.getNewFeesByLoanId(loan.id)
+                        .first()
+
+                    val feesRes = feesFusionAmount(feesDB, feesNewDB)
+
+                    val newLoan = LoanMapper.loanEntityToModel(loan, feesRes)
+                    newLoan
+                }
+
+                withContext(Dispatchers.Main) {
+                    Log.d("ROOM_DB", "Actualizando LiveData con ${newLoans.size} préstamos")
+                    _downloadedRoutes.value = newLoans
+
+                    newLoans.forEach { loan ->
+                        if (loan.id == downloadRouteSelected.value?.id) {
+                            _downloadRouteSelected.value = loan
+                        }
+                    }
+                }
+
+            } catch (e: Exception) {
+                Log.e("DB_ERROR", "Error al obtener datos: ${e.message}")
+            }
+        }
+    }
+
+    fun feesFusionAmount(feesDB: List<FeeEntity>, feesNewDB: List<NewFeeEntity>): List<FeeEntity> {
+        val newFeesMap = feesNewDB.groupBy { it.loanId to it.number }
+
+        return feesDB.map { fee ->
+            val extraAmount =
+                newFeesMap[fee.loanId to fee.number]?.sumOf { it.paymentAmount } ?: 0.0
+
+            fee.copy(paymentAmount = fee.paymentAmount + extraAmount)
+        }
     }
 
     fun downloadRoute(id: String) {
         viewModelScope.launch {
             try {
                 val response = apiService.downloadRoute(id)
-                _downloadedRoutes.postValue(response)
 
-                viewModelScope.launch {
-
-                    response.forEach { loan ->
-                        var newloan = LoanMapper.loanModelToEntity(loan)
-                        loanRepository.insertLoan(newloan)
-
-                        loan.fees.forEach { fee ->
-                            var newfee = LoanMapper.feeModelToEntity(fee, newloan.id)
-                            loanRepository.insertFee(newfee)
-                        }
-                    }
-
+                response.forEach { loan ->
+                    saveLoansOnDatabase(loan)
                 }
 
+                getLoansFromDatabase()
                 showToast("Route downloaded successfully")
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al obtener datos: ${e.message}")

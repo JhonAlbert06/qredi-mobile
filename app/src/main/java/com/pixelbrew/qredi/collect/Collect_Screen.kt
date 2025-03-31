@@ -97,7 +97,7 @@ fun Collect(
 @Composable
 fun FeeItems(
     viewModel: CollectViewModel,
-    loan: DownloadModel
+    loan: DownloadModel,
 ) {
     val amount: String by viewModel.amount.observeAsState(initial = "")
 
@@ -149,7 +149,8 @@ fun FeeItems(
                     Button(
                         onClick = {
                             showDialogCollect = true
-                            // open dialog collect
+                            viewModel.setFeeSelected(fee)
+
                         },
                         modifier = Modifier
                             .padding(top = 8.dp)
@@ -193,7 +194,7 @@ fun FeeItems(
             confirmButton = {
                 Button(
                     onClick = {
-                        // set new payment
+                        viewModel.collectFee()
                         showDialogCollect = false
                     },
                     enabled = amount.isNotEmpty()
@@ -215,6 +216,7 @@ fun FeeItems(
 
 
 }
+
 
 @Composable
 fun AmountField(amount: String, onValueChange: (String) -> Unit) {
@@ -402,7 +404,7 @@ fun LoansList(
                     FeeItems(
 
                         viewModel = viewModel,
-                        loan = loanSelected
+                        loan = loanSelected,
                     )
                 }
             },

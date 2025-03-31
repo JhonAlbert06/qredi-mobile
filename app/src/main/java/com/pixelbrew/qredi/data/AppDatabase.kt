@@ -7,8 +7,13 @@ import androidx.room.RoomDatabase
 import com.pixelbrew.qredi.data.dao.LoanDao
 import com.pixelbrew.qredi.data.entities.FeeEntity
 import com.pixelbrew.qredi.data.entities.LoanEntity
+import com.pixelbrew.qredi.data.entities.NewFeeEntity
 
-@Database(entities = [LoanEntity::class, FeeEntity::class], version = 1, exportSchema = false)
+@Database(
+    entities = [LoanEntity::class, FeeEntity::class, NewFeeEntity::class],
+    version = 2,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun loanDao(): LoanDao
 
@@ -21,7 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "qredi_database"
+                    "qredi_database1"
                 ).build()
                 INSTANCE = instance
                 instance
