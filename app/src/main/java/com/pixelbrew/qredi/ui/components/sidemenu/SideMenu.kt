@@ -36,6 +36,7 @@ import com.pixelbrew.qredi.admin.AdminScreen
 import com.pixelbrew.qredi.admin.AdminViewModel
 import com.pixelbrew.qredi.collect.CollectScreen
 import com.pixelbrew.qredi.collect.CollectViewModel
+import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.reprint.ReprintScreen
 import com.pixelbrew.qredi.settings.SettingsScreen
@@ -118,7 +119,7 @@ fun SideMenu(
                 )
 
                 Screen.Collect -> CollectScreen(
-                    CollectViewModel(apiService),
+                    CollectViewModel(LoanRepository(context), apiService),
                     modifier = modifier.padding(top = 25.dp),
                     context
                 )

@@ -5,12 +5,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pixelbrew.qredi.data.converter.LoanMapper
+import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.RouteModel
 import kotlinx.coroutines.launch
 
 class CollectViewModel(
+    private val loanRepository: LoanRepository,
     private val apiService: ApiService,
 ) : ViewModel() {
 
@@ -45,9 +48,7 @@ class CollectViewModel(
         viewModelScope.launch {
             try {
                 val response = apiService.getRoutes()
-
                 _routes.value = response
-
                 showToast("Routes loaded successfully")
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
@@ -62,6 +63,19 @@ class CollectViewModel(
                 val response = apiService.downloadRoute(id)
                 _downloadedRoutes.postValue(response)
 
+                viewModelScope.launch {
+
+                    response.forEach { loan ->
+                        var newloan = LoanMapper.loanModelToEntity(loan)
+                        loanRepository.insertLoan(newloan)
+
+                        loan.fees.forEach { fee ->
+                            var newfee = LoanMapper.feeModelToEntity(fee, newloan.id)
+                            loanRepository.insertFee(newfee)
+                        }
+                    }
+
+                }
 
                 showToast("Route downloaded successfully")
             } catch (e: Exception) {
