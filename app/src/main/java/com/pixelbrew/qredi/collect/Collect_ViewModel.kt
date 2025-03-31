@@ -61,6 +61,10 @@ class CollectViewModel(
         _selectedFee.value = fee
     }
 
+    fun resetAmount() {
+        _amount.value = ""
+    }
+
     fun collectFee() {
         Log.d("DEBUG_AMOUNT", "Valor de _amount antes de conversión: ${_amount.value}")
         val amountValue = _amount.value?.toDoubleOrNull() ?: 0.0
@@ -81,7 +85,6 @@ class CollectViewModel(
                 showToast(e.message.toString())
             }
         }
-
     }
 
     fun getRoutes() {

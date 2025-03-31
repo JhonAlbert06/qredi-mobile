@@ -150,7 +150,6 @@ fun FeeItems(
                         onClick = {
                             showDialogCollect = true
                             viewModel.setFeeSelected(fee)
-
                         },
                         modifier = Modifier
                             .padding(top = 8.dp)
@@ -196,6 +195,7 @@ fun FeeItems(
                     onClick = {
                         viewModel.collectFee()
                         showDialogCollect = false
+                        viewModel.resetAmount()
                     },
                     enabled = amount.isNotEmpty()
                 ) {
