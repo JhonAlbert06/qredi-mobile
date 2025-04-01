@@ -119,9 +119,11 @@ fun SideMenu(
                 )
 
                 Screen.Collect -> CollectScreen(
-                    CollectViewModel(LoanRepository(context), apiService),
+                    CollectViewModel(
+                        LoanRepository(context), apiService
+                    ),
                     modifier = modifier.padding(top = 25.dp),
-                    context
+                    context,
                 )
 
                 Screen.Reprint -> ReprintScreen(modifier = modifier.padding(padding))

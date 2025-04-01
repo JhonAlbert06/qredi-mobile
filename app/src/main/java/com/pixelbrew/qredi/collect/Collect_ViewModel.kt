@@ -1,6 +1,9 @@
 package com.pixelbrew.qredi.collect
 
+import android.Manifest
+import android.content.Context
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,6 +12,8 @@ import com.pixelbrew.qredi.data.converter.LoanMapper
 import com.pixelbrew.qredi.data.entities.FeeEntity
 import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.repository.LoanRepository
+import com.pixelbrew.qredi.invoice.BluetoothPrinter
+import com.pixelbrew.qredi.invoice.InvoiceGenerator
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.Fee
@@ -22,6 +27,7 @@ class CollectViewModel(
     private val loanRepository: LoanRepository,
     private val apiService: ApiService,
 ) : ViewModel() {
+
 
     private val _routes = MutableLiveData<List<RouteModel>>(emptyList())
     val routes: LiveData<List<RouteModel>> get() = _routes
@@ -202,5 +208,57 @@ class CollectViewModel(
         } else {
             cedula
         }
+    }
+
+    fun stringToDouble(value: String): Double {
+        return try {
+            value.toDouble()
+        } catch (e: NumberFormatException) {
+            0.0
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun printCollect(context: Context) {
+
+        val loan = downloadRouteSelected.value
+        val fee = selectedFee.value
+
+        val cuotaN = fee?.number
+
+        val feeAmount: Double = stringToDouble(_amount.value.toString())
+        var total: Double = 0.0
+
+        loan?.fees?.forEach { fee ->
+            total += fee.paymentAmount
+        }
+
+        total += feeAmount
+
+        val clientName = loan?.customer?.name!!
+
+        val paymentData = InvoiceGenerator.DocumentData(
+            items = listOf(
+                InvoiceGenerator.DocumentItem(
+                    description = "Cuota #${cuotaN}",
+                    quantity = 1,
+                    price = feeAmount,
+                    tax = 0.0,
+                )
+            ),
+            total = total,
+            clientName = clientName,
+            cashierName = "Jhon A. Guzman G.",
+        )
+
+        viewModelScope.launch(Dispatchers.IO) {
+            BluetoothPrinter.printDocument(
+                context,
+                "2C-P58-C",
+                BluetoothPrinter.DocumentType.PAYMENT,
+                paymentData
+            )
+        }
+        resetAmount()
     }
 }

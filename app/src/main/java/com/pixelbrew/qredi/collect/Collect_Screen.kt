@@ -50,19 +50,21 @@ import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.RouteModel
 import kotlinx.coroutines.launch
 
+@androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun CollectScreen(
     viewModel: CollectViewModel,
     modifier: Modifier = Modifier,
-    context: MainActivity
+    context: MainActivity,
 ) {
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
     ) {
 
-        Collect(viewModel, modifier)
+        Collect(viewModel, modifier, context)
         Spacer(modifier = Modifier.height(8.dp))
     }
 
@@ -76,10 +78,12 @@ fun CollectScreen(
     }
 }
 
+@androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun Collect(
     viewModel: CollectViewModel,
-    modifier: Modifier
+    modifier: Modifier,
+    context: MainActivity,
 ) {
     val loans by viewModel.downloadedRoutes.observeAsState(emptyList())
 
@@ -88,15 +92,17 @@ fun Collect(
         LoansList(
             loans = loans,
             viewModel = viewModel,
+            context = context
         )
     }
 }
 
-
+@androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun FeeItems(
     viewModel: CollectViewModel,
     loan: DownloadModel,
+    context: MainActivity,
 ) {
     val amount: String by viewModel.amount.observeAsState(initial = "")
 
@@ -176,6 +182,7 @@ fun FeeItems(
         }
     }
 
+
     if (showDialogCollect) {
         AlertDialog(
             title = {
@@ -194,7 +201,7 @@ fun FeeItems(
                     onClick = {
                         viewModel.collectFee()
                         showDialogCollect = false
-                        viewModel.resetAmount()
+                        viewModel.printCollect(context)
                     },
                     enabled = amount.isNotEmpty()
                 ) {
@@ -362,10 +369,12 @@ fun LoanItem(
 
 }
 
+@androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun LoansList(
     loans: List<DownloadModel>,
     viewModel: CollectViewModel,
+    context: MainActivity
 ) {
     var showDialogLoan by remember { mutableStateOf(false) }
     val loanSelectedState =
@@ -401,9 +410,9 @@ fun LoansList(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     FeeItems(
-
                         viewModel = viewModel,
                         loan = loanSelected,
+                        context = context
                     )
                 }
             },

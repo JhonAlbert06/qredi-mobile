@@ -22,7 +22,6 @@ class MainActivity : ComponentActivity() {
         val sessionManager = SessionManager(this)
         var networkModule = NetworkModule.createApiService(sessionManager)
 
-
         setContent {
             QrediTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -30,7 +29,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding),
                         sessionManager = sessionManager,
                         apiService = networkModule,
-                        context = this,
+                        context = this
                     )
                 }
             }
