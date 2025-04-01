@@ -39,6 +39,7 @@ import com.pixelbrew.qredi.collect.CollectViewModel
 import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.reprint.ReprintScreen
+import com.pixelbrew.qredi.reprint.ReprintViewModel
 import com.pixelbrew.qredi.settings.SettingsScreen
 import com.pixelbrew.qredi.statistics.StatisticsScreen
 import com.pixelbrew.qredi.ui.components.services.SessionManager
@@ -114,20 +115,34 @@ fun SideMenu(
         ) { padding ->
             when (currentScreen) {
                 Screen.Admin -> AdminScreen(
-                    AdminViewModel(apiService, sessionManager),
+                    AdminViewModel(
+                        apiService,
+                        sessionManager
+                    ),
                     modifier,
                     context
                 )
 
                 Screen.Collect -> CollectScreen(
                     CollectViewModel(
-                        LoanRepository(context), apiService, sessionManager
+                        LoanRepository(context),
+                        apiService,
+                        sessionManager
                     ),
                     modifier = modifier.padding(top = 25.dp),
                     context,
                 )
 
-                Screen.Reprint -> ReprintScreen(modifier = modifier.padding(padding))
+                Screen.Reprint -> ReprintScreen(
+                    ReprintViewModel(
+                        LoanRepository(context),
+                        apiService,
+                        sessionManager
+                    ),
+                    modifier = modifier.padding(padding),
+                    context
+                )
+
                 Screen.Statistics -> StatisticsScreen(modifier = modifier.padding(padding))
                 Screen.Settings -> SettingsScreen(modifier = modifier.padding(padding))
             }

@@ -85,15 +85,28 @@ fun Collect(
     modifier: Modifier,
     context: MainActivity,
 ) {
-    val loans by viewModel.downloadedRoutes.observeAsState(emptyList())
+    val loans by viewModel.downloadedLoans.observeAsState(emptyList())
+    val routes by viewModel.routes.observeAsState(emptyList())
 
     Column {
-        DownloadRoute(viewModel, modifier)
-        LoansList(
-            loans = loans,
-            viewModel = viewModel,
-            context = context
-        )
+        Header(viewModel, modifier)
+
+        if (loans.isEmpty() && routes.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
+            }
+        } else {
+            LoansList(
+                loans = loans,
+                viewModel = viewModel,
+                context = context
+            )
+        }
+
+
     }
 }
 
@@ -380,7 +393,7 @@ fun LoansList(
 ) {
     var showDialogLoan by remember { mutableStateOf(false) }
     val loanSelectedState =
-        viewModel.downloadRouteSelected.observeAsState(initial = DownloadModel())
+        viewModel.downloadLoanSelected.observeAsState(initial = DownloadModel())
     val loanSelected: DownloadModel = loanSelectedState.value
 
     LazyColumn {
@@ -437,7 +450,7 @@ fun LoansList(
 }
 
 @Composable
-fun DownloadRoute(
+fun Header(
     viewModel: CollectViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -445,6 +458,8 @@ fun DownloadRoute(
     var showDialogRoute by remember { mutableStateOf(false) }
 
     val routes by viewModel.routes.observeAsState(emptyList())
+
+    val downloadedRoutes by viewModel.downloadedLoans.observeAsState(emptyList())
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -472,7 +487,7 @@ fun DownloadRoute(
                 disabledContainerColor = Color(0x2C00BCD4),
                 disabledContentColor = Color(0xFF0C0C0C)
             ),
-            enabled = viewModel.downloadedRoutes.value?.isEmpty() == true
+            enabled = downloadedRoutes.isEmpty()
         ) {
             Text("Descargar")
             Icon(

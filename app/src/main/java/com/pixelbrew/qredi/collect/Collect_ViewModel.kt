@@ -38,11 +38,11 @@ class CollectViewModel(
     private val _routes = MutableLiveData<List<RouteModel>>(emptyList())
     val routes: LiveData<List<RouteModel>> get() = _routes
 
-    private val _downloadedRoutes = MutableLiveData<List<DownloadModel>>()
-    val downloadedRoutes: LiveData<List<DownloadModel>> get() = _downloadedRoutes
+    private val _downloadedLoans = MutableLiveData<List<DownloadModel>>()
+    val downloadedLoans: LiveData<List<DownloadModel>> get() = _downloadedLoans
 
-    private val _downloadRouteSelected = MutableLiveData<DownloadModel>()
-    val downloadRouteSelected: LiveData<DownloadModel> = _downloadRouteSelected
+    private val _downloadLoanSelected = MutableLiveData<DownloadModel>()
+    val downloadLoanSelected: LiveData<DownloadModel> = _downloadLoanSelected
 
     private val _selectedFee = MutableLiveData<Fee>()
     val selectedFee: LiveData<Fee> get() = _selectedFee
@@ -64,7 +64,7 @@ class CollectViewModel(
     }
 
     fun setDownloadRouteSelected(downloadRoute: DownloadModel) {
-        _downloadRouteSelected.value = downloadRoute
+        _downloadLoanSelected.value = downloadRoute
     }
 
     fun onAmountChange(amount: String) {
@@ -88,7 +88,7 @@ class CollectViewModel(
                 var newFeeEntity = NewFeeEntity(
                     id = 0,
                     feeId = _selectedFee.value?.id ?: "",
-                    loanId = downloadRouteSelected.value?.id ?: "",
+                    loanId = downloadLoanSelected.value?.id ?: "",
                     paymentAmount = amountValue,
                     number = _selectedFee.value?.number ?: 0,
                     dateDay = _selectedFee.value?.date?.day ?: 0,
@@ -169,11 +169,11 @@ class CollectViewModel(
 
                 withContext(Dispatchers.Main) {
                     Log.d("ROOM_DB", "Actualizando LiveData con ${newLoans.size} préstamos")
-                    _downloadedRoutes.value = newLoans
+                    _downloadedLoans.value = newLoans
 
                     newLoans.forEach { loan ->
-                        if (loan.id == downloadRouteSelected.value?.id) {
-                            _downloadRouteSelected.value = loan
+                        if (loan.id == downloadLoanSelected.value?.id) {
+                            _downloadLoanSelected.value = loan
                         }
                     }
                 }
@@ -204,6 +204,8 @@ class CollectViewModel(
                     saveLoansOnDatabase(loan)
                 }
 
+                // Esperar 2 segundos
+                delay(2000)
                 getLoansFromDatabase()
                 showToast("Route downloaded successfully")
             } catch (e: Exception) {
@@ -235,7 +237,7 @@ class CollectViewModel(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printCollect(context: Context) {
-        val loan = downloadRouteSelected.value ?: run {
+        val loan = downloadLoanSelected.value ?: run {
             showError("No se ha seleccionado ningún préstamo")
             return
         }

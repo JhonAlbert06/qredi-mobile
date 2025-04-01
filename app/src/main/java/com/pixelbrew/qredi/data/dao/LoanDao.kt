@@ -35,6 +35,9 @@ interface LoanDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertNewFee(fee: NewFeeEntity)
 
+    @Query("SELECT * FROM new_fees")
+    fun getAllNewFees(): Flow<List<NewFeeEntity>>
+
     @Transaction
     @Query("SELECT * FROM loans WHERE id = :loanId")
     fun getLoanWithFees(loanId: String): Flow<List<LoanWithFees>>
@@ -44,4 +47,8 @@ interface LoanDao {
 
     @Query("DELETE FROM fees")
     fun deleteAllFees()
+
+    @Query("DELETE FROM new_fees")
+    fun deleteAllNewFees()
+
 }
