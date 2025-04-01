@@ -52,8 +52,8 @@ class ReprintViewModel(
             loanRepository.deleteAllFees()
             loanRepository.deleteAllNewFees()
             Log.d("ReprintViewModel", "Base de datos limpiada correctamente")
-        
         }
+        _newFees.postValue(emptyList())
     }
 
     fun getAllNewFees() {

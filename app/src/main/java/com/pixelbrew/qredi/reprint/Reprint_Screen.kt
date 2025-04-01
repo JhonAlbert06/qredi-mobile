@@ -2,7 +2,10 @@ package com.pixelbrew.qredi.reprint
 
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,24 +33,36 @@ fun ReprintScreen(
 ) {
     val newFees by viewModel.newFees.observeAsState(emptyList())
 
-    Column(modifier = modifier.fillMaxSize()) {
-        Button(
-            onClick = {
-                viewModel.uploadFees()
-            },
-            modifier = Modifier.padding(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+    Box(modifier = modifier.fillMaxSize()) {
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Subir Data",
-                color = MaterialTheme.colorScheme.onPrimary
+                "Reimprimir",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(16.dp)
             )
+
+            Button(
+                onClick = {
+                    viewModel.uploadFees()
+                },
+                modifier = Modifier.padding(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(
+                    text = "Subir Data",
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
+
         }
-        Text(
-            "Reimprimir Comprobantes",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(16.dp)
-        )
+
 
         LazyColumn {
             items(newFees) { fee ->

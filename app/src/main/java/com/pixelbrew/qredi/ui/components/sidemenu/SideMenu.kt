@@ -139,7 +139,7 @@ fun SideMenu(
                         apiService,
                         sessionManager
                     ),
-                    modifier = modifier.padding(padding),
+                    modifier = modifier.padding(top = 45.dp),
                     context
                 )
 
