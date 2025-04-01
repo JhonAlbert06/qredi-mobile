@@ -50,7 +50,6 @@ import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.RouteModel
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun CollectScreen(
     viewModel: CollectViewModel,
@@ -62,6 +61,7 @@ fun CollectScreen(
             .fillMaxSize()
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
     ) {
+
         Collect(viewModel, modifier)
         Spacer(modifier = Modifier.height(8.dp))
     }
@@ -81,7 +81,6 @@ fun Collect(
     viewModel: CollectViewModel,
     modifier: Modifier
 ) {
-
     val loans by viewModel.downloadedRoutes.observeAsState(emptyList())
 
     Column {

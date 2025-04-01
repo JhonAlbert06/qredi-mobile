@@ -4,10 +4,12 @@ import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.LoginRequest
 import com.pixelbrew.qredi.network.model.RouteModel
 import com.pixelbrew.qredi.network.model.TokenModel
+import com.pixelbrew.qredi.network.model.UploadFee
 import com.pixelbrew.qredi.network.model.UserModel
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface ApiService {
@@ -22,9 +24,13 @@ interface ApiService {
     @GET("/routes")
     suspend fun getRoutes(): List<RouteModel>
 
-    // "/route/download/13d7eea0-3fe1-4e34-93cd-2541f29df6a1"
     @GET("/route/download/{id}")
     suspend fun downloadRoute(
         @Path("id") id: String
     ): List<DownloadModel>
+
+    @PUT("/fee/uploadFees")
+    suspend fun uploadFees(
+        @Body fees: List<UploadFee>
+    ): List<UploadFee>
 }
