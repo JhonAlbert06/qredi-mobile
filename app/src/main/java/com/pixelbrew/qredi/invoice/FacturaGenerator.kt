@@ -38,6 +38,10 @@ object InvoiceGenerator {
         val transactionsCount: Int
     )
 
+    fun formatNumber(number: Double): String {
+        return "%,.2f".format(number)
+    }
+
     fun generateLoanContent(data: DocumentData): String {
         val builder = StringBuilder()
 
@@ -85,12 +89,12 @@ object InvoiceGenerator {
             builder.appendLine(
                 "${item.description.take(16).padEnd(16)} ${
                     item.quantity.toString().padStart(4)
-                }  ${"%.2f".format(item.price)}"
+                }  ${formatNumber(item.price)}"
             )
         }
 
         builder.appendLine("--------------------------------")
-        builder.appendLine("TOTAL PAGADO: ${"%.2f".format(data.total)}")
+        builder.appendLine("TOTAL PAGADO: ${formatNumber(data.total)}")
         builder.appendLine("\n\n\n")
         return builder.toString()
     }

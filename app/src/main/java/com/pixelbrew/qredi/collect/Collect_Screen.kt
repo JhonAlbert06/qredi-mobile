@@ -202,6 +202,8 @@ fun FeeItems(
                         viewModel.collectFee()
                         showDialogCollect = false
                         viewModel.printCollect(context)
+
+                        viewModel.resetAmount()
                     },
                     enabled = amount.isNotEmpty()
                 ) {
@@ -470,8 +472,8 @@ fun DownloadRoute(
                 disabledContainerColor = Color(0x2C00BCD4),
                 disabledContentColor = Color(0xFF0C0C0C)
             ),
-
-            ) {
+            enabled = viewModel.downloadedRoutes.value?.isEmpty() == true
+        ) {
             Text("Descargar")
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.download_solid),

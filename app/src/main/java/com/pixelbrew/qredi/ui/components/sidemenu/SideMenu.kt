@@ -70,6 +70,7 @@ object ScreenSaver : Saver<Screen, String> {
     override fun SaverScope.save(value: Screen): String = value.route
 }
 
+@androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun SideMenu(
     modifier: Modifier = Modifier,
@@ -120,7 +121,7 @@ fun SideMenu(
 
                 Screen.Collect -> CollectScreen(
                     CollectViewModel(
-                        LoanRepository(context), apiService
+                        LoanRepository(context), apiService, sessionManager
                     ),
                     modifier = modifier.padding(top = 25.dp),
                     context,

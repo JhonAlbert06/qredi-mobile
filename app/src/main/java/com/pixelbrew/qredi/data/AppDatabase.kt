@@ -11,7 +11,7 @@ import com.pixelbrew.qredi.data.entities.NewFeeEntity
 
 @Database(
     entities = [LoanEntity::class, FeeEntity::class, NewFeeEntity::class],
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,7 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "qredi_database1"
+                    "qredi_database"
                 ).build()
                 INSTANCE = instance
                 instance

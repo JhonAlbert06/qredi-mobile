@@ -48,6 +48,21 @@ class AdminViewModel(
         _toastMessage.value = message
     }
 
+    suspend fun loadUser() {
+        _isLoading.value = true
+
+        try {
+            val response = apiService.loadUser()
+            sessionManager.saveUser(response)
+            Log.d("API_RESPONSE", response.toString())
+            _isLoading.value = false
+        } catch (e: Exception) {
+            Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+            _isLoading.value = false
+            showToast(e.message.toString())
+        }
+    }
+
     suspend fun onLoginSelected() {
 
         _isLoading.value = true
@@ -66,6 +81,8 @@ class AdminViewModel(
             // save token
             sessionManager.saveAuthToken(response.token)
             _isLoading.value = false
+
+            loadUser()
             showToast("Login successful")
         } catch (e: Exception) {
             Log.e("API_ERROR", "Error al obtener datos: ${e.message}")

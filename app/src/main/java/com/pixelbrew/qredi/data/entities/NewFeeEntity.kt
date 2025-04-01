@@ -11,4 +11,11 @@ data class NewFeeEntity(
     val loanId: String,
     val paymentAmount: Double,
     val number: Int,
+    val dateDay: Int,
+    val dateMonth: Int,
+    val dateYear: Int,
+    val dateHour: Int,
+    val dateMinute: Int,
+    val dateSecond: Int,
+    val dateTimezone: String
 )

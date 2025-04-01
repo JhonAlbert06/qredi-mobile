@@ -18,7 +18,10 @@ import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.Fee
 import com.pixelbrew.qredi.network.model.RouteModel
+import com.pixelbrew.qredi.network.model.UserModel
+import com.pixelbrew.qredi.ui.components.services.SessionManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,8 +29,11 @@ import kotlinx.coroutines.withContext
 class CollectViewModel(
     private val loanRepository: LoanRepository,
     private val apiService: ApiService,
+    private val sessionManager: SessionManager,
 ) : ViewModel() {
 
+    val userSession: UserModel?
+        get() = sessionManager.fetchUser()
 
     private val _routes = MutableLiveData<List<RouteModel>>(emptyList())
     val routes: LiveData<List<RouteModel>> get() = _routes
@@ -49,6 +55,12 @@ class CollectViewModel(
 
     init {
         getLoansFromDatabase()
+        Log.d("DEBUG", "CollectViewModel initialized")
+        Log.d("DEBUG", "${userSession?.firstName}")
+    }
+
+    fun resetAmount() {
+        _amount.value = ""
     }
 
     fun setDownloadRouteSelected(downloadRoute: DownloadModel) {
@@ -67,10 +79,6 @@ class CollectViewModel(
         _selectedFee.value = fee
     }
 
-    fun resetAmount() {
-        _amount.value = ""
-    }
-
     fun collectFee() {
         Log.d("DEBUG_AMOUNT", "Valor de _amount antes de conversión: ${_amount.value}")
         val amountValue = _amount.value?.toDoubleOrNull() ?: 0.0
@@ -82,7 +90,14 @@ class CollectViewModel(
                     feeId = _selectedFee.value?.id ?: "",
                     loanId = downloadRouteSelected.value?.id ?: "",
                     paymentAmount = amountValue,
-                    number = _selectedFee.value?.number ?: 0
+                    number = _selectedFee.value?.number ?: 0,
+                    dateDay = _selectedFee.value?.date?.day ?: 0,
+                    dateMonth = _selectedFee.value?.date?.month ?: 0,
+                    dateYear = _selectedFee.value?.date?.year ?: 0,
+                    dateHour = _selectedFee.value?.date?.hour ?: 0,
+                    dateMinute = _selectedFee.value?.date?.minute ?: 0,
+                    dateSecond = _selectedFee.value?.date?.second ?: 0,
+                    dateTimezone = _selectedFee.value?.date?.timezone ?: ""
                 )
                 loanRepository.insertNewFee(newFeeEntity)
                 getLoansFromDatabase()
@@ -220,45 +235,75 @@ class CollectViewModel(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printCollect(context: Context) {
-
-        val loan = downloadRouteSelected.value
-        val fee = selectedFee.value
-
-        val cuotaN = fee?.number
-
-        val feeAmount: Double = stringToDouble(_amount.value.toString())
-        var total: Double = 0.0
-
-        loan?.fees?.forEach { fee ->
-            total += fee.paymentAmount
+        val loan = downloadRouteSelected.value ?: run {
+            showError("No se ha seleccionado ningún préstamo")
+            return
         }
 
-        total += feeAmount
+        val fee = selectedFee.value ?: run {
+            showError("No se ha seleccionado ninguna cuota")
+            return
+        }
 
-        val clientName = loan?.customer?.name!!
+        try {
+            val feeAmount = stringToDouble(_amount.value.toString())
+            var total = loan.fees.sumOf { it.paymentAmount } + feeAmount
 
-        val paymentData = InvoiceGenerator.DocumentData(
-            items = listOf(
-                InvoiceGenerator.DocumentItem(
-                    description = "Cuota #${cuotaN}",
-                    quantity = 1,
-                    price = feeAmount,
-                    tax = 0.0,
-                )
-            ),
-            total = total,
-            clientName = clientName,
-            cashierName = "Jhon A. Guzman G.",
-        )
-
-        viewModelScope.launch(Dispatchers.IO) {
-            BluetoothPrinter.printDocument(
-                context,
-                "2C-P58-C",
-                BluetoothPrinter.DocumentType.PAYMENT,
-                paymentData
+            val paymentData = InvoiceGenerator.DocumentData(
+                items = listOf(
+                    InvoiceGenerator.DocumentItem(
+                        description = "Cuota #${fee.number}",
+                        quantity = 1,
+                        price = feeAmount,
+                        tax = 0.0
+                    )
+                ),
+                total = total,
+                clientName = loan.customer.name,
+                cashierName = "${userSession?.firstName} ${userSession?.lastName}".trim()
             )
+
+            viewModelScope.launch(Dispatchers.IO) {
+                var attempts = 0
+                var success = false
+
+                while (attempts < 3 && !success) {
+                    success = BluetoothPrinter.printDocument(
+                        context,
+                        "2C-P58-C", // Nombre de tu impresora
+                        BluetoothPrinter.DocumentType.PAYMENT,
+                        paymentData
+                    )
+
+                    if (!success) {
+                        attempts++
+                        delay(1000) // Esperar 1 segundo antes de reintentar
+                    }
+                }
+
+                withContext(Dispatchers.Main) {
+                    if (success) {
+                        //resetAmount()
+                        showSuccess("Recibo impreso correctamente")
+                    } else {
+                        showError("No se pudo imprimir el recibo después de 3 intentos")
+                    }
+                }
+            }
+        } catch (e: NumberFormatException) {
+            showError("El monto ingresado no es válido")
+        } catch (e: Exception) {
+            showError("Error al generar el recibo: ${e.localizedMessage}")
         }
-        resetAmount()
+    }
+
+    private fun showError(message: String) {
+        // Implementa tu lógica para mostrar errores al usuario
+        // _errorMessage.value = message
+    }
+
+    private fun showSuccess(message: String) {
+        // Implementa tu lógica para mostrar mensajes de éxito
+        //_successMessage.value = message
     }
 }

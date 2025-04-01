@@ -41,7 +41,7 @@ object BluetoothPrinter {
                 }
                 PrinterUtils.sendDataPrinter(content, outputStream)
                 true
-            } ?: false
+            } == true
         } catch (e: Exception) {
             Log.e(TAG, "Printing failed", e)
             resetConnection()
