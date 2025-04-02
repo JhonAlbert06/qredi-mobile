@@ -79,25 +79,15 @@ fun Collect(
     context: MainActivity,
 ) {
     val loans by viewModel.downloadedLoans.observeAsState(emptyList())
-    val routes by viewModel.routes.observeAsState(emptyList())
 
     Column {
         HeaderCollect(viewModel, modifier)
 
-        if (loans.isEmpty() && routes.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(Modifier.align(Alignment.Center))
-            }
-        } else {
-            LoansList(
-                loans = loans,
-                viewModel = viewModel,
-                context = context
-            )
-        }
+        LoansList(
+            loans = loans,
+            viewModel = viewModel,
+            context = context
+        )
     }
 }
 
@@ -173,21 +163,36 @@ fun LoansList(
     val loanSelectedState =
         viewModel.downloadLoanSelected.observeAsState(initial = DownloadModel())
     val loanSelected: DownloadModel = loanSelectedState.value
+    val isLoading by viewModel.isLoading.observeAsState(initial = false)
 
-    LazyColumn {
-        items(loans) { loan ->
-            Card(
-                modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    .clickable {
-                        viewModel.setDownloadRouteSelected(loan)
-                        showDialogLoan = true
-                    }
-            ) {
-                LoanItem(loan, viewModel)
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        }
+    } else {
+        LazyColumn {
+            items(loans) { loan ->
+                Card(
+                    modifier = Modifier
+                        .padding(bottom = 8.dp)
+                        .clickable {
+                            viewModel.setDownloadRouteSelected(loan)
+                            showDialogLoan = true
+                        }
+                ) {
+                    LoanItem(loan, viewModel)
+                }
             }
         }
     }
+
+
 
     LoanDetailDialog(
         showDialog = showDialogLoan,

@@ -1,5 +1,7 @@
 package com.pixelbrew.qredi.ui.components.sidemenu
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -71,6 +73,7 @@ object ScreenSaver : Saver<Screen, String> {
     override fun SaverScope.save(value: Screen): String = value.route
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun SideMenu(
@@ -136,10 +139,9 @@ fun SideMenu(
                 Screen.Reprint -> ReprintScreen(
                     ReprintViewModel(
                         LoanRepository(context),
-                        apiService,
-                        sessionManager
+                        apiService
                     ),
-                    modifier = modifier.padding(top = 45.dp),
+                    modifier = modifier.padding(top = 25.dp),
                     context
                 )
 

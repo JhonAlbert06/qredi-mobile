@@ -2,7 +2,9 @@ package com.pixelbrew.qredi.collect
 
 import android.Manifest
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -25,6 +27,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class CollectViewModel(
     private val loanRepository: LoanRepository,
@@ -53,6 +57,9 @@ class CollectViewModel(
     private val _toastMessage = MutableLiveData<String>()
     val toastMessage: LiveData<String> get() = _toastMessage
 
+    private val _isLoading = MutableLiveData<Boolean>(false)
+    val isLoading: LiveData<Boolean> get() = _isLoading
+
     init {
         getLoansFromDatabase()
         Log.d("DEBUG", "CollectViewModel initialized")
@@ -79,10 +86,16 @@ class CollectViewModel(
         _selectedFee.value = fee
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun collectFee() {
+        val date = LocalDateTime.now(ZoneId.systemDefault())
         Log.d("DEBUG_AMOUNT", "Valor de _amount antes de conversión: ${_amount.value}")
-        val amountValue = _amount.value?.toDoubleOrNull() ?: 0.0
+        val amountValue: Double = _amount.value?.toDoubleOrNull() ?: 0.0
         Log.d("DEBUG_AMOUNT", "Valor de paymentAmount después de conversión: $amountValue")
+
+        var total: Double = (_downloadLoanSelected.value?.fees?.sumOf { it.paymentAmount }
+            ?.plus((amountValue))) ?: 0.0
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 var newFeeEntity = NewFeeEntity(
@@ -91,13 +104,16 @@ class CollectViewModel(
                     loanId = downloadLoanSelected.value?.id ?: "",
                     paymentAmount = amountValue,
                     number = _selectedFee.value?.number ?: 0,
-                    dateDay = _selectedFee.value?.date?.day ?: 0,
-                    dateMonth = _selectedFee.value?.date?.month ?: 0,
-                    dateYear = _selectedFee.value?.date?.year ?: 0,
-                    dateHour = _selectedFee.value?.date?.hour ?: 0,
-                    dateMinute = _selectedFee.value?.date?.minute ?: 0,
-                    dateSecond = _selectedFee.value?.date?.second ?: 0,
-                    dateTimezone = _selectedFee.value?.date?.timezone ?: ""
+                    dateDay = date.dayOfMonth,
+                    dateMonth = date.monthValue,
+                    dateYear = date.year,
+                    dateHour = date.hour,
+                    dateMinute = date.minute,
+                    dateSecond = date.second,
+                    dateTimezone = ZoneId.systemDefault().id,
+                    clientName = downloadLoanSelected.value?.customer?.name.toString(),
+                    total = total,
+                    cashierName = "${userSession?.firstName} ${userSession?.lastName}".trim()
                 )
                 loanRepository.insertNewFee(newFeeEntity)
                 getLoansFromDatabase()
@@ -196,6 +212,7 @@ class CollectViewModel(
     }
 
     fun downloadRoute(id: String) {
+        _isLoading.value = true
         viewModelScope.launch {
             try {
                 val response = apiService.downloadRoute(id)
@@ -204,10 +221,10 @@ class CollectViewModel(
                     saveLoansOnDatabase(loan)
                 }
 
-                // Esperar 2 segundos
+                showToast("Route downloaded successfully")
                 delay(2000)
                 getLoansFromDatabase()
-                showToast("Route downloaded successfully")
+                _isLoading.value = false
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
                 showToast(e.message.toString())
@@ -231,6 +248,7 @@ class CollectViewModel(
         return try {
             value.toDouble()
         } catch (e: NumberFormatException) {
+            Log.e("DEBUG", "Error al convertir a Double: ${e.message}")
             0.0
         }
     }
@@ -238,12 +256,12 @@ class CollectViewModel(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printCollect(context: Context) {
         val loan = downloadLoanSelected.value ?: run {
-            showError("No se ha seleccionado ningún préstamo")
+            showToast("No se ha seleccionado ningún préstamo")
             return
         }
 
         val fee = selectedFee.value ?: run {
-            showError("No se ha seleccionado ninguna cuota")
+            showToast("No se ha seleccionado ninguna cuota")
             return
         }
 
@@ -272,40 +290,31 @@ class CollectViewModel(
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
                         context,
-                        "2C-P58-C", // Nombre de tu impresora
+                        "2C-P58-C",
                         BluetoothPrinter.DocumentType.PAYMENT,
                         paymentData
                     )
 
                     if (!success) {
                         attempts++
-                        delay(1000) // Esperar 1 segundo antes de reintentar
+                        delay(1000)
                     }
                 }
 
                 withContext(Dispatchers.Main) {
                     if (success) {
-                        //resetAmount()
-                        showSuccess("Recibo impreso correctamente")
+                        showToast("Recibo impreso correctamente")
                     } else {
-                        showError("No se pudo imprimir el recibo después de 3 intentos")
+                        showToast("No se pudo imprimir el recibo después de 3 intentos")
                     }
                 }
             }
         } catch (e: NumberFormatException) {
-            showError("El monto ingresado no es válido")
+            showToast("El monto ingresado no es válido: ${e.localizedMessage}")
         } catch (e: Exception) {
-            showError("Error al generar el recibo: ${e.localizedMessage}")
+            showToast("Error al generar el recibo: ${e.localizedMessage}")
         }
     }
 
-    private fun showError(message: String) {
-        // Implementa tu lógica para mostrar errores al usuario
-        // _errorMessage.value = message
-    }
 
-    private fun showSuccess(message: String) {
-        // Implementa tu lógica para mostrar mensajes de éxito
-        //_successMessage.value = message
-    }
 }
