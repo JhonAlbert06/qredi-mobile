@@ -13,9 +13,37 @@ class SessionManager(context: Context) {
 
     private val gson = Gson()
 
+    init {
+        savePrinterName("2C-P58-C")
+        saveApiUrl("http://192.168.1.10:3000")
+        saveAuthToken("")
+    }
+
     companion object {
         const val USER_TOKEN = "user_token"
         const val USER = "user"
+        const val PRINTER_NAME = "printer_name"
+        const val API_URL = "api_url"
+    }
+
+    fun savePrinterName(printerName: String) {
+        prefs.edit() {
+            putString(PRINTER_NAME, printerName)
+        }
+    }
+
+    fun fetchPrinterName(): String? {
+        return prefs.getString(PRINTER_NAME, null)
+    }
+
+    fun saveApiUrl(apiUrl: String) {
+        prefs.edit() {
+            putString(API_URL, apiUrl)
+        }
+    }
+
+    fun fetchApiUrl(): String? {
+        return prefs.getString(API_URL, null)
     }
 
     fun saveAuthToken(token: String) {
@@ -43,6 +71,5 @@ class SessionManager(context: Context) {
             null
         }
     }
-
 
 }

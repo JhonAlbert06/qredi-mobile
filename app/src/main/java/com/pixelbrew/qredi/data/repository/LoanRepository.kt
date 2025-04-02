@@ -4,6 +4,7 @@ import android.content.Context
 import com.pixelbrew.qredi.data.AppDatabase
 import com.pixelbrew.qredi.data.entities.FeeEntity
 import com.pixelbrew.qredi.data.entities.LoanEntity
+import com.pixelbrew.qredi.data.entities.LoanWithNewFees
 import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -49,6 +50,10 @@ class LoanRepository(context: Context) {
 
     fun deleteAllNewFees() {
         loanDao.deleteAllNewFees()
+    }
+
+    fun getLoanById(loanId: String): Flow<LoanWithNewFees> {
+        return loanDao.getLoanById(loanId)
     }
 
 }

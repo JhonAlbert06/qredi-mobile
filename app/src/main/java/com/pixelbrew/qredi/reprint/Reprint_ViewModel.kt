@@ -9,13 +9,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pixelbrew.qredi.data.entities.LoanWithFees
+import com.pixelbrew.qredi.data.entities.LoanWithNewFees
 import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.invoice.BluetoothPrinter
 import com.pixelbrew.qredi.invoice.InvoiceGenerator
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.UploadFee
+import com.pixelbrew.qredi.ui.components.services.SessionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -24,11 +25,9 @@ import kotlinx.coroutines.withContext
 
 class ReprintViewModel(
     private val loanRepository: LoanRepository,
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val sessionManager: SessionManager,
 ) : ViewModel() {
-
-    private val _Loan = MutableLiveData<List<LoanWithFees>>(emptyList())
-    val loan: LiveData<List<LoanWithFees>> get() = _Loan
 
     private val _newFees = MutableLiveData<List<NewFeeEntity>>(emptyList())
     val newFees: MutableLiveData<List<NewFeeEntity>> get() = _newFees
@@ -44,12 +43,26 @@ class ReprintViewModel(
 
     private val _feeSelected = MutableLiveData<NewFeeEntity>()
 
+    private val _selectedLoan = MutableLiveData<LoanWithNewFees>()
+
     init {
         getAllNewFees()
     }
 
+    fun getLoanById(loanId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val loan = loanRepository.getLoanById(loanId).first()
+                _selectedLoan.postValue(loan)
+            } catch (e: Exception) {
+                Log.e("ReprintViewModel", "Error fetching loan: ${e.message}", e)
+            }
+        }
+    }
+
     fun setFeeSelected(fee: NewFeeEntity) {
         _feeSelected.value = fee
+        getLoanById(fee.loanId)
     }
 
     fun setShowUploadDialog(show: Boolean) {
@@ -105,6 +118,20 @@ class ReprintViewModel(
     fun printCollect(context: Context) {
 
         val fee = _feeSelected.value ?: return
+        var loan = _selectedLoan.value?.loan ?: return
+        var fees = _selectedLoan.value?.newFees ?: return
+        var total = 0.0
+
+        val foundFee = fees.find { it.feeId == fee.feeId }
+        println("Fee encontrado: $foundFee")
+
+        foundFee?.let {
+            total = it.paymentAmount
+            println("Total actualizado a: $total")
+        }
+
+
+        val cuota = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
 
         try {
             val paymentData = InvoiceGenerator.DocumentData(
@@ -112,11 +139,11 @@ class ReprintViewModel(
                     InvoiceGenerator.DocumentItem(
                         description = "Cuota #${fee.number}",
                         quantity = 1,
-                        price = fee.paymentAmount,
-                        tax = 0.0
+                        price = fee.paymentAmount + total,
+                        tax = cuota
                     )
                 ),
-                total = fee.total,
+                total = (cuota * loan.feesQuantity) - fee.total,
                 clientName = fee.clientName,
                 cashierName = fee.cashierName
             )
@@ -128,7 +155,7 @@ class ReprintViewModel(
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
                         context,
-                        "2C-P58-C",
+                        sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
                         paymentData
                     )

@@ -11,3 +11,12 @@ data class LoanWithFees(
     )
     val fees: List<FeeEntity>
 )
+
+data class LoanWithNewFees(
+    @Embedded val loan: LoanEntity,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "loanId"
+    )
+    val newFees: List<NewFeeEntity>
+)

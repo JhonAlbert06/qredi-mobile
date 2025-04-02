@@ -4,8 +4,10 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.pixelbrew.qredi.data.entities.FeeEntity
 import com.pixelbrew.qredi.data.entities.LoanEntity
+import com.pixelbrew.qredi.data.entities.LoanWithNewFees
 import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -42,4 +44,7 @@ interface LoanDao {
     @Query("DELETE FROM new_fees")
     fun deleteAllNewFees()
 
+    @Transaction
+    @Query("SELECT * FROM loans WHERE id = :loanId")
+    fun getLoanById(loanId: String): Flow<LoanWithNewFees>
 }

@@ -90,7 +90,7 @@ class CollectViewModel(
     fun collectFee() {
         val date = LocalDateTime.now(ZoneId.systemDefault())
         Log.d("DEBUG_AMOUNT", "Valor de _amount antes de conversión: ${_amount.value}")
-        val amountValue: Double = _amount.value?.toDoubleOrNull() ?: 0.0
+        var amountValue: Double = _amount.value?.toDoubleOrNull() ?: 0.0
         Log.d("DEBUG_AMOUNT", "Valor de paymentAmount después de conversión: $amountValue")
 
         var total: Double = (_downloadLoanSelected.value?.fees?.sumOf { it.paymentAmount }
@@ -260,6 +260,7 @@ class CollectViewModel(
             return
         }
 
+
         val fee = selectedFee.value ?: run {
             showToast("No se ha seleccionado ninguna cuota")
             return
@@ -269,16 +270,18 @@ class CollectViewModel(
             val feeAmount = stringToDouble(_amount.value.toString())
             var total = loan.fees.sumOf { it.paymentAmount } + feeAmount
 
+            val cuota = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
+
             val paymentData = InvoiceGenerator.DocumentData(
                 items = listOf(
                     InvoiceGenerator.DocumentItem(
                         description = "Cuota #${fee.number}",
                         quantity = 1,
-                        price = feeAmount,
-                        tax = 0.0
+                        price = _selectedFee.value?.paymentAmount?.plus(feeAmount) ?: 0.0,
+                        tax = cuota
                     )
                 ),
-                total = total,
+                total = (cuota * loan.feesQuantity) - total,
                 clientName = loan.customer.name,
                 cashierName = "${userSession?.firstName} ${userSession?.lastName}".trim()
             )
@@ -290,7 +293,7 @@ class CollectViewModel(
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
                         context,
-                        "2C-P58-C",
+                        sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
                         paymentData
                     )
@@ -315,6 +318,5 @@ class CollectViewModel(
             showToast("Error al generar el recibo: ${e.localizedMessage}")
         }
     }
-
 
 }

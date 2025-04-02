@@ -43,6 +43,7 @@ import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.reprint.ReprintScreen
 import com.pixelbrew.qredi.reprint.ReprintViewModel
 import com.pixelbrew.qredi.settings.SettingsScreen
+import com.pixelbrew.qredi.settings.SettingsViewModel
 import com.pixelbrew.qredi.statistics.StatisticsScreen
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import kotlinx.coroutines.launch
@@ -139,14 +140,20 @@ fun SideMenu(
                 Screen.Reprint -> ReprintScreen(
                     ReprintViewModel(
                         LoanRepository(context),
-                        apiService
+                        apiService,
+                        sessionManager
                     ),
                     modifier = modifier.padding(top = 25.dp),
                     context
                 )
 
                 Screen.Statistics -> StatisticsScreen(modifier = modifier.padding(padding))
-                Screen.Settings -> SettingsScreen(modifier = modifier.padding(padding))
+                Screen.Settings -> SettingsScreen(
+                    SettingsViewModel(
+                        sessionManager
+                    ),
+                    modifier = modifier.padding(padding)
+                )
             }
         }
     }

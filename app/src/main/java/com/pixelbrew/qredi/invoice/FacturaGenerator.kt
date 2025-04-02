@@ -82,19 +82,18 @@ object InvoiceGenerator {
         builder.appendLine("Cajero: ${data.cashierName}")
         data.clientName?.let { builder.appendLine("Cliente: $it") }
         builder.appendLine("--------------------------------")
-        builder.appendLine("Descripcion       Cant  Monto")
+        builder.appendLine("Descripcion         Monto")
         builder.appendLine("--------------------------------")
 
         data.items.forEach { item ->
             builder.appendLine(
-                "${item.description.take(16).padEnd(16)} ${
-                    item.quantity.toString().padStart(4)
-                }  ${formatNumber(item.price)}"
+                item.description.take(16).padEnd(14) +
+                        "${formatNumber(item.price)}/${formatNumber(item.tax)}"
             )
         }
 
         builder.appendLine("--------------------------------")
-        builder.appendLine("TOTAL PAGADO: ${formatNumber(data.total)}")
+        builder.appendLine("Restante: ${formatNumber(data.total)}")
         builder.appendLine("\n\n\n")
         return builder.toString()
     }

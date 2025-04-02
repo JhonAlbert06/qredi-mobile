@@ -1,32 +1,37 @@
 package com.pixelbrew.qredi.settings
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
-    var darkMode by rememberSaveable { mutableStateOf(false) }
-    var notifications by rememberSaveable { mutableStateOf(true) }
+fun SettingsScreen(
+    viewModel: SettingsViewModel,
+    modifier: Modifier = Modifier
+) {
+
+    val printerName by viewModel.printerName.observeAsState("")
+    val apiUrl by viewModel.apiUrl.observeAsState("")
 
     Column(
         modifier = modifier
@@ -40,41 +45,100 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("Preferencias", style = MaterialTheme.typography.titleLarge)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Modo oscuro")
-            Switch(
-                checked = darkMode,
-                onCheckedChange = { darkMode = it }
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Notificaciones")
-            Switch(
-                checked = notifications,
-                onCheckedChange = { notifications = it }
-            )
-        }
 
         Spacer(modifier = Modifier.height(24.dp))
         Text("Impresora", style = MaterialTheme.typography.titleLarge)
-        Button(onClick = { /* Configurar impresora */ }) {
-            Text("Configurar impresora")
-        }
+        PrinterField(
+            printerName,
+            onValueChange = { viewModel.onPrinterNameChange(it) }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
         Text("Seguridad", style = MaterialTheme.typography.titleLarge)
-        Button(onClick = { /* Cambiar contraseña */ }) {
-            Text("Cambiar contraseña")
-        }
+        ApiUrlField(
+            apiUrl,
+            onValueChange = { viewModel.onApiUrlChange(it) }
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+        SaveButton(
+            modifier = Modifier.padding(top = 16.dp),
+            onLoginSelected = {
+                viewModel.saveSettings()
+            }
+        )
+    }
+}
+
+@Composable
+fun PrinterField(name: String, onValueChange: (String) -> Unit) {
+    TextField(
+        value = name,
+        onValueChange = { onValueChange(it) },
+        modifier = Modifier.fillMaxWidth(),
+        placeholder = {
+            Text(
+                text = "Impresora",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Next
+        ),
+        singleLine = true,
+        maxLines = 1,
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+        )
+    )
+}
+
+@Composable
+fun ApiUrlField(url: String, onValueChange: (String) -> Unit) {
+    TextField(
+        value = url,
+        onValueChange = { onValueChange(it) },
+        modifier = Modifier.fillMaxWidth(),
+        placeholder = {
+            Text(
+                text = "URL de la API",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Uri,
+            imeAction = ImeAction.Done
+        ),
+        singleLine = true,
+        maxLines = 1,
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+        )
+    )
+}
+
+@Composable
+fun SaveButton(modifier: Modifier, onLoginSelected: () -> Unit) {
+    Button(
+        onClick = { onLoginSelected() },
+        modifier = modifier
+            .fillMaxWidth()
+            .height(48.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF00BCD4),
+            contentColor = Color.Black,
+            disabledContainerColor = Color(0x2C00BCD4),
+            disabledContentColor = Color(0xFF0C0C0C)
+        )
+    ) {
+        Text(
+            text = "Guardar Configuración",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.White
+        )
     }
 }

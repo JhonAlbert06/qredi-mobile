@@ -20,5 +20,5 @@ data class NewFeeEntity(
     val dateTimezone: String,
     val clientName: String,
     val total: Double,
-    val cashierName: String,
+    val cashierName: String
 )
