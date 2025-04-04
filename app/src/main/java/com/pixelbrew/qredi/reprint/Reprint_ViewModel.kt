@@ -132,7 +132,6 @@ class ReprintViewModel(
             println("Total actualizado a: $total")
         }
 
-
         val cuota = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
 
         try {
@@ -141,7 +140,7 @@ class ReprintViewModel(
                     InvoiceGenerator.DocumentItem(
                         description = "Cuota #${fee.number}",
                         quantity = 1,
-                        price = fee.paymentAmount + total,
+                        price = fee.paymentAmount,
                         tax = cuota
                     )
                 ),

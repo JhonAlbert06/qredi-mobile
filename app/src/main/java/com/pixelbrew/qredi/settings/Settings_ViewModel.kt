@@ -1,5 +1,6 @@
 package com.pixelbrew.qredi.settings
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
@@ -13,6 +14,9 @@ class SettingsViewModel(
 
     private val _apiUrl = MutableLiveData<String>()
     val apiUrl: MutableLiveData<String> get() = _apiUrl
+
+    private val _toastMessage = MutableLiveData<String>()
+    val toastMessage: LiveData<String> get() = _toastMessage
 
     init {
         _printerName.value = sessionManager.fetchPrinterName()
@@ -30,6 +34,7 @@ class SettingsViewModel(
     fun saveSettings() {
         sessionManager.savePrinterName(_printerName.value ?: "")
         sessionManager.saveApiUrl(_apiUrl.value ?: "")
+        _toastMessage.value = "Configuración guardada"
     }
 
 }

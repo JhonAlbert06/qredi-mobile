@@ -281,7 +281,7 @@ class CollectViewModel(
                     InvoiceGenerator.DocumentItem(
                         description = "Cuota #${fee.number}",
                         quantity = 1,
-                        price = _selectedFee.value?.paymentAmount?.plus(feeAmount) ?: 0.0,
+                        price = feeAmount,
                         tax = cuota
                     )
                 ),

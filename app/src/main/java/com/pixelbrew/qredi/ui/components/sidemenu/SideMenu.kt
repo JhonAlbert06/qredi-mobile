@@ -152,7 +152,8 @@ fun SideMenu(
                     SettingsViewModel(
                         sessionManager
                     ),
-                    modifier = modifier.padding(padding)
+                    modifier = modifier.padding(padding),
+                    context = context
                 )
             }
         }
