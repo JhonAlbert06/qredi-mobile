@@ -36,6 +36,8 @@ class CollectViewModel(
     private val sessionManager: SessionManager,
 ) : ViewModel() {
 
+    private val baseUrl = sessionManager.fetchApiUrl()
+
     val userSession: UserModel?
         get() = sessionManager.fetchUser()
 
@@ -127,7 +129,8 @@ class CollectViewModel(
     fun getRoutes() {
         viewModelScope.launch {
             try {
-                val response = apiService.getRoutes()
+                val routesUrl = "$baseUrl/routes"
+                val response = apiService.getRoutes(routesUrl)
                 _routes.value = response
                 showToast("Routes loaded successfully")
             } catch (e: Exception) {
@@ -215,7 +218,8 @@ class CollectViewModel(
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val response = apiService.downloadRoute(id)
+                val downloadUrl = "$baseUrl/route/download/${id}"
+                val response = apiService.downloadRoute(downloadUrl)
 
                 response.forEach { loan ->
                     saveLoansOnDatabase(loan)

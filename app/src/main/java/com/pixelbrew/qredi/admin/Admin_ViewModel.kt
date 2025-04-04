@@ -13,6 +13,7 @@ class AdminViewModel(
     private val apiService: ApiService,
     private val sessionManager: SessionManager,
 ) : ViewModel() {
+    private val baseUrl = sessionManager.fetchApiUrl()
 
     private val _toastMessage = MutableLiveData<String>()
     val toastMessage: LiveData<String> get() = _toastMessage
@@ -52,7 +53,8 @@ class AdminViewModel(
         _isLoading.value = true
 
         try {
-            val response = apiService.loadUser()
+            val userUrl = "$baseUrl/user/loadUser"
+            val response = apiService.loadUser(userUrl)
             sessionManager.saveUser(response)
             Log.d("API_RESPONSE", response.toString())
             _isLoading.value = false
@@ -75,7 +77,8 @@ class AdminViewModel(
                 "Email: ${loginRequest.username}, Password: ${loginRequest.password}"
             )
 
-            val response = apiService.login(loginRequest)
+            val loginUrl = "$baseUrl/user/login"
+            val response = apiService.login(loginUrl, loginRequest)
             Log.d("API_RESPONSE", response.token)
 
             // save token

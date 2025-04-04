@@ -28,6 +28,7 @@ class ReprintViewModel(
     private val apiService: ApiService,
     private val sessionManager: SessionManager,
 ) : ViewModel() {
+    private val baseUrl = sessionManager.fetchApiUrl()
 
     private val _newFees = MutableLiveData<List<NewFeeEntity>>(emptyList())
     val newFees: MutableLiveData<List<NewFeeEntity>> get() = _newFees
@@ -84,7 +85,8 @@ class ReprintViewModel(
                 } ?: emptyList()
 
                 if (uploadFeeModel.isNotEmpty()) {
-                    apiService.uploadFees(uploadFeeModel)
+                    val uploadUrl = "$baseUrl/fee/uploadFees"
+                    apiService.uploadFees(uploadUrl, uploadFeeModel)
                     resetDatabase()  // Se llama solo si la subida es exitosa
                 }
             } catch (e: Exception) {

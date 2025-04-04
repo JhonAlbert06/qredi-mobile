@@ -11,27 +11,34 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
-import retrofit2.http.Path
+import retrofit2.http.Url
 
 interface ApiService {
-    @POST("/user/login")
+
+    @POST
     suspend fun login(
+        @Url url: String,
         @Body loginRequest: LoginRequest
     ): TokenModel
 
-    @GET("/user/loadUser")
-    suspend fun loadUser(): UserModel
+    @GET
+    suspend fun loadUser(
+        @Url url: String
+    ): UserModel
 
-    @GET("/routes")
-    suspend fun getRoutes(): List<RouteModel>
+    @GET
+    suspend fun getRoutes(
+        @Url url: String
+    ): List<RouteModel>
 
-    @GET("/route/download/{id}")
+    @GET
     suspend fun downloadRoute(
-        @Path("id") id: String
+        @Url url: String
     ): List<DownloadModel>
 
-    @PUT("/fee/uploadFees")
+    @PUT
     suspend fun uploadFees(
+        @Url url: String,
         @Body fees: List<UploadFee>
     ): Response<Unit>
 }
