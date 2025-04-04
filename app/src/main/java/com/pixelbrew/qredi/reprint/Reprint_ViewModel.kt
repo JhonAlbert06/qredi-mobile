@@ -89,8 +89,11 @@ class ReprintViewModel(
                     apiService.uploadFees(uploadUrl, uploadFeeModel)
                     resetDatabase()  // Se llama solo si la subida es exitosa
                 }
+
+                showToast("Recibos subidos correctamente")
             } catch (e: Exception) {
                 Log.e("ReprintViewModel", "Error uploading fees: ${e.message}", e)
+                showToast("Error al subir los recibos: ${e.message}")
             }
         }
     }
