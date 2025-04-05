@@ -10,7 +10,6 @@ data class NewFeeEntity(
     val feeId: String,
     val loanId: String,
     val paymentAmount: Double,
-    val number: Int,
     val dateDay: Int,
     val dateMonth: Int,
     val dateYear: Int,
@@ -18,7 +17,9 @@ data class NewFeeEntity(
     val dateMinute: Int,
     val dateSecond: Int,
     val dateTimezone: String,
+    val number: Int,
+    val numberTotal: Int,
+    val companyName: String,
+    val companyNumber: String,
     val clientName: String,
-    val total: Double,
-    val cashierName: String
 )

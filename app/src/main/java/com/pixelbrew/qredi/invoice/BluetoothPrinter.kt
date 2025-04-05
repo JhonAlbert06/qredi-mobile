@@ -10,6 +10,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
+import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import java.io.IOException
 import java.util.UUID
 
@@ -22,21 +23,38 @@ object BluetoothPrinter {
     private var currentSocket: BluetoothSocket? = null
     private var currentDevice: BluetoothDevice? = null
 
-    enum class DocumentType { LOAN, PAYMENT, DAY_CLOSE }
+    enum class DocumentType { PAYMENT, DAY_CLOSE }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printDocument(
         context: Context,
         printerName: String,
         type: DocumentType,
-        data: InvoiceGenerator.DocumentData
+        data: InvoiceGenerator.DocumentData = InvoiceGenerator.DocumentData(),
+        feeEntity: NewFeeEntity = NewFeeEntity(
+            id = 0,
+            feeId = "",
+            loanId = "",
+            paymentAmount = 0.0,
+            dateDay = 0,
+            dateMonth = 0,
+            dateYear = 0,
+            dateHour = 0,
+            dateMinute = 0,
+            dateSecond = 0,
+            dateTimezone = "",
+            number = 0,
+            numberTotal = 0,
+            companyName = "",
+            companyNumber = "",
+            clientName = ""
+        )
     ): Boolean {
         return try {
-            ensureConnection(context, printerName)?.use { socket ->
+            ensureConnection(printerName)?.use { socket ->
                 val outputStream = socket.outputStream
                 val content = when (type) {
-                    DocumentType.LOAN -> InvoiceGenerator.generateLoanContent(data)
-                    DocumentType.PAYMENT -> InvoiceGenerator.generatePaymentContent(data)
+                    DocumentType.PAYMENT -> InvoiceGenerator.generatePaymentContent(feeEntity)
                     DocumentType.DAY_CLOSE -> InvoiceGenerator.generateDayCloseContent(data)
                 }
                 PrinterUtils.sendDataPrinter(content, outputStream)
@@ -51,7 +69,7 @@ object BluetoothPrinter {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     @Throws(IOException::class)
-    private fun ensureConnection(context: Context, printerName: String): BluetoothSocket? {
+    private fun ensureConnection(printerName: String): BluetoothSocket? {
 
         if (currentSocket?.isConnected == true) {
             return currentSocket

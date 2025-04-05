@@ -1,5 +1,6 @@
 package com.pixelbrew.qredi.invoice
 
+import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -38,64 +39,42 @@ object InvoiceGenerator {
         val transactionsCount: Int
     )
 
-    fun formatNumber(number: Double): String {
-        return "%,.2f".format(number)
-    }
-
-    fun generateLoanContent(data: DocumentData): String {
+    fun generatePaymentContent(fee: NewFeeEntity): String {
         val builder = StringBuilder()
+        val fecha = "%02d/%02d/%04d".format(fee.dateDay, fee.dateMonth, fee.dateYear)
 
-        builder.appendLine("--------------------------------")
-        builder.appendLine("COMPROBANTE DE PRÉSTAMO")
-        builder.appendLine("--------------------------------")
-        builder.appendLine("Fecha: ${data.date}")
-        builder.appendLine("Cajero: ${data.cashierName}")
-        data.clientName?.let { builder.appendLine("Cliente: $it") }
-        builder.appendLine("No. Préstamo: ${data.loanDetails?.loanNumber ?: "N/A"}")
-        builder.appendLine("Vence: ${data.loanDetails?.dueDate ?: "N/A"}")
-        builder.appendLine("Tasa: ${data.loanDetails?.interestRate ?: 0.0}%")
-        builder.appendLine("--------------------------------")
-        builder.appendLine("Descripción       Cant  Monto")
-        builder.appendLine("--------------------------------")
+        builder.appendLine("=".repeat(32))
+        builder.appendLine("       * RECIBO DE PAGO *")
+        builder.appendLine("=".repeat(32))
+        builder.appendLine(centerText(fee.companyName, 32))
+        builder.appendLine(centerText(fee.companyNumber, 32))
+        builder.appendLine("-".repeat(32))
 
-        data.items.forEach { item ->
-            builder.appendLine(
-                "${item.description.take(16).padEnd(16)} ${
-                    item.quantity.toString().padStart(4)
-                }  ${"%.2f".format(item.price)}"
-            )
-        }
+        builder.appendLine("NOMBRE: ${fee.clientName.uppercase()}")
+        builder.appendLine("CONCEPTO   : Pago de cuota")
+        builder.appendLine("CUOTA      : ${fee.number} de ${fee.numberTotal}")
+        builder.appendLine("FECHA      : $fecha")
+        builder.appendLine("-".repeat(32))
 
-        builder.appendLine("--------------------------------")
-        builder.appendLine("TOTAL PRÉSTAMO: ${"%.2f".format(data.total)}")
-        builder.appendLine("\n\n\n")
+        builder.appendLine(centerText("* MONTO PAGADO *", 32))
+        builder.appendLine(centerText("RD$ ${"%,.2f".format(fee.paymentAmount)}", 32, '*'))
+        builder.appendLine("-".repeat(32))
+
+        builder.appendLine("=".repeat(32))
+        builder.appendLine(centerText("NO NOS HACEMOS RESPONSABLES", 32))
+        builder.appendLine(centerText("DEL DINERO ENTREGADO SIN", 32))
+        builder.appendLine(centerText("RECIBO", 32))
+        builder.appendLine("=".repeat(32))
+        builder.appendLine("\n\n")
+
         return builder.toString()
     }
 
-    fun generatePaymentContent(data: DocumentData): String {
-        val builder = StringBuilder()
-
-        builder.appendLine("--------------------------------")
-        builder.appendLine("COMPROBANTE DE PAGO")
-        builder.appendLine("--------------------------------")
-        builder.appendLine("Fecha: ${data.date}")
-        builder.appendLine("Cajero: ${data.cashierName}")
-        data.clientName?.let { builder.appendLine("Cliente: $it") }
-        builder.appendLine("--------------------------------")
-        builder.appendLine("Descripcion         Monto")
-        builder.appendLine("--------------------------------")
-
-        data.items.forEach { item ->
-            builder.appendLine(
-                item.description.take(16).padEnd(14) +
-                        "${formatNumber(item.price)}/${formatNumber(item.tax)}"
-            )
-        }
-
-        builder.appendLine("--------------------------------")
-        builder.appendLine("Restante: ${formatNumber(data.total)}")
-        builder.appendLine("\n\n\n")
-        return builder.toString()
+    fun centerText(text: String, width: Int, padChar: Char = ' '): String {
+        val padding = width - text.length
+        val padStart = padding / 2
+        val padEnd = padding - padStart
+        return padChar.toString().repeat(padStart) + text + padChar.toString().repeat(padEnd)
     }
 
     fun generateDayCloseContent(data: DocumentData): String {

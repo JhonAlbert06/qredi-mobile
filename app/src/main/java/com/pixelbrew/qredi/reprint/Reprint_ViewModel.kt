@@ -13,7 +13,6 @@ import com.pixelbrew.qredi.data.entities.LoanWithNewFees
 import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.invoice.BluetoothPrinter
-import com.pixelbrew.qredi.invoice.InvoiceGenerator
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.UploadFee
 import com.pixelbrew.qredi.ui.components.services.SessionManager
@@ -123,34 +122,8 @@ class ReprintViewModel(
     fun printCollect(context: Context) {
 
         val fee = _feeSelected.value ?: return
-        var loan = _selectedLoan.value?.loan ?: return
-        var fees = _selectedLoan.value?.newFees ?: return
-        var total = 0.0
-
-        val foundFee = fees.find { it.feeId == fee.feeId }
-        println("Fee encontrado: $foundFee")
-
-        foundFee?.let {
-            total = it.paymentAmount
-            println("Total actualizado a: $total")
-        }
-
-        val cuota = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
 
         try {
-            val paymentData = InvoiceGenerator.DocumentData(
-                items = listOf(
-                    InvoiceGenerator.DocumentItem(
-                        description = "Cuota #${fee.number}",
-                        quantity = 1,
-                        price = fee.paymentAmount,
-                        tax = cuota
-                    )
-                ),
-                total = (cuota * loan.feesQuantity) - fee.total,
-                clientName = fee.clientName,
-                cashierName = fee.cashierName
-            )
 
             viewModelScope.launch(Dispatchers.IO) {
                 var attempts = 0
@@ -161,7 +134,7 @@ class ReprintViewModel(
                         context,
                         sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
-                        paymentData
+                        feeEntity = fee,
                     )
 
                     if (!success) {

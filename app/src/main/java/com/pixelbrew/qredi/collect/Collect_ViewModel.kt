@@ -15,7 +15,6 @@ import com.pixelbrew.qredi.data.entities.FeeEntity
 import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.invoice.BluetoothPrinter
-import com.pixelbrew.qredi.invoice.InvoiceGenerator
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.Fee
@@ -95,9 +94,6 @@ class CollectViewModel(
         var amountValue: Double = _amount.value?.toDoubleOrNull() ?: 0.0
         Log.d("DEBUG_AMOUNT", "Valor de paymentAmount después de conversión: $amountValue")
 
-        var total: Double = (_downloadLoanSelected.value?.fees?.sumOf { it.paymentAmount }
-            ?.plus((amountValue))) ?: 0.0
-
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 var newFeeEntity = NewFeeEntity(
@@ -114,8 +110,10 @@ class CollectViewModel(
                     dateSecond = date.second,
                     dateTimezone = ZoneId.systemDefault().id,
                     clientName = downloadLoanSelected.value?.customer?.name.toString(),
-                    total = total,
-                    cashierName = "${userSession?.firstName} ${userSession?.lastName}".trim()
+                    companyName = userSession?.company?.name ?: "J & J Prestamos",
+                    numberTotal = downloadLoanSelected.value?.feesQuantity ?: 0,
+                    companyNumber = "${userSession?.company?.phone1}/${userSession?.company?.phone2}"
+                        ?: "809-123-4567 / 809-123-4567"
                 )
                 loanRepository.insertNewFee(newFeeEntity)
                 getLoansFromDatabase()
@@ -257,6 +255,7 @@ class CollectViewModel(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printCollect(context: Context) {
         val loan = downloadLoanSelected.value ?: run {
@@ -272,23 +271,6 @@ class CollectViewModel(
 
         try {
             val feeAmount = stringToDouble(_amount.value.toString())
-            var total = loan.fees.sumOf { it.paymentAmount } + feeAmount
-
-            val cuota = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
-
-            val paymentData = InvoiceGenerator.DocumentData(
-                items = listOf(
-                    InvoiceGenerator.DocumentItem(
-                        description = "Cuota #${fee.number}",
-                        quantity = 1,
-                        price = feeAmount,
-                        tax = cuota
-                    )
-                ),
-                total = (cuota * loan.feesQuantity) - total,
-                clientName = loan.customer.name,
-                cashierName = "${userSession?.firstName} ${userSession?.lastName}".trim()
-            )
 
             viewModelScope.launch(Dispatchers.IO) {
                 var attempts = 0
@@ -299,7 +281,24 @@ class CollectViewModel(
                         context,
                         sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
-                        paymentData
+                        feeEntity = NewFeeEntity(
+                            id = 0,
+                            feeId = fee.id,
+                            loanId = loan.id,
+                            paymentAmount = feeAmount,
+                            dateDay = LocalDateTime.now().dayOfMonth,
+                            dateMonth = LocalDateTime.now().monthValue,
+                            dateYear = LocalDateTime.now().year,
+                            dateHour = LocalDateTime.now().hour,
+                            dateMinute = LocalDateTime.now().minute,
+                            dateSecond = LocalDateTime.now().second,
+                            dateTimezone = ZoneId.systemDefault().id,
+                            number = fee.number,
+                            numberTotal = loan.feesQuantity,
+                            companyName = "J & J Prestamos",
+                            companyNumber = "809-123-4567 / 809-123-4567",
+                            clientName = loan.customer.name
+                        )
                     )
 
                     if (!success) {
