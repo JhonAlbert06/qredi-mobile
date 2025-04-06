@@ -80,7 +80,7 @@ class CollectViewModel(
     }
 
     private fun showToast(message: String) {
-        _toastMessage.value = message
+        _toastMessage.postValue(message)
     }
 
     fun setFeeSelected(fee: Fee) {
