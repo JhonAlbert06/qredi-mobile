@@ -62,8 +62,7 @@ fun ReprintScreen(
     ) {
         Reprint(
             viewModel = viewModel,
-            modifier = modifier,
-            context = context
+            modifier = modifier
         )
     }
 }
@@ -73,8 +72,7 @@ fun ReprintScreen(
 @Composable
 fun Reprint(
     viewModel: ReprintViewModel,
-    modifier: Modifier = Modifier,
-    context: MainActivity
+    modifier: Modifier = Modifier
 ) {
 
     val newFees by viewModel.newFees.observeAsState(emptyList())
@@ -165,12 +163,13 @@ fun Reprint(
             },
             onConfirm = {
                 viewModel.setShowReprintDialog(false)
-                viewModel.printCollect(context)
+                viewModel.printCollect()
             }
         )
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun HeaderReprint(
@@ -179,6 +178,7 @@ fun HeaderReprint(
 ) {
 
     val showUploadDialog by viewModel.showUploadDialog.observeAsState(false)
+    val fees by viewModel.newFees.observeAsState(emptyList())
 
     Row(
         modifier = modifier
@@ -194,10 +194,11 @@ fun HeaderReprint(
         Button(
             onClick = {
                 viewModel.setShowUploadDialog(true)
-                viewModel.printDayCloset()
+
             },
             modifier = Modifier.padding(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            enabled = fees.isNotEmpty()
         ) {
             Text("Subir Data")
             Icon(
@@ -205,7 +206,7 @@ fun HeaderReprint(
                 contentDescription = "Download Route",
                 modifier = Modifier
                     .padding(start = 8.dp)
-                    .size(20.dp)
+                    .size(20.dp),
             )
         }
     }

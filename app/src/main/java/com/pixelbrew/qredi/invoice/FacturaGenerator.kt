@@ -58,7 +58,7 @@ object InvoiceGenerator {
         builder.appendLine("Fecha   : ${data.date}")
         builder.appendLine("Usuario : ${data.cashierName}")
         builder.appendLine("-".repeat(32))
-        builder.appendLine(centerText("RESUMEN DEL DÍA", 32))
+        builder.appendLine(centerText("RESUMEN DEL DIA", 32))
         builder.appendLine("-".repeat(32))
         builder.appendLine("Clientes atendidos : ${data.uniqueClients}")
         builder.appendLine("Pagos recibidos    : ${data.transactionsCount}")

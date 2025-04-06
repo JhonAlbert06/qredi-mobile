@@ -2,8 +2,9 @@ package com.pixelbrew.qredi.reprint
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,6 +16,7 @@ import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.invoice.BluetoothPrinter
 import com.pixelbrew.qredi.invoice.InvoiceGenerator.DayCloseData
 import com.pixelbrew.qredi.network.api.ApiService
+import com.pixelbrew.qredi.network.model.Date
 import com.pixelbrew.qredi.network.model.UploadFee
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
 
 class ReprintViewModel(
     private val loanRepository: LoanRepository,
@@ -29,6 +32,8 @@ class ReprintViewModel(
     private val sessionManager: SessionManager,
 ) : ViewModel() {
     private val baseUrl = sessionManager.fetchApiUrl()
+
+    private val user = sessionManager.fetchUser()
 
     private val _newFees = MutableLiveData<List<NewFeeEntity>>(emptyList())
     val newFees: MutableLiveData<List<NewFeeEntity>> get() = _newFees
@@ -74,9 +79,13 @@ class ReprintViewModel(
         _showReprintDialog.value = show
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresApi(Build.VERSION_CODES.O)
     fun uploadFees() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                printDayCloset()
+
                 val uploadFeeModel = _newFees.value?.map { fee ->
                     UploadFee(
                         feeId = fee.feeId,
@@ -119,105 +128,26 @@ class ReprintViewModel(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printDayCloset() {
+        val payments = newFees.value ?: emptyList()
+        val date = LocalDateTime.now()
+        var dateAux = Date(
+            day = date.dayOfMonth,
+            month = date.monthValue,
+            year = date.year,
+            hour = date.hour,
+            minute = date.minute,
+            second = date.second
+        )
+
         val cierre = DayCloseData(
-            date = "05/04/2025 19:48",
-            cashierName = "Carlos Pérez",
-            initialBalance = 5000.0,
-            totalLoans = 15000.0,
-            payments = listOf(
-                NewFeeEntity(
-                    0,
-                    "1",
-                    "353",
-                    3000.0,
-                    5,
-                    4,
-                    2025,
-                    9,
-                    15,
-                    0,
-                    "GMT-4",
-                    1,
-                    10,
-                    "J & J PRESTAMOS",
-                    "829-755-1724",
-                    "JUAN PEREZ"
-                ),
-                NewFeeEntity(
-                    0,
-                    "2",
-                    "354",
-                    5000.0,
-                    5,
-                    4,
-                    2025,
-                    10,
-                    42,
-                    0,
-                    "GMT-4",
-                    2,
-                    12,
-                    "J & J PRESTAMOS",
-                    "829-755-1724",
-                    "MARIA GOMEZ"
-                ),
-                NewFeeEntity(
-                    0,
-                    "3",
-                    "355",
-                    4000.0,
-                    5,
-                    4,
-                    2025,
-                    11,
-                    30,
-                    0,
-                    "GMT-4",
-                    1,
-                    8,
-                    "J & J PRESTAMOS",
-                    "829-755-1724",
-                    "PEDRO RAMIREZ"
-                ),
-                NewFeeEntity(
-                    0,
-                    "4",
-                    "354",
-                    3000.0,
-                    5,
-                    4,
-                    2025,
-                    14,
-                    55,
-                    0,
-                    "GMT-4",
-                    3,
-                    12,
-                    "J & J PRESTAMOS",
-                    "829-755-1724",
-                    "MARIA GOMEZ"
-                ),
-                NewFeeEntity(
-                    0,
-                    "5",
-                    "353",
-                    3000.0,
-                    5,
-                    4,
-                    2025,
-                    16,
-                    10,
-                    0,
-                    "GMT-4",
-                    2,
-                    10,
-                    "J & J PRESTAMOS",
-                    "829-755-1724",
-                    "JUAN PEREZ"
-                )
-            )
+            date = "${dateAux.day}/${dateAux.month}/${dateAux.year}  ${dateAux.hour}:${dateAux.minute}",
+            cashierName = user?.firstName + " " + user?.lastName,
+            initialBalance = 0.0,
+            totalLoans = 0.0,
+            payments = payments
         )
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -237,7 +167,7 @@ class ReprintViewModel(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun printCollect(context: Context) {
+    fun printCollect() {
         val fee = _feeSelected.value ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
