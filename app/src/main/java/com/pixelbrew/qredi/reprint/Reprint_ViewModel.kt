@@ -89,7 +89,14 @@ class ReprintViewModel(
                 val uploadFeeModel = _newFees.value?.map { fee ->
                     UploadFee(
                         feeId = fee.feeId,
-                        amount = fee.paymentAmount
+                        amount = fee.paymentAmount,
+                        dateDay = fee.dateDay,
+                        dateMonth = fee.dateMonth,
+                        dateYear = fee.dateYear,
+                        dateHour = fee.dateHour,
+                        dateMinute = fee.dateMinute,
+                        dateSecond = fee.dateSecond,
+                        dateTimezone = fee.dateTimezone
                     )
                 } ?: emptyList()
 
