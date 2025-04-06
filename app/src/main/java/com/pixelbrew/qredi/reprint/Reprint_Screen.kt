@@ -172,6 +172,7 @@ fun Reprint(
     }
 }
 
+@androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun HeaderReprint(
     viewModel: ReprintViewModel,
@@ -194,6 +195,7 @@ fun HeaderReprint(
         Button(
             onClick = {
                 viewModel.setShowUploadDialog(true)
+                //viewModel.printDayCloset()
             },
             modifier = Modifier.padding(16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)

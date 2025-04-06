@@ -13,6 +13,7 @@ import com.pixelbrew.qredi.data.entities.LoanWithNewFees
 import com.pixelbrew.qredi.data.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.invoice.BluetoothPrinter
+import com.pixelbrew.qredi.invoice.InvoiceGenerator.DayCloseData
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.UploadFee
 import com.pixelbrew.qredi.ui.components.services.SessionManager
@@ -119,6 +120,119 @@ class ReprintViewModel(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun printDayCloset() {
+        val cierre = DayCloseData(
+            date = "05/04/2025 19:48",
+            cashierName = "Carlos Pérez",
+            initialBalance = 5000.0,
+            totalLoans = 15000.0,
+            payments = listOf(
+                NewFeeEntity(
+                    0,
+                    "1",
+                    "353",
+                    3000.0,
+                    5,
+                    4,
+                    2025,
+                    9,
+                    15,
+                    0,
+                    "GMT-4",
+                    1,
+                    10,
+                    "J & J PRESTAMOS",
+                    "829-755-1724",
+                    "JUAN PEREZ"
+                ),
+                NewFeeEntity(
+                    0,
+                    "2",
+                    "354",
+                    5000.0,
+                    5,
+                    4,
+                    2025,
+                    10,
+                    42,
+                    0,
+                    "GMT-4",
+                    2,
+                    12,
+                    "J & J PRESTAMOS",
+                    "829-755-1724",
+                    "MARIA GOMEZ"
+                ),
+                NewFeeEntity(
+                    0,
+                    "3",
+                    "355",
+                    4000.0,
+                    5,
+                    4,
+                    2025,
+                    11,
+                    30,
+                    0,
+                    "GMT-4",
+                    1,
+                    8,
+                    "J & J PRESTAMOS",
+                    "829-755-1724",
+                    "PEDRO RAMIREZ"
+                ),
+                NewFeeEntity(
+                    0,
+                    "4",
+                    "354",
+                    3000.0,
+                    5,
+                    4,
+                    2025,
+                    14,
+                    55,
+                    0,
+                    "GMT-4",
+                    3,
+                    12,
+                    "J & J PRESTAMOS",
+                    "829-755-1724",
+                    "MARIA GOMEZ"
+                ),
+                NewFeeEntity(
+                    0,
+                    "5",
+                    "353",
+                    3000.0,
+                    5,
+                    4,
+                    2025,
+                    16,
+                    10,
+                    0,
+                    "GMT-4",
+                    2,
+                    10,
+                    "J & J PRESTAMOS",
+                    "829-755-1724",
+                    "JUAN PEREZ"
+                )
+            )
+        )
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val recibo = BluetoothPrinter.printDocument(
+                sessionManager.fetchPrinterName().toString(),
+                BluetoothPrinter.DocumentType.DAY_CLOSE,
+                data = cierre
+            )
+            println(recibo)
+        }
+
+
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printCollect(context: Context) {
 
         val fee = _feeSelected.value ?: return
@@ -131,7 +245,6 @@ class ReprintViewModel(
 
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
-                        context,
                         sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
                         feeEntity = fee,

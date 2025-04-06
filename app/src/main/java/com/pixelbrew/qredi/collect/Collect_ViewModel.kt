@@ -278,7 +278,7 @@ class CollectViewModel(
 
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
-                        context,
+                      
                         sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
                         feeEntity = NewFeeEntity(

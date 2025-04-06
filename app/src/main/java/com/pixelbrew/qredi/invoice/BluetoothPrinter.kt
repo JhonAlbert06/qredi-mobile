@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import com.pixelbrew.qredi.data.entities.NewFeeEntity
+import com.pixelbrew.qredi.invoice.InvoiceGenerator.DayCloseData
 import java.io.IOException
 import java.util.UUID
 
@@ -27,10 +28,15 @@ object BluetoothPrinter {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printDocument(
-        context: Context,
         printerName: String,
         type: DocumentType,
-        data: InvoiceGenerator.DocumentData = InvoiceGenerator.DocumentData(),
+        data: DayCloseData = DayCloseData(
+            date = "",
+            cashierName = "",
+            initialBalance = 0.0,
+            totalLoans = 0.0,
+            payments = emptyList()
+        ),
         feeEntity: NewFeeEntity = NewFeeEntity(
             id = 0,
             feeId = "",
