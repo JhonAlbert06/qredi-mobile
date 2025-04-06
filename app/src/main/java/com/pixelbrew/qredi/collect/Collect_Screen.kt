@@ -29,7 +29,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +42,7 @@ import com.pixelbrew.qredi.collect.components.LoanDetailDialog
 import com.pixelbrew.qredi.collect.components.LoanItem
 import com.pixelbrew.qredi.collect.components.RouteSelectionDialog
 import com.pixelbrew.qredi.network.model.DownloadModel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
@@ -66,6 +65,7 @@ fun CollectScreen(
 
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
+            delay(200)
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
     }
@@ -96,7 +96,7 @@ fun HeaderCollect(
     viewModel: CollectViewModel,
     modifier: Modifier = Modifier
 ) {
-    val coroutineScope = rememberCoroutineScope()
+
     var showDialogRoute by remember { mutableStateOf(false) }
 
     val routes by viewModel.routes.observeAsState(emptyList())
@@ -116,9 +116,7 @@ fun HeaderCollect(
         Button(
             onClick = {
                 showDialogRoute = true
-                coroutineScope.launch {
-                    viewModel.getRoutes()
-                }
+                viewModel.getRoutes()
             },
             modifier = Modifier
                 .padding(start = 8.dp)
@@ -191,8 +189,6 @@ fun LoansList(
             }
         }
     }
-
-
 
     LoanDetailDialog(
         showDialog = showDialogLoan,

@@ -5,9 +5,13 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.network.model.LoginRequest
 import com.pixelbrew.qredi.ui.components.services.SessionManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AdminViewModel(
     private val apiService: ApiService,
@@ -49,51 +53,53 @@ class AdminViewModel(
         _toastMessage.value = message
     }
 
-    suspend fun loadUser() {
+    fun onLoginSelected() {
         _isLoading.value = true
 
+        viewModelScope.launch {
+            try {
+                val loginRequest = LoginRequest(_email.value.toString(), _password.value.toString())
+
+                Log.d(
+                    "API_REQUEST",
+                    "Email: ${loginRequest.username}, Password: ${loginRequest.password}"
+                )
+
+                val loginUrl = "$baseUrl/user/login"
+
+                // Ejecutamos en un hilo de IO
+                val response = withContext(Dispatchers.IO) {
+                    apiService.login(loginUrl, loginRequest)
+                }
+
+                sessionManager.saveAuthToken(response.token)
+                Log.d("API_RESPONSE", response.token)
+
+                loadUser()
+
+                _isLoading.value = false
+                showToast("Login successful")
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+                _isLoading.value = false
+                showToast(e.message.toString())
+            }
+        }
+    }
+
+    private suspend fun loadUser() {
         try {
             val userUrl = "$baseUrl/user/loadUser"
-            val response = apiService.loadUser(userUrl)
+
+            val response = withContext(Dispatchers.IO) {
+                apiService.loadUser(userUrl)
+            }
+
             sessionManager.saveUser(response)
             Log.d("API_RESPONSE", response.toString())
-            _isLoading.value = false
         } catch (e: Exception) {
             Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
-            _isLoading.value = false
             showToast(e.message.toString())
         }
     }
-
-    suspend fun onLoginSelected() {
-
-        _isLoading.value = true
-
-        try {
-            var loginRequest = LoginRequest(_email.value.toString(), _password.value.toString())
-
-            Log.d(
-                "API_REQUEST",
-                "Email: ${loginRequest.username}, Password: ${loginRequest.password}"
-            )
-
-            val loginUrl = "$baseUrl/user/login"
-            val response = apiService.login(loginUrl, loginRequest)
-            Log.d("API_RESPONSE", response.token)
-
-            // save token
-            sessionManager.saveAuthToken(response.token)
-            _isLoading.value = false
-
-            loadUser()
-            showToast("Login successful")
-        } catch (e: Exception) {
-            Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
-            _isLoading.value = false
-            showToast(e.message.toString())
-        }
-
-
-    }
-
 }

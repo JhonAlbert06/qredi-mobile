@@ -125,12 +125,15 @@ class CollectViewModel(
     }
 
     fun getRoutes() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val routesUrl = "$baseUrl/routes"
                 val response = apiService.getRoutes(routesUrl)
-                _routes.value = response
-                showToast("Routes loaded successfully")
+
+                withContext(Dispatchers.Main) {
+                    _routes.value = response
+                    showToast("Routes loaded successfully")
+                }
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
                 showToast(e.message.toString())
@@ -166,7 +169,7 @@ class CollectViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val downloadedRoutesAux =
-                    loanRepository.getAllLoans().first() // Usamos first() en lugar de collect()
+                    loanRepository.getAllLoans().first()
 
                 Log.d("ROOM_DB", "Cantidad de préstamos recuperados: ${downloadedRoutesAux.size}")
 
@@ -214,22 +217,25 @@ class CollectViewModel(
 
     fun downloadRoute(id: String) {
         _isLoading.value = true
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val downloadUrl = "$baseUrl/route/download/${id}"
+                val downloadUrl = "$baseUrl/route/download/$id"
                 val response = apiService.downloadRoute(downloadUrl)
 
-                response.forEach { loan ->
-                    saveLoansOnDatabase(loan)
-                }
+                response.forEach { saveLoansOnDatabase(it) }
 
-                showToast("Route downloaded successfully")
-                delay(2000)
+                delay(1000)
                 getLoansFromDatabase()
-                _isLoading.value = false
+
+                withContext(Dispatchers.Main) {
+                    showToast("Ruta descargada correctamente")
+                    _isLoading.value = false
+                }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
-                showToast(e.message.toString())
+                withContext(Dispatchers.Main) {
+                    showToast("Error al descargar ruta: ${e.message}")
+                    _isLoading.value = false
+                }
             }
         }
     }
@@ -278,7 +284,7 @@ class CollectViewModel(
 
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
-                      
+
                         sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
                         feeEntity = NewFeeEntity(

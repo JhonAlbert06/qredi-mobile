@@ -23,7 +23,7 @@ import com.pixelbrew.qredi.admin.components.ForgotPassword
 import com.pixelbrew.qredi.admin.components.HeaderImage
 import com.pixelbrew.qredi.admin.components.LoginButton
 import com.pixelbrew.qredi.admin.components.PasswordField
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @Composable
 fun AdminScreen(viewModel: AdminViewModel, modifier: Modifier = Modifier, context: MainActivity) {
@@ -41,6 +41,7 @@ fun AdminScreen(viewModel: AdminViewModel, modifier: Modifier = Modifier, contex
 
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
+            delay(200)
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
     }
@@ -81,9 +82,7 @@ fun Login(viewModel: AdminViewModel, modifier: Modifier = Modifier) {
             ForgotPassword(modifier.align(Alignment.End))
             Spacer(modifier = Modifier.height(16.dp))
             LoginButton(modifier, isLoginEnabled) {
-                coroutineScope.launch {
-                    viewModel.onLoginSelected()
-                }
+                viewModel.onLoginSelected()
             }
             Spacer(modifier = Modifier.height(16.dp))
         }

@@ -46,6 +46,14 @@ fun ReprintScreen(
     modifier: Modifier = Modifier,
     context: MainActivity
 ) {
+    val toastMessage by viewModel.toastMessage.observeAsState()
+
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearToast()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -57,15 +65,6 @@ fun ReprintScreen(
             modifier = modifier,
             context = context
         )
-    }
-
-    val viewModel: ReprintViewModel = viewModel
-    val toastMessage by viewModel.toastMessage.observeAsState()
-
-    LaunchedEffect(toastMessage) {
-        toastMessage?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-        }
     }
 }
 
@@ -195,7 +194,7 @@ fun HeaderReprint(
         Button(
             onClick = {
                 viewModel.setShowUploadDialog(true)
-                //viewModel.printDayCloset()
+                viewModel.printDayCloset()
             },
             modifier = Modifier.padding(16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)

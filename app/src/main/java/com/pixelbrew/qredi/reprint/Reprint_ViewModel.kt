@@ -33,8 +33,8 @@ class ReprintViewModel(
     private val _newFees = MutableLiveData<List<NewFeeEntity>>(emptyList())
     val newFees: MutableLiveData<List<NewFeeEntity>> get() = _newFees
 
-    private val _toastMessage = MutableLiveData<String>()
-    val toastMessage: LiveData<String> get() = _toastMessage
+    private val _toastMessage = MutableLiveData<String?>()
+    val toastMessage: LiveData<String?> get() = _toastMessage
 
     private val _showUploadDialog = MutableLiveData<Boolean>(false)
     val showUploadDialog: LiveData<Boolean> get() = _showUploadDialog
@@ -232,42 +232,41 @@ class ReprintViewModel(
 
     }
 
+    fun clearToast() {
+        _toastMessage.value = null
+    }
+
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printCollect(context: Context) {
-
         val fee = _feeSelected.value ?: return
 
-        try {
+        viewModelScope.launch(Dispatchers.IO) {
+            var attempts = 0
+            var success = false
 
-            viewModelScope.launch(Dispatchers.IO) {
-                var attempts = 0
-                var success = false
+            while (attempts < 3 && !success) {
+                success = BluetoothPrinter.printDocument(
+                    sessionManager.fetchPrinterName().toString(),
+                    BluetoothPrinter.DocumentType.PAYMENT,
+                    feeEntity = fee,
+                )
 
-                while (attempts < 3 && !success) {
-                    success = BluetoothPrinter.printDocument(
-                        sessionManager.fetchPrinterName().toString(),
-                        BluetoothPrinter.DocumentType.PAYMENT,
-                        feeEntity = fee,
-                    )
-
-                    if (!success) {
-                        attempts++
-                        delay(1000)
-                    }
-                }
-
-                withContext(Dispatchers.Main) {
-                    if (success) {
-                        showToast("Recibo impreso correctamente")
-                    } else {
-                        showToast("No se pudo imprimir el recibo después de 3 intentos")
-                    }
+                if (!success) {
+                    attempts++
+                    delay(800) // Menor delay para no congelar UI por mucho tiempo
                 }
             }
-        } catch (e: NumberFormatException) {
-            showToast("El monto ingresado no es válido: ${e.localizedMessage}")
-        } catch (e: Exception) {
-            showToast("Error al generar el recibo: ${e.localizedMessage}")
+
+            val message = if (success) {
+                "Recibo impreso correctamente"
+            } else {
+                "No se pudo imprimir el recibo después de 3 intentos"
+            }
+
+            // Enviar una sola vez al hilo principal
+            withContext(Dispatchers.Main) {
+                showToast(message)
+            }
         }
     }
 

@@ -30,15 +30,8 @@ object BluetoothPrinter {
     fun printDocument(
         printerName: String,
         type: DocumentType,
-        data: DayCloseData = DayCloseData(
-            date = "",
-            cashierName = "",
-            initialBalance = 0.0,
-            totalLoans = 0.0,
-            payments = emptyList()
-        ),
+        data: DayCloseData = DayCloseData("", "", 0.0, 0.0, emptyList()),
         feeEntity: NewFeeEntity = NewFeeEntity(
-            id = 0,
             feeId = "",
             loanId = "",
             paymentAmount = 0.0,
@@ -53,11 +46,13 @@ object BluetoothPrinter {
             numberTotal = 0,
             companyName = "",
             companyNumber = "",
-            clientName = ""
+            clientName = "",
+            id = 0
         )
     ): Boolean {
         return try {
-            ensureConnection(printerName)?.use { socket ->
+            val socket = ensureConnection(printerName)
+            if (socket != null && socket.isConnected) {
                 val outputStream = socket.outputStream
                 val content = when (type) {
                     DocumentType.PAYMENT -> InvoiceGenerator.generatePaymentContent(feeEntity)
@@ -65,9 +60,11 @@ object BluetoothPrinter {
                 }
                 PrinterUtils.sendDataPrinter(content, outputStream)
                 true
-            } == true
+            } else {
+                false
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Printing failed", e)
+            Log.e(TAG, "Error de impresión", e)
             resetConnection()
             false
         }
@@ -76,10 +73,7 @@ object BluetoothPrinter {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     @Throws(IOException::class)
     private fun ensureConnection(printerName: String): BluetoothSocket? {
-
-        if (currentSocket?.isConnected == true) {
-            return currentSocket
-        }
+        if (currentSocket?.isConnected == true) return currentSocket
 
         resetConnection()
 
@@ -90,26 +84,22 @@ object BluetoothPrinter {
         val device =
             findPrinter(adapter, printerName) ?: throw IOException("Impresora no encontrada")
 
-        try {
+        return try {
             val socket = device.createRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID))
             socket.connect()
-
             Thread.sleep(RECONNECTION_DELAY_MS)
-
             currentDevice = device
             currentSocket = socket
-            return socket
+            socket
         } catch (e: Exception) {
             try {
                 val socket =
                     device.createInsecureRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID))
                 socket.connect()
-
                 Thread.sleep(RECONNECTION_DELAY_MS)
-
                 currentDevice = device
                 currentSocket = socket
-                return socket
+                socket
             } catch (e2: Exception) {
                 resetConnection()
                 throw IOException("No se pudo conectar a la impresora", e2)
@@ -119,9 +109,7 @@ object BluetoothPrinter {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun findPrinter(adapter: BluetoothAdapter, name: String): BluetoothDevice? {
-        return adapter.bondedDevices.firstOrNull { device ->
-            device.name?.equals(name, ignoreCase = true) == true
-        }
+        return adapter.bondedDevices.firstOrNull { it.name.equals(name, ignoreCase = true) }
     }
 
     private fun resetConnection() {
@@ -135,7 +123,7 @@ object BluetoothPrinter {
         }
     }
 
-    private fun hasBluetoothPermissions(context: Context): Boolean {
+    fun hasBluetoothPermissions(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ActivityCompat.checkSelfPermission(
                 context,
