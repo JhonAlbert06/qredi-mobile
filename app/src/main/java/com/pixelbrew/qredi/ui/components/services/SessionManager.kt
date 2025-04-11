@@ -14,9 +14,9 @@ class SessionManager(context: Context) {
     private val gson = Gson()
 
     init {
-        savePrinterName("2C-P58-C")
-        saveApiUrl("http://192.168.1.10:3000")
-        saveAuthToken("")
+        //savePrinterName("2C-P58-C")
+        //saveApiUrl("http://192.168.1.10:3000")
+        //saveAuthToken("")
     }
 
     companion object {

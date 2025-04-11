@@ -50,11 +50,11 @@ class AdminViewModel(
     }
 
     private fun showToast(message: String) {
-        _toastMessage.value = message
+        _toastMessage.postValue(message)
     }
 
     fun onLoginSelected() {
-        _isLoading.value = true
+        _isLoading.postValue(true)
 
         viewModelScope.launch {
             try {
@@ -77,11 +77,11 @@ class AdminViewModel(
 
                 loadUser()
 
-                _isLoading.value = false
+                _isLoading.postValue(false)
                 showToast("Login successful")
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
-                _isLoading.value = false
+                _isLoading.postValue(false)
                 showToast(e.message.toString())
             }
         }

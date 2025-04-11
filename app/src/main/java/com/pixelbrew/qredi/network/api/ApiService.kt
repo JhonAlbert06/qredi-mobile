@@ -1,5 +1,7 @@
 package com.pixelbrew.qredi.network.api
 
+import com.pixelbrew.qredi.network.model.CustomerModel
+import com.pixelbrew.qredi.network.model.CustomerModelRes
 import com.pixelbrew.qredi.network.model.DownloadModel
 import com.pixelbrew.qredi.network.model.LoginRequest
 import com.pixelbrew.qredi.network.model.RouteModel
@@ -41,4 +43,15 @@ interface ApiService {
         @Url url: String,
         @Body fees: List<UploadFee>
     ): Response<Unit>
+
+    @POST
+    suspend fun createCustomer(
+        @Url url: String,
+        @Body customer: CustomerModel
+    ): CustomerModelRes
+
+    @GET
+    suspend fun getCustomers(
+        @Url url: String
+    ): List<CustomerModelRes>
 }

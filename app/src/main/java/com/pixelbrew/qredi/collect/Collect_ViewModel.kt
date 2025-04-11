@@ -68,15 +68,15 @@ class CollectViewModel(
     }
 
     fun resetAmount() {
-        _amount.value = ""
+        _amount.postValue("")
     }
 
     fun setDownloadRouteSelected(downloadRoute: DownloadModel) {
-        _downloadLoanSelected.value = downloadRoute
+        _downloadLoanSelected.postValue(downloadRoute)
     }
 
     fun onAmountChange(amount: String) {
-        _amount.value = amount
+        _amount.postValue(amount)
     }
 
     private fun showToast(message: String) {
@@ -84,7 +84,7 @@ class CollectViewModel(
     }
 
     fun setFeeSelected(fee: Fee) {
-        _selectedFee.value = fee
+        _selectedFee.postValue(fee)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

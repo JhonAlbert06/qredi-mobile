@@ -38,6 +38,8 @@ import com.pixelbrew.qredi.admin.AdminScreen
 import com.pixelbrew.qredi.admin.AdminViewModel
 import com.pixelbrew.qredi.collect.CollectScreen
 import com.pixelbrew.qredi.collect.CollectViewModel
+import com.pixelbrew.qredi.customer.CustomerScreen
+import com.pixelbrew.qredi.customer.CustomerViewModel
 import com.pixelbrew.qredi.data.repository.LoanRepository
 import com.pixelbrew.qredi.network.api.ApiService
 import com.pixelbrew.qredi.reprint.ReprintScreen
@@ -54,6 +56,7 @@ sealed class Screen(val route: String) {
     object Reprint : Screen("reprint")
     object Statistics : Screen("statistics")
     object Settings : Screen("settings")
+    object Customer : Screen("customer")
 
     companion object {
         fun fromRoute(route: String): Screen {
@@ -61,6 +64,7 @@ sealed class Screen(val route: String) {
                 "admin" -> Admin
                 "collect" -> Collect
                 "reprint" -> Reprint
+                "customer" -> Customer
                 "statistics" -> Statistics
                 "settings" -> Settings
                 else -> Admin // default
@@ -129,6 +133,16 @@ fun SideMenu(
 
                 Screen.Collect -> CollectScreen(
                     CollectViewModel(
+                        LoanRepository(context),
+                        apiService,
+                        sessionManager
+                    ),
+                    modifier = modifier.padding(top = 25.dp),
+                    context,
+                )
+
+                Screen.Customer -> CustomerScreen(
+                    CustomerViewModel(
                         LoanRepository(context),
                         apiService,
                         sessionManager
@@ -252,6 +266,21 @@ fun DrawerContent(
             onClick = { onItemSelected(Screen.Reprint) },
             modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
         )
+
+        NavigationDrawerItem(
+            label = { Text("Cliente") },
+            selected = currentScreen is Screen.Customer,
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.user_solid),
+                    contentDescription = "Cliente",
+                    modifier = Modifier.size(32.dp)
+                )
+            },
+            onClick = { onItemSelected(Screen.Customer) },
+            modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
+        )
+
 
         NavigationDrawerItem(
             label = { Text("Estadísticas") },

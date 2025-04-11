@@ -11,6 +11,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.collect.CollectViewModel
 import com.pixelbrew.qredi.network.model.DownloadModel
@@ -27,6 +28,7 @@ fun LoanDetailDialog(
 ) {
     if (showDialog) {
         AlertDialog(
+            properties = DialogProperties(usePlatformDefaultWidth = false),
             modifier = modifier,
             onDismissRequest = onDismiss,
             title = {

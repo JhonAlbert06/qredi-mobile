@@ -18,9 +18,15 @@ class SettingsViewModel(
     private val _toastMessage = MutableLiveData<String>()
     val toastMessage: LiveData<String> get() = _toastMessage
 
+
     init {
-        _printerName.value = sessionManager.fetchPrinterName()
-        _apiUrl.value = sessionManager.fetchApiUrl()
+        try {
+            _printerName.value = sessionManager.fetchPrinterName() ?: ""
+            _apiUrl.value = sessionManager.fetchApiUrl() ?: ""
+        } catch (e: Exception) {
+            _printerName.value = ""
+            _apiUrl.value = ""
+        }
     }
 
     fun onPrinterNameChange(name: String) {
