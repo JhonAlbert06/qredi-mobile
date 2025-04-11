@@ -30,11 +30,11 @@ class SettingsViewModel(
     }
 
     fun onPrinterNameChange(name: String) {
-        _printerName.value = name
+        _printerName.postValue(name)
     }
 
     fun onApiUrlChange(url: String) {
-        _apiUrl.value = url
+        _apiUrl.postValue(url)
     }
 
     fun saveSettings() {

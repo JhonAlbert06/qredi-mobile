@@ -67,7 +67,6 @@ class AdminViewModel(
 
                 val loginUrl = "$baseUrl/user/login"
 
-                // Ejecutamos en un hilo de IO
                 val response = withContext(Dispatchers.IO) {
                     apiService.login(loginUrl, loginRequest)
                 }

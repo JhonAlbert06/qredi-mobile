@@ -21,7 +21,7 @@ class CustomerViewModel(
 ) : ViewModel() {
 
     private val _showCreationDialog = MutableLiveData<Boolean>(false)
-    val showCreationDialog: MutableLiveData<Boolean> get() = _showCreationDialog
+    val showCreationDialog: LiveData<Boolean> get() = _showCreationDialog
 
     private val _customerList = MutableLiveData<List<CustomerModelRes>>()
     val customerList: LiveData<List<CustomerModelRes>> get() = _customerList

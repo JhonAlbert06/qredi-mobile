@@ -67,16 +67,16 @@ class ReprintViewModel(
     }
 
     fun setFeeSelected(fee: NewFeeEntity) {
-        _feeSelected.value = fee
+        _feeSelected.postValue(fee)
         getLoanById(fee.loanId)
     }
 
     fun setShowUploadDialog(show: Boolean) {
-        _showUploadDialog.value = show
+        _showUploadDialog.postValue(show)
     }
 
     fun setShowReprintDialog(show: Boolean) {
-        _showReprintDialog.value = show
+        _showReprintDialog.postValue(show)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -170,7 +170,7 @@ class ReprintViewModel(
     }
 
     fun clearToast() {
-        _toastMessage.value = null
+        _toastMessage.postValue(null)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -190,7 +190,7 @@ class ReprintViewModel(
 
                 if (!success) {
                     attempts++
-                    delay(800) // Menor delay para no congelar UI por mucho tiempo
+                    delay(800)
                 }
             }
 
@@ -200,7 +200,6 @@ class ReprintViewModel(
                 "No se pudo imprimir el recibo después de 3 intentos"
             }
 
-            // Enviar una sola vez al hilo principal
             withContext(Dispatchers.Main) {
                 showToast(message)
             }
@@ -216,8 +215,7 @@ class ReprintViewModel(
     fun formatTime(hour: Int, minute: Int, second: Int): String {
         return String.format("%02d:%02d:%02d", hour, minute, second)
     }
-
-
+    
     private fun showToast(message: String) {
         _toastMessage.postValue(message)
     }
