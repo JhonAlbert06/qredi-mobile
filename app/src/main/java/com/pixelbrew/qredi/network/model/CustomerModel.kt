@@ -9,9 +9,6 @@ class CustomerModel {
     var phone: String = ""
     var reference: String = ""
 
-    constructor() {
-    }
-
     constructor(
         companyId: String,
         cedula: String,
@@ -40,7 +37,5 @@ class CustomerModelRes {
     var address: String = ""
     var phone: String = ""
     var reference: String = ""
-
-    constructor() {
-    }
+    
 }

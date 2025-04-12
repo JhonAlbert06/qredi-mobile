@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.customer.components.CreateCustomerDialog
+import com.pixelbrew.qredi.network.model.CustomerModelRes
 import kotlinx.coroutines.delay
 
 @Composable
@@ -89,13 +92,126 @@ fun Customer(
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         } else {
-            customerList.forEach { customer ->
-                Text(customer.firstName)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(customerList.size) { index ->
+                    val customer = customerList[index]
+                    CustomerItem(
+                        customer = customer,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
-
-
     }
+
+}
+
+@Composable
+fun CustomerItem(
+    customer: CustomerModelRes,
+    modifier: Modifier
+) {
+
+    Card {
+        Column {
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, bottom = 2.dp, top = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.user_solid),
+                    contentDescription = "Cliente",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "${customer.firstName} ${customer.lastName}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, bottom = 2.dp, top = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.address_card_solid),
+                    contentDescription = "Cedula",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = customer.cedula,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, bottom = 2.dp, top = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.phone_solid),
+                    contentDescription = "Telefono",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = customer.phone,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, bottom = 2.dp, top = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.location_dot_solid),
+                    contentDescription = "Direccion",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = customer.address,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, bottom = 2.dp, top = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.comment_solid),
+                    contentDescription = "Referencia",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = customer.reference,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+
 
 }
 
