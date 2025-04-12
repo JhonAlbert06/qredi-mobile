@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -54,8 +53,6 @@ fun Login(viewModel: AdminViewModel, modifier: Modifier = Modifier) {
     val password: String by viewModel.password.observeAsState(initial = "")
     val isLoginEnabled: Boolean by viewModel.isLoginEnabled.observeAsState(initial = false)
     val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = false)
-
-    val coroutineScope = rememberCoroutineScope()
 
     if (isLoading) {
         // Show loading indicator

@@ -20,9 +20,10 @@ fun DialogCollect(
     onDismiss: () -> Unit,
     viewModel: CollectViewModel,
     context: MainActivity,
+    amount: String,
 ) {
 
-    val amount: String by viewModel.amount.observeAsState(initial = "")
+    val cuote by viewModel.cuote.observeAsState(0.0)
 
     if (showDialog) {
         AlertDialog(
@@ -42,7 +43,7 @@ fun DialogCollect(
                         onDismiss()
                         viewModel.printCollect(context)
                     },
-                    enabled = !amount.isEmpty()
+                    enabled = !amount.isEmpty() && amount.toDouble() > 0 && amount.toDouble() <= cuote,
                 ) {
                     Text("Cobrar")
                 }

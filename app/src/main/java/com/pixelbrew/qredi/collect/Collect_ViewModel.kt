@@ -37,6 +37,9 @@ class CollectViewModel(
 
     private val baseUrl = sessionManager.fetchApiUrl()
 
+    private val _cuote = MutableLiveData<Double>(0.0)
+    val cuote: LiveData<Double> get() = _cuote
+
     val userSession: UserModel?
         get() = sessionManager.fetchUser()
 
@@ -69,6 +72,18 @@ class CollectViewModel(
 
     fun resetAmount() {
         _amount.postValue("")
+    }
+
+    fun getCuote(amount: Double) {
+        val loan = downloadLoanSelected.value ?: return
+        var cuoteAUX = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
+
+        _cuote.postValue(cuoteAUX)
+        
+        cuoteAUX -= amount
+
+        _amount.postValue(cuoteAUX.toString())
+
     }
 
     fun setDownloadRouteSelected(downloadRoute: DownloadModel) {

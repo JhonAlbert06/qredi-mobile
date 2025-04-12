@@ -1,6 +1,8 @@
 package com.pixelbrew.qredi.collect.components
 
 import android.Manifest
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +18,7 @@ import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.collect.CollectViewModel
 import com.pixelbrew.qredi.network.model.DownloadModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun LoanDetailDialog(

@@ -1,7 +1,9 @@
 package com.pixelbrew.qredi.collect
 
 import android.Manifest
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -150,6 +152,7 @@ fun HeaderCollect(
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun LoansList(

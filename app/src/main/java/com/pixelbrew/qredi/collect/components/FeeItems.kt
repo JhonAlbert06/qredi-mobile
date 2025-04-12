@@ -1,5 +1,7 @@
 package com.pixelbrew.qredi.collect.components
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +32,7 @@ import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.collect.CollectViewModel
 import com.pixelbrew.qredi.network.model.DownloadModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun FeeItems(
@@ -36,6 +40,9 @@ fun FeeItems(
     loan: DownloadModel,
     context: MainActivity,
 ) {
+
+    val amount: String by viewModel.amount.observeAsState("")
+
     var showDialogCollect by remember { mutableStateOf(false) }
     var totalLoanPaid = 0.0
 
@@ -48,11 +55,11 @@ fun FeeItems(
         "${viewModel.formatNumber(totalLoanPaid)}$ / ${viewModel.formatNumber(loan.amount)}$"
     )
 
-    LazyColumn {
-        items(loan.fees) { fee ->
+    var cuote by remember { mutableDoubleStateOf(0.0) }
+    cuote = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
 
-            var cuote by remember { mutableDoubleStateOf(0.0) }
-            cuote = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
+    LazyColumn {
+        items(loan.fees.filter { it.paymentAmount < cuote }) { fee ->
 
             Card(
                 modifier = Modifier
@@ -85,7 +92,8 @@ fun FeeItems(
                         onClick = {
                             showDialogCollect = true
                             viewModel.setFeeSelected(fee)
-                            viewModel.resetAmount()
+                            viewModel.getCuote(fee.paymentAmount);
+                            //viewModel.resetAmount()
                         },
                         modifier = Modifier
                             .padding(top = 8.dp)
@@ -117,7 +125,8 @@ fun FeeItems(
         showDialog = showDialogCollect,
         onDismiss = { showDialogCollect = false },
         viewModel = viewModel,
-        context = context
+        context = context,
+        amount
     )
 
 

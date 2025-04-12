@@ -36,7 +36,11 @@ class CustomerViewModel(
     private val _toastMessage = MutableLiveData<String>()
     val toastMessage: LiveData<String> get() = _toastMessage
 
+    private val _isLoading = MutableLiveData<Boolean>(false)
+    val isLoading: LiveData<Boolean> get() = _isLoading
+
     init {
+        _isLoading.value = true
         fetchCustomers()
     }
 
@@ -46,9 +50,11 @@ class CustomerViewModel(
                 val url = "$baseUrl/customer?query=$query&field=$field"
                 val customers = apiService.getCustomers(url)
                 _customerList.postValue(customers)
+                _isLoading.postValue(false)
             } catch (e: Exception) {
                 Log.e("CustomerViewModel", "Error fetching customers: ${e.message}")
                 showToast("Error fetching customers: ${e.message}")
+                _isLoading.postValue(false)
             }
         }
     }

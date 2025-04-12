@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
@@ -183,24 +184,25 @@ fun HeaderReprint(
     Row(
         modifier = modifier
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             "Reimprimir",
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(16.dp)
         )
 
         Button(
             onClick = {
                 viewModel.setShowUploadDialog(true)
-
             },
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .align(Alignment.CenterVertically),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             enabled = fees.isNotEmpty()
         ) {
-            Text("Subir Data")
+            Text("Sincronizar")
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.cloud_arrow_up_solid),
                 contentDescription = "Download Route",

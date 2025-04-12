@@ -1,8 +1,6 @@
 package com.pixelbrew.qredi.customer.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,8 +13,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -50,19 +46,14 @@ fun CreateCustomerDialog(
     var cedula by remember { mutableStateOf("") }
     var names by remember { mutableStateOf("") }
     var lastNames by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var reference by remember { mutableStateOf("") }
 
     // Dirección desglosada
     var city by remember { mutableStateOf("") }
     var sector by remember { mutableStateOf("") }
     var street by remember { mutableStateOf("") }
     var houseNumber by remember { mutableStateOf("") }
-
-    var phone by remember { mutableStateOf("") }
-    var civilStatus by remember { mutableStateOf("") }
-    var reference by remember { mutableStateOf("") }
-
-    val civilStatusOptions = listOf("Soltero", "Casado", "Divorciado", "Viudo")
-    var expanded by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
 
@@ -85,99 +76,29 @@ fun CreateCustomerDialog(
                 Text("Crear Cliente", style = MaterialTheme.typography.titleLarge)
 
                 Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = cedula,
-                    onValueChange = { cedula = it },
-                    label = { Text("Cédula") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1,
+                CedulaField(
+                    cedula = cedula,
+                    onValueChange = { cedula = it }
                 )
 
-                OutlinedTextField(
-                    value = names,
-                    onValueChange = { names = it },
-                    label = { Text("Nombres") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1,
+                NamesField(
+                    names = names,
+                    onValueChange = { names = it }
                 )
 
-                OutlinedTextField(
-                    value = lastNames,
-                    onValueChange = { lastNames = it },
-                    label = { Text("Apellidos") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1,
+                LastNamesField(
+                    lastNames = lastNames,
+                    onValueChange = { lastNames = it }
                 )
 
-                OutlinedTextField(
-                    value = phone,
-                    onValueChange = { phone = it },
-                    label = { Text("Teléfono") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Phone,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1,
+                PhoneField(
+                    phone = phone,
+                    onValueChange = { phone = it }
                 )
 
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = civilStatus,
-                        onValueChange = { },
-                        readOnly = true,
-                        label = { Text("Estado civil") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { expanded = true },
-                        singleLine = true,
-                        maxLines = 1,
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        civilStatusOptions.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    civilStatus = option
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                OutlinedTextField(
-                    value = reference,
-                    onValueChange = { reference = it },
-                    label = { Text("Referencia") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1,
+                ReferenceField(
+                    reference = reference,
+                    onValueChange = { reference = it }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -185,57 +106,32 @@ fun CreateCustomerDialog(
                 Text("Dirección", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(4.dp))
 
-                OutlinedTextField(
-                    value = city,
-                    onValueChange = { city = it },
-                    label = { Text("Ciudad") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1,
+                CityField(
+                    city = city,
+                    onValueChange = { city = it }
                 )
 
-                OutlinedTextField(
-                    value = sector,
-                    onValueChange = { sector = it },
-                    label = { Text("Sector") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1,
+                SectorField(
+                    sector = sector,
+                    onValueChange = { sector = it }
                 )
 
-                OutlinedTextField(
-                    value = street,
-                    onValueChange = { street = it },
-                    label = { Text("Calle") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    StreetField(
+                        street = street,
+                        onValueChange = { street = it },
+                        modifier = Modifier.weight(1f)
+                    )
+                    HouseNumberField(
+                        houseNumber = houseNumber,
+                        onValueChange = { houseNumber = it },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
-                OutlinedTextField(
-                    value = houseNumber,
-                    onValueChange = { houseNumber = it },
-                    label = { Text("Número de casa") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1,
-                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
@@ -276,3 +172,179 @@ fun CreateCustomerDialog(
         }
     }
 }
+
+@Composable
+fun CedulaField(
+    cedula: String,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = cedula,
+        onValueChange = { onValueChange(it) },
+        label = { Text("Cédula") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Next
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        maxLines = 1,
+    )
+}
+
+@Composable
+fun NamesField(
+    names: String,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = names,
+        onValueChange = { onValueChange(it) },
+        label = { Text("Nombres") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        maxLines = 1,
+    )
+}
+
+@Composable
+fun LastNamesField(
+    lastNames: String,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = lastNames,
+        onValueChange = { onValueChange(it) },
+        label = { Text("Apellidos") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        maxLines = 1,
+    )
+}
+
+@Composable
+fun PhoneField(
+    phone: String,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = phone,
+        onValueChange = { onValueChange(it) },
+        label = { Text("Teléfono") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Phone,
+            imeAction = ImeAction.Next
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        maxLines = 1,
+    )
+}
+
+@Composable
+fun ReferenceField(
+    reference: String,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = reference,
+        onValueChange = { onValueChange(it) },
+        label = { Text("Referencia") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        maxLines = 1,
+    )
+}
+
+@Composable
+fun CityField(
+    city: String,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = city,
+        onValueChange = { onValueChange(it) },
+        label = { Text("Ciudad") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        maxLines = 1,
+    )
+}
+
+@Composable
+fun SectorField(
+    sector: String,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = sector,
+        onValueChange = { onValueChange(it) },
+        label = { Text("Sector") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        maxLines = 1,
+    )
+}
+
+@Composable
+fun StreetField(
+    street: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier
+) {
+    OutlinedTextField(
+        value = street,
+        onValueChange = { onValueChange(it) },
+        label = { Text("Calle") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        ),
+        modifier = modifier
+            .padding(end = 4.dp),
+        singleLine = true,
+        maxLines = 1,
+    )
+}
+
+@Composable
+fun HouseNumberField(
+    houseNumber: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier
+) {
+    OutlinedTextField(
+        value = houseNumber,
+        onValueChange = { onValueChange(it) },
+        label = { Text("Número de casa") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Done
+        ),
+        modifier = modifier
+            .padding(start = 4.dp),
+        singleLine = true,
+        maxLines = 1,
+    )
+}
+

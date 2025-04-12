@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -68,6 +69,7 @@ fun Customer(
 ) {
 
     val customerList by viewModel.customerList.observeAsState(initial = emptyList())
+    val isLoading by viewModel.isLoading.observeAsState(initial = false)
 
     Column {
         HeaderCustomer(
@@ -77,8 +79,19 @@ fun Customer(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        customerList.forEach { customer ->
-            Text(customer.firstName)
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
+            }
+        } else {
+            customerList.forEach { customer ->
+                Text(customer.firstName)
+            }
         }
 
 
@@ -149,3 +162,4 @@ fun HeaderCustomer(
         )
     }
 }
+
