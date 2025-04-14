@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import com.pixelbrew.qredi.collect.CollectViewModel
-import com.pixelbrew.qredi.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.RouteModel
 
 @Composable
 fun RouteSelectionDialog(

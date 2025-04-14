@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.customer.components.CreateCustomerDialog
-import com.pixelbrew.qredi.network.model.CustomerModelRes
+import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 import kotlinx.coroutines.delay
 
 @Composable

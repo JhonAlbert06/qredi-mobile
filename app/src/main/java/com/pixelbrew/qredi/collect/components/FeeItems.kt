@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.collect.CollectViewModel
-import com.pixelbrew.qredi.network.model.DownloadModel
+import com.pixelbrew.qredi.data.network.model.DownloadModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)

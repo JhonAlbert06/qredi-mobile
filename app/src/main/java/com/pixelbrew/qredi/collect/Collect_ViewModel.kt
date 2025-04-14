@@ -10,17 +10,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pixelbrew.qredi.data.converter.LoanMapper
-import com.pixelbrew.qredi.data.entities.FeeEntity
-import com.pixelbrew.qredi.data.entities.NewFeeEntity
-import com.pixelbrew.qredi.data.repository.LoanRepository
-import com.pixelbrew.qredi.invoice.BluetoothPrinter
-import com.pixelbrew.qredi.network.api.ApiService
-import com.pixelbrew.qredi.network.model.DownloadModel
-import com.pixelbrew.qredi.network.model.Fee
-import com.pixelbrew.qredi.network.model.RouteModel
-import com.pixelbrew.qredi.network.model.UserModel
+import com.pixelbrew.qredi.data.local.converter.LoanMapper
+import com.pixelbrew.qredi.data.local.entities.FeeEntity
+import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
+import com.pixelbrew.qredi.data.local.repository.LoanRepository
+import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.data.network.model.DownloadModel
+import com.pixelbrew.qredi.data.network.model.Fee
+import com.pixelbrew.qredi.data.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
+import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -79,7 +79,7 @@ class CollectViewModel(
         var cuoteAUX = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
 
         _cuote.postValue(cuoteAUX)
-        
+
         cuoteAUX -= amount
 
         _amount.postValue(cuoteAUX.toString())

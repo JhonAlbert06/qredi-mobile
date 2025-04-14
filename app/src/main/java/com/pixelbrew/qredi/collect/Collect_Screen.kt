@@ -43,7 +43,7 @@ import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.collect.components.LoanDetailDialog
 import com.pixelbrew.qredi.collect.components.LoanItem
 import com.pixelbrew.qredi.collect.components.RouteSelectionDialog
-import com.pixelbrew.qredi.network.model.DownloadModel
+import com.pixelbrew.qredi.data.network.model.DownloadModel
 import kotlinx.coroutines.delay
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

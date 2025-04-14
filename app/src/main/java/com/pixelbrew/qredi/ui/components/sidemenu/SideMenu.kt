@@ -24,6 +24,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
@@ -40,8 +41,10 @@ import com.pixelbrew.qredi.collect.CollectScreen
 import com.pixelbrew.qredi.collect.CollectViewModel
 import com.pixelbrew.qredi.customer.CustomerScreen
 import com.pixelbrew.qredi.customer.CustomerViewModel
-import com.pixelbrew.qredi.data.repository.LoanRepository
-import com.pixelbrew.qredi.network.api.ApiService
+import com.pixelbrew.qredi.data.local.repository.LoanRepository
+import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.loan.LoanScreen
+import com.pixelbrew.qredi.loan.LoanViewModel
 import com.pixelbrew.qredi.reprint.ReprintScreen
 import com.pixelbrew.qredi.reprint.ReprintViewModel
 import com.pixelbrew.qredi.settings.SettingsScreen
@@ -57,6 +60,7 @@ sealed class Screen(val route: String) {
     object Statistics : Screen("statistics")
     object Settings : Screen("settings")
     object Customer : Screen("customer")
+    object Loan : Screen("loan")
 
     companion object {
         fun fromRoute(route: String): Screen {
@@ -65,6 +69,7 @@ sealed class Screen(val route: String) {
                 "collect" -> Collect
                 "reprint" -> Reprint
                 "customer" -> Customer
+                "loan" -> Loan
                 "statistics" -> Statistics
                 "settings" -> Settings
                 else -> Admin // default
@@ -93,6 +98,26 @@ fun SideMenu(
         mutableStateOf(Screen.Admin)
     }
 
+    val loanRepository = LoanRepository(context)
+
+
+    val adminViewModel = remember { AdminViewModel(apiService, sessionManager) }
+
+    val collectViewModel =
+        remember { CollectViewModel(loanRepository, apiService, sessionManager) }
+
+    val customerViewModel =
+        remember { CustomerViewModel(loanRepository, apiService, sessionManager) }
+
+    val loanViewModel =
+        remember { LoanViewModel(loanRepository, apiService, sessionManager) }
+
+    val reprintViewModel =
+        remember { ReprintViewModel(loanRepository, apiService, sessionManager) }
+
+    val settingsViewModel = remember { SettingsViewModel(sessionManager) }
+
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -102,7 +127,6 @@ fun SideMenu(
                     scope.launch {
                         drawerState.close()
                     }
-
                 },
                 currentScreen = currentScreen
             )
@@ -122,50 +146,40 @@ fun SideMenu(
             }
         ) { padding ->
             when (currentScreen) {
+
                 Screen.Admin -> AdminScreen(
-                    AdminViewModel(
-                        apiService,
-                        sessionManager
-                    ),
-                    modifier,
-                    context
+                    adminViewModel,
+                    modifier = modifier,
+                    context = context
                 )
 
                 Screen.Collect -> CollectScreen(
-                    CollectViewModel(
-                        LoanRepository(context),
-                        apiService,
-                        sessionManager
-                    ),
+                    collectViewModel,
                     modifier = modifier.padding(top = 25.dp),
                     context,
                 )
 
                 Screen.Customer -> CustomerScreen(
-                    CustomerViewModel(
-                        LoanRepository(context),
-                        apiService,
-                        sessionManager
-                    ),
+                    customerViewModel,
+                    modifier = modifier.padding(top = 25.dp),
+                    context,
+                )
+
+                Screen.Loan -> LoanScreen(
+                    loanViewModel,
                     modifier = modifier.padding(top = 25.dp),
                     context,
                 )
 
                 Screen.Reprint -> ReprintScreen(
-                    ReprintViewModel(
-                        LoanRepository(context),
-                        apiService,
-                        sessionManager
-                    ),
+                    reprintViewModel,
                     modifier = modifier.padding(top = 25.dp),
                     context
                 )
 
                 Screen.Statistics -> StatisticsScreen(modifier = modifier.padding(padding))
                 Screen.Settings -> SettingsScreen(
-                    SettingsViewModel(
-                        sessionManager
-                    ),
+                    settingsViewModel,
                     modifier = modifier.padding(padding),
                     context = context
                 )
@@ -218,11 +232,9 @@ fun DrawerContent(
         Text(
             "Qredi",
             modifier = Modifier
-                .padding(16.dp),
-
-            )
+                .padding(16.dp)
+        )
         HorizontalDivider(modifier = Modifier.padding(bottom = 10.dp))
-
 
         NavigationDrawerItem(
             label = { Text("Administrar") },
@@ -281,6 +293,20 @@ fun DrawerContent(
             modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
         )
 
+        NavigationDrawerItem(
+            label = { Text("Préstamo") },
+            selected = currentScreen is Screen.Loan,
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.coins_solid),
+                    contentDescription = "Préstamo",
+                    modifier = Modifier.size(32.dp)
+                )
+            },
+            onClick = { onItemSelected(Screen.Loan) },
+            modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
+        )
+
 
         NavigationDrawerItem(
             label = { Text("Estadísticas") },
@@ -309,7 +335,5 @@ fun DrawerContent(
             onClick = { onItemSelected(Screen.Settings) },
             modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
         )
-
-
     }
 }

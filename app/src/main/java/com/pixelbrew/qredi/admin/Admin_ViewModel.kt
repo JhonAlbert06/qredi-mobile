@@ -6,8 +6,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pixelbrew.qredi.network.api.ApiService
-import com.pixelbrew.qredi.network.model.LoginRequest
+import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.data.network.model.LoginRequest
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

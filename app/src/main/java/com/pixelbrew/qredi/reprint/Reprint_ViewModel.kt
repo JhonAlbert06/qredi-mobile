@@ -10,15 +10,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pixelbrew.qredi.data.entities.LoanWithNewFees
-import com.pixelbrew.qredi.data.entities.NewFeeEntity
-import com.pixelbrew.qredi.data.repository.LoanRepository
-import com.pixelbrew.qredi.invoice.BluetoothPrinter
-import com.pixelbrew.qredi.invoice.InvoiceGenerator.DayCloseData
-import com.pixelbrew.qredi.network.api.ApiService
-import com.pixelbrew.qredi.network.model.Date
-import com.pixelbrew.qredi.network.model.UploadFee
+import com.pixelbrew.qredi.data.local.entities.LoanWithNewFees
+import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
+import com.pixelbrew.qredi.data.local.repository.LoanRepository
+import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.data.network.model.Date
+import com.pixelbrew.qredi.data.network.model.UploadFee
 import com.pixelbrew.qredi.ui.components.services.SessionManager
+import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
+import com.pixelbrew.qredi.ui.components.services.invoice.InvoiceGenerator.DayCloseData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -215,7 +215,7 @@ class ReprintViewModel(
     fun formatTime(hour: Int, minute: Int, second: Int): String {
         return String.format("%02d:%02d:%02d", hour, minute, second)
     }
-    
+
     private fun showToast(message: String) {
         _toastMessage.postValue(message)
     }

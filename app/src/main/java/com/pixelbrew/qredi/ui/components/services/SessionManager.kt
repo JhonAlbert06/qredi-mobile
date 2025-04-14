@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.google.gson.Gson
 import com.pixelbrew.qredi.R
-import com.pixelbrew.qredi.network.model.UserModel
+import com.pixelbrew.qredi.data.network.model.UserModel
 
 class SessionManager(context: Context) {
     private var prefs: SharedPreferences =

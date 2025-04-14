@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.collect.CollectViewModel
-import com.pixelbrew.qredi.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.RouteModel
 import kotlinx.coroutines.launch
 
 @Composable
