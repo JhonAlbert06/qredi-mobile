@@ -24,7 +24,6 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
@@ -100,24 +99,6 @@ fun SideMenu(
 
     val loanRepository = LoanRepository(context)
 
-
-    val adminViewModel = remember { AdminViewModel(apiService, sessionManager) }
-
-    val collectViewModel =
-        remember { CollectViewModel(loanRepository, apiService, sessionManager) }
-
-    val customerViewModel =
-        remember { CustomerViewModel(loanRepository, apiService, sessionManager) }
-
-    val loanViewModel =
-        remember { LoanViewModel(loanRepository, apiService, sessionManager) }
-
-    val reprintViewModel =
-        remember { ReprintViewModel(loanRepository, apiService, sessionManager) }
-
-    val settingsViewModel = remember { SettingsViewModel(sessionManager) }
-
-
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -148,38 +129,38 @@ fun SideMenu(
             when (currentScreen) {
 
                 Screen.Admin -> AdminScreen(
-                    adminViewModel,
+                    AdminViewModel(apiService, sessionManager),
                     modifier = modifier,
                     context = context
                 )
 
                 Screen.Collect -> CollectScreen(
-                    collectViewModel,
+                    CollectViewModel(loanRepository, apiService, sessionManager),
                     modifier = modifier.padding(top = 25.dp),
                     context,
                 )
 
                 Screen.Customer -> CustomerScreen(
-                    customerViewModel,
+                    CustomerViewModel(loanRepository, apiService, sessionManager),
                     modifier = modifier.padding(top = 25.dp),
                     context,
                 )
 
                 Screen.Loan -> LoanScreen(
-                    loanViewModel,
+                    LoanViewModel(loanRepository, apiService, sessionManager),
                     modifier = modifier.padding(top = 25.dp),
                     context,
                 )
 
                 Screen.Reprint -> ReprintScreen(
-                    reprintViewModel,
+                    ReprintViewModel(loanRepository, apiService, sessionManager),
                     modifier = modifier.padding(top = 25.dp),
                     context
                 )
 
                 Screen.Statistics -> StatisticsScreen(modifier = modifier.padding(padding))
                 Screen.Settings -> SettingsScreen(
-                    settingsViewModel,
+                    SettingsViewModel(sessionManager),
                     modifier = modifier.padding(padding),
                     context = context
                 )
