@@ -1,14 +1,19 @@
 package com.pixelbrew.qredi.admin
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,6 +33,10 @@ import kotlinx.coroutines.delay
 fun AdminScreen(viewModel: AdminViewModel, modifier: Modifier = Modifier, context: MainActivity) {
     Box(
         modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.background,
+                shape = MaterialTheme.shapes.large
+            )
             .fillMaxSize()
             .padding(16.dp),
         contentAlignment = Alignment.Center
@@ -67,7 +76,10 @@ fun Login(viewModel: AdminViewModel, modifier: Modifier = Modifier) {
     } else {
 
         Column(
-            modifier = modifier.fillMaxWidth(),
+            modifier = modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()) // <- Permite scroll si se necesita
+                .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             HeaderImage(modifier)

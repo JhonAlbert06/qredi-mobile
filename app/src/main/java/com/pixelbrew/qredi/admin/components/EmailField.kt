@@ -1,5 +1,6 @@
 package com.pixelbrew.qredi.admin.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -17,7 +18,12 @@ fun EmailField(email: String, onValueChange: (String) -> Unit) {
     TextField(
         value = email,
         onValueChange = { onValueChange(it) },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.primary,
+                shape = MaterialTheme.shapes.large
+            ),
         placeholder = {
             Text(
                 text = "Usuario",
@@ -31,9 +37,10 @@ fun EmailField(email: String, onValueChange: (String) -> Unit) {
         singleLine = true,
         maxLines = 1,
         colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = Color.Transparent,
+            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
             unfocusedIndicatorColor = Color.Transparent,
-        )
+
+            )
     )
 }
 

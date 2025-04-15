@@ -3,6 +3,9 @@ package com.pixelbrew.qredi.ui.components.sidemenu
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -16,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -31,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
@@ -174,7 +179,10 @@ fun SideMenu(
 fun TopBar(onOpenDrawer: () -> Unit) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f),
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface
         ),
         navigationIcon = {
             Icon(
@@ -187,7 +195,9 @@ fun TopBar(onOpenDrawer: () -> Unit) {
                     }
             )
         },
-        title = { Text("Qredi") },
+        title = {
+            Text("Qredi")
+        },
         actions = {
             Icon(
                 imageVector = Icons.Default.AccountCircle,
@@ -208,113 +218,50 @@ fun DrawerContent(
     onItemSelected: (Screen) -> Unit,
     currentScreen: Screen
 ) {
+    val drawerItems = listOf(
+        Triple("Administrar", R.drawable.gear_solid, Screen.Admin),
+        Triple("Cobrar", R.drawable.wallet_solid, Screen.Collect),
+        Triple("Reimprimir", R.drawable.print_solid, Screen.Reprint),
+        Triple("Cliente", R.drawable.user_solid, Screen.Customer),
+        Triple("Préstamo", R.drawable.coins_solid, Screen.Loan),
+        Triple("Estadísticas", R.drawable.chart_simple_solid, Screen.Statistics),
+        Triple("Configuración", R.drawable.gears_solid, Screen.Settings),
+    )
 
-    ModalDrawerSheet {
+    ModalDrawerSheet(
+        drawerShape = MaterialTheme.shapes.large,
+        drawerContentColor = MaterialTheme.colorScheme.surface,
+        modifier = Modifier.padding(0.dp),
+        windowInsets = WindowInsets(0.dp)
+            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+    ) {
         Text(
             "Qredi",
             modifier = Modifier
-                .padding(16.dp)
+                .padding(16.dp),
+            fontWeight = FontWeight.Bold,
+            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.8f)
         )
         HorizontalDivider(modifier = Modifier.padding(bottom = 10.dp))
 
-        NavigationDrawerItem(
-            label = { Text("Administrar") },
-            selected = currentScreen is Screen.Admin,
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.gear_solid),
-                    contentDescription = "Administrar",
-                    modifier = Modifier
-                        .size(32.dp)
+        drawerItems.forEach { (label, iconRes, screen) ->
+            NavigationDrawerItem(
+                label = { Text(label) },
+                selected = currentScreen::class == screen::class,
+                icon = {
+                    Icon(
+                        painter = painterResource(id = iconRes),
+                        contentDescription = label,
+                        modifier = Modifier.size(32.dp)
+                    )
+                },
+                onClick = { onItemSelected(screen) },
+                modifier = Modifier.padding(horizontal = 5.dp, vertical = 5.dp),
+                colors = NavigationDrawerItemDefaults.colors(
+                    selectedContainerColor = MaterialTheme.colorScheme.surface
                 )
-            },
-            onClick = { onItemSelected(Screen.Admin) },
-            modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
-        )
-
-        NavigationDrawerItem(
-            label = { Text("Cobrar") },
-            selected = currentScreen is Screen.Collect,
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.wallet_solid),
-                    contentDescription = "Cobrar",
-                    modifier = Modifier.size(32.dp)
-                )
-            },
-            onClick = { onItemSelected(Screen.Collect) },
-            modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
-        )
-
-        NavigationDrawerItem(
-            label = { Text("Reimprimir") },
-            selected = currentScreen is Screen.Reprint,
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.print_solid),
-                    contentDescription = "Reimprimir",
-                    modifier = Modifier.size(32.dp)
-                )
-            },
-            onClick = { onItemSelected(Screen.Reprint) },
-            modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
-        )
-
-        NavigationDrawerItem(
-            label = { Text("Cliente") },
-            selected = currentScreen is Screen.Customer,
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.user_solid),
-                    contentDescription = "Cliente",
-                    modifier = Modifier.size(32.dp)
-                )
-            },
-            onClick = { onItemSelected(Screen.Customer) },
-            modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
-        )
-
-        NavigationDrawerItem(
-            label = { Text("Préstamo") },
-            selected = currentScreen is Screen.Loan,
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.coins_solid),
-                    contentDescription = "Préstamo",
-                    modifier = Modifier.size(32.dp)
-                )
-            },
-            onClick = { onItemSelected(Screen.Loan) },
-            modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
-        )
-
-
-        NavigationDrawerItem(
-            label = { Text("Estadísticas") },
-            selected = currentScreen is Screen.Statistics,
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.chart_simple_solid),
-                    contentDescription = "Estadísticas",
-                    modifier = Modifier.size(32.dp)
-                )
-            },
-            onClick = { onItemSelected(Screen.Statistics) },
-            modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
-        )
-
-        NavigationDrawerItem(
-            label = { Text("Configuración") },
-            selected = currentScreen is Screen.Settings,
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.gears_solid),
-                    contentDescription = "Configuración",
-                    modifier = Modifier.size(32.dp)
-                )
-            },
-            onClick = { onItemSelected(Screen.Settings) },
-            modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
-        )
+            )
+        }
     }
 }
