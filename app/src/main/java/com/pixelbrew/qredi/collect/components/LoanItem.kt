@@ -11,11 +11,11 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.collect.CollectViewModel
-import com.pixelbrew.qredi.data.network.model.DownloadModel
+import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 
 @Composable
 fun LoanItem(
-    loan: DownloadModel,
+    loan: LoanDownloadModel,
     viewModel: CollectViewModel
 ) {
 

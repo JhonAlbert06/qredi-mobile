@@ -100,13 +100,20 @@ class ReprintViewModel(
                     )
                 } ?: emptyList()
 
-                if (uploadFeeModel.isNotEmpty()) {
-                    val uploadUrl = "$baseUrl/fee/uploadFees"
-                    apiService.uploadFees(uploadUrl, uploadFeeModel)
-                    resetDatabase()  // Se llama solo si la subida es exitosa
-                }
+                val uploadUrl = "$baseUrl/fee/uploadFees"
 
-                showToast("Recibos subidos correctamente")
+                if (uploadFeeModel.isNotEmpty()) {
+                    val response = apiService.uploadFees(uploadUrl, uploadFeeModel)
+
+                    if (response.isSuccessful) {
+                        resetDatabase()
+                        showToast("Recibos subidos correctamente")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        Log.d("API_RESPONSE", "Error: $errorBody")
+                        showToast("Error: $errorBody")
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("ReprintViewModel", "Error uploading fees: ${e.message}", e)
                 showToast("Error al subir los recibos: ${e.message}")

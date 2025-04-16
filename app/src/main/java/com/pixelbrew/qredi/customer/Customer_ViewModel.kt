@@ -14,6 +14,11 @@ import com.pixelbrew.qredi.ui.components.services.SessionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+data class Field(
+    val name: String,
+    val value: String
+)
+
 class CustomerViewModel(
     private val loanRepository: LoanRepository,
     private val apiService: ApiService,
@@ -39,16 +44,42 @@ class CustomerViewModel(
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> get() = _isLoading
 
+    private val _fieldSelected = MutableLiveData<Field>()
+    val fieldSelected: LiveData<Field> get() = _fieldSelected
+
+    val fields = listOf(
+        Field("Nombre", "names"),
+        Field("Apellido", "lastNames"),
+        Field("Cedula", "cedula"),
+        Field("Celular", "phone")
+    )
+
     init {
-        _isLoading.value = true
+
+        _isLoading.postValue(true)
         fetchCustomers()
     }
 
-    private fun fetchCustomers(query: String = "", field: String = "names") {
+    fun onFieldSelected(field: Field) {
+        _fieldSelected.postValue(field)
+
+    }
+
+    private fun fetchCustomers(query: String = "", field: String = "") {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val url = "$baseUrl/customer?query=$query&field=$field"
-                val customers = apiService.getCustomers(url)
+                val response = apiService.getCustomers(url)
+                var customers = emptyList<CustomerModelRes>()
+
+                if (response.isSuccessful) {
+                    customers = response.body() ?: emptyList()
+                    Log.d("CustomerViewModel", "Fetched customers: $customers")
+                } else {
+                    Log.e("CustomerViewModel", "Error fetching customers: ${response.errorBody()}")
+                    showToast("Error fetching customers: ${response.errorBody()}")
+                }
+
                 _customerList.postValue(customers)
                 _isLoading.postValue(false)
             } catch (e: Exception) {
@@ -88,7 +119,7 @@ class CustomerViewModel(
             phone = phone,
             reference = reference
         )
-        _newCustomer.value = customer
+        _newCustomer.postValue(customer)
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -97,9 +128,18 @@ class CustomerViewModel(
                     url,
                     customer
                 )
-
-                Log.d("CustomerViewModel", "Creating customer: ${res.firstName} ${res.lastName}")
-                hideCreationDialog()
+                val createdCustomer = res.body()!!
+                if (res.isSuccessful) {
+                    Log.d(
+                        "CustomerViewModel",
+                        "Creating customer: ${createdCustomer.firstName} ${createdCustomer.lastName}"
+                    )
+                    hideCreationDialog()
+                    fetchCustomers()
+                } else {
+                    Log.e("CustomerViewModel", "Error creating customer: ${res.errorBody()}")
+                    showToast("Error creating customer: ${res.errorBody()}")
+                }
             } catch (e: Exception) {
                 Log.e("CustomerViewModel", "Error creating customer: ${e.message}")
                 showToast("Error creating customer: ${e.message}")

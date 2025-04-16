@@ -1,6 +1,6 @@
 package com.pixelbrew.qredi.data.network.model
 
-class DownloadModel(
+class LoanDownloadModel(
     var id: String = "",
     var amount: Double = 0.0,
     var interest: Double = 0.0,

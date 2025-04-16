@@ -2,7 +2,7 @@ package com.pixelbrew.qredi.data.network.api
 
 import com.pixelbrew.qredi.data.network.model.CustomerModel
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
-import com.pixelbrew.qredi.data.network.model.DownloadModel
+import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.data.network.model.LoginRequest
 import com.pixelbrew.qredi.data.network.model.RouteModel
 import com.pixelbrew.qredi.data.network.model.TokenModel
@@ -21,22 +21,22 @@ interface ApiService {
     suspend fun login(
         @Url url: String,
         @Body loginRequest: LoginRequest
-    ): TokenModel
+    ): Response<TokenModel>
 
     @GET
     suspend fun loadUser(
         @Url url: String
-    ): UserModel
+    ): Response<UserModel>
 
     @GET
     suspend fun getRoutes(
         @Url url: String
-    ): List<RouteModel>
+    ): Response<List<RouteModel>>
 
     @GET
     suspend fun downloadRoute(
         @Url url: String
-    ): List<DownloadModel>
+    ): Response<List<LoanDownloadModel>>
 
     @PUT
     suspend fun uploadFees(
@@ -48,10 +48,10 @@ interface ApiService {
     suspend fun createCustomer(
         @Url url: String,
         @Body customer: CustomerModel
-    ): CustomerModelRes
+    ): Response<CustomerModelRes>
 
     @GET
     suspend fun getCustomers(
         @Url url: String
-    ): List<CustomerModelRes>
+    ): Response<List<CustomerModelRes>>
 }

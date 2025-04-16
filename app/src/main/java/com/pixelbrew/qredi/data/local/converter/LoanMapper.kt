@@ -4,13 +4,13 @@ import com.pixelbrew.qredi.data.local.entities.FeeEntity
 import com.pixelbrew.qredi.data.local.entities.LoanEntity
 import com.pixelbrew.qredi.data.network.model.Customer
 import com.pixelbrew.qredi.data.network.model.Date
-import com.pixelbrew.qredi.data.network.model.DownloadModel
 import com.pixelbrew.qredi.data.network.model.Fee
+import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 
 
 object LoanMapper {
 
-    fun loanModelToEntity(model: DownloadModel): LoanEntity {
+    fun loanModelToEntity(model: LoanDownloadModel): LoanEntity {
         return LoanEntity(
             id = model.id,
             amount = model.amount,
@@ -29,8 +29,8 @@ object LoanMapper {
         )
     }
 
-    fun loanEntityToModel(entity: LoanEntity, fees: List<FeeEntity>): DownloadModel {
-        return DownloadModel(
+    fun loanEntityToModel(entity: LoanEntity, fees: List<FeeEntity>): LoanDownloadModel {
+        return LoanDownloadModel(
             id = entity.id,
             amount = entity.amount,
             interest = entity.interest,

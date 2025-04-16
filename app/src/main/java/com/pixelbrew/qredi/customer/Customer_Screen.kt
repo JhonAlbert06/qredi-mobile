@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.customer.components.CreateCustomerDialog
+import com.pixelbrew.qredi.customer.components.FieldDropdown
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 import kotlinx.coroutines.delay
 
@@ -73,11 +74,25 @@ fun Customer(
 
     val customerList by viewModel.customerList.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
+    val fieldSelected by viewModel.fieldSelected.observeAsState(initial = Field("NONE", "NONE"))
 
     Column {
         HeaderCustomer(
             viewModel = viewModel,
             modifier = modifier
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Filtro de busqueda
+
+        // query: ""
+        FieldDropdown(
+            items = viewModel.fields,
+            selectedField = fieldSelected,
+            onFieldSelected = { field ->
+                viewModel.onFieldSelected(field)
+            },
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -180,12 +195,12 @@ fun CustomerItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.location_dot_solid),
-                    contentDescription = "Direccion",
+                    imageVector = ImageVector.vectorResource(id = R.drawable.comment_solid),
+                    contentDescription = "Referencia",
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = customer.address,
+                    text = customer.reference,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(start = 8.dp)
                 )
@@ -198,12 +213,12 @@ fun CustomerItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.comment_solid),
-                    contentDescription = "Referencia",
+                    imageVector = ImageVector.vectorResource(id = R.drawable.location_dot_solid),
+                    contentDescription = "Direccion",
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = customer.reference,
+                    text = customer.address,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(start = 8.dp)
                 )

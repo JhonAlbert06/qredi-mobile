@@ -1,7 +1,6 @@
 package com.pixelbrew.qredi.collect
 
 import android.Manifest
-import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -15,8 +14,8 @@ import com.pixelbrew.qredi.data.local.entities.FeeEntity
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.local.repository.LoanRepository
 import com.pixelbrew.qredi.data.network.api.ApiService
-import com.pixelbrew.qredi.data.network.model.DownloadModel
 import com.pixelbrew.qredi.data.network.model.Fee
+import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.data.network.model.RouteModel
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
@@ -46,11 +45,11 @@ class CollectViewModel(
     private val _routes = MutableLiveData<List<RouteModel>>(emptyList())
     val routes: LiveData<List<RouteModel>> get() = _routes
 
-    private val _downloadedLoans = MutableLiveData<List<DownloadModel>>()
-    val downloadedLoans: LiveData<List<DownloadModel>> get() = _downloadedLoans
+    private val _downloadedLoans = MutableLiveData<List<LoanDownloadModel>>()
+    val downloadedLoans: LiveData<List<LoanDownloadModel>> get() = _downloadedLoans
 
-    private val _downloadLoanSelected = MutableLiveData<DownloadModel>()
-    val downloadLoanSelected: LiveData<DownloadModel> = _downloadLoanSelected
+    private val _downloadLoanSelected = MutableLiveData<LoanDownloadModel>()
+    val downloadLoanSelected: LiveData<LoanDownloadModel> = _downloadLoanSelected
 
     private val _selectedFee = MutableLiveData<Fee>()
     val selectedFee: LiveData<Fee> get() = _selectedFee
@@ -86,7 +85,7 @@ class CollectViewModel(
 
     }
 
-    fun setDownloadRouteSelected(downloadRoute: DownloadModel) {
+    fun setDownloadRouteSelected(downloadRoute: LoanDownloadModel) {
         _downloadLoanSelected.postValue(downloadRoute)
     }
 
@@ -143,12 +142,21 @@ class CollectViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val routesUrl = "$baseUrl/routes"
-                val response = apiService.getRoutes(routesUrl)
 
-                withContext(Dispatchers.Main) {
-                    _routes.value = response
-                    showToast("Routes loaded successfully")
+                val response = withContext(Dispatchers.Main) {
+                    apiService.getRoutes(routesUrl)
                 }
+
+                if (response.isSuccessful) {
+                    val routes = response.body() ?: emptyList()
+                    Log.d("API_RESPONSE", "Rutas: $routes")
+                    _routes.postValue(routes)
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.d("API_RESPONSE", "Error: $errorBody")
+                    showToast("Error: $errorBody")
+                }
+
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
                 showToast(e.message.toString())
@@ -161,7 +169,7 @@ class CollectViewModel(
         }
     }
 
-    fun saveLoansOnDatabase(loan: DownloadModel) {
+    fun saveLoansOnDatabase(loan: LoanDownloadModel) {
         viewModelScope.launch(Dispatchers.IO) { // ← Mover a IO
             try {
                 val newLoan = LoanMapper.loanModelToEntity(loan)
@@ -231,25 +239,31 @@ class CollectViewModel(
     }
 
     fun downloadRoute(id: String) {
-        _isLoading.value = true
+        _isLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val downloadUrl = "$baseUrl/route/download/$id"
                 val response = apiService.downloadRoute(downloadUrl)
 
-                response.forEach { saveLoansOnDatabase(it) }
+                if (response.isSuccessful) {
+                    val loans = response.body() ?: emptyList()
+                    loans.forEach { saveLoansOnDatabase(it) }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.d("API_RESPONSE", "Error: $errorBody")
+                    showToast("Error: $errorBody")
+                }
 
                 delay(1000)
                 getLoansFromDatabase()
 
                 withContext(Dispatchers.Main) {
-                    showToast("Ruta descargada correctamente")
-                    _isLoading.value = false
+                    _isLoading.postValue(false)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     showToast("Error al descargar ruta: ${e.message}")
-                    _isLoading.value = false
+                    _isLoading.postValue(false)
                 }
             }
         }
@@ -278,7 +292,7 @@ class CollectViewModel(
 
     @RequiresApi(Build.VERSION_CODES.O)
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun printCollect(context: Context) {
+    fun printCollect() {
         val loan = downloadLoanSelected.value ?: run {
             showToast("No se ha seleccionado ningún préstamo")
             return

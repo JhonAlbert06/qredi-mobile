@@ -43,9 +43,10 @@ import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.collect.components.LoanDetailDialog
 import com.pixelbrew.qredi.collect.components.LoanItem
 import com.pixelbrew.qredi.collect.components.RouteSelectionDialog
-import com.pixelbrew.qredi.data.network.model.DownloadModel
+import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import kotlinx.coroutines.delay
 
+@RequiresApi(Build.VERSION_CODES.O)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun CollectScreen(
@@ -73,6 +74,7 @@ fun CollectScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun Collect(
@@ -156,14 +158,14 @@ fun HeaderCollect(
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun LoansList(
-    loans: List<DownloadModel>,
+    loans: List<LoanDownloadModel>,
     viewModel: CollectViewModel,
     context: MainActivity
 ) {
     var showDialogLoan by remember { mutableStateOf(false) }
     val loanSelectedState =
-        viewModel.downloadLoanSelected.observeAsState(initial = DownloadModel())
-    val loanSelected: DownloadModel = loanSelectedState.value
+        viewModel.downloadLoanSelected.observeAsState(initial = LoanDownloadModel())
+    val loanSelected: LoanDownloadModel = loanSelectedState.value
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
 
 
@@ -197,8 +199,7 @@ fun LoansList(
         showDialog = showDialogLoan,
         onDismiss = { showDialogLoan = false },
         loan = loanSelected,
-        viewModel = viewModel,
-        context = context
+        viewModel = viewModel
     )
 
 }

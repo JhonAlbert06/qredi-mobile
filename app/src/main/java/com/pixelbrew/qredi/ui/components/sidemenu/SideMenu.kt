@@ -247,7 +247,19 @@ fun DrawerContent(
 
         drawerItems.forEach { (label, iconRes, screen) ->
             NavigationDrawerItem(
-                label = { Text(label) },
+                label = {
+                    if (currentScreen::class == screen::class) {
+                        Text(
+                            label,
+                            color = MaterialTheme.colorScheme.inverseOnSurface,
+                        )
+                    } else {
+                        Text(
+                            label,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                    }
+                },
                 selected = currentScreen::class == screen::class,
                 icon = {
                     Icon(
@@ -259,7 +271,7 @@ fun DrawerContent(
                 onClick = { onItemSelected(screen) },
                 modifier = Modifier.padding(horizontal = 5.dp, vertical = 5.dp),
                 colors = NavigationDrawerItemDefaults.colors(
-                    selectedContainerColor = MaterialTheme.colorScheme.surface
+                    selectedContainerColor = MaterialTheme.colorScheme.onSurface,
                 )
             )
         }

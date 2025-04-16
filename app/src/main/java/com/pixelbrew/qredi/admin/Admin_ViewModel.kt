@@ -71,17 +71,24 @@ class AdminViewModel(
                     apiService.login(loginUrl, loginRequest)
                 }
 
-                sessionManager.saveAuthToken(response.token)
-                Log.d("API_RESPONSE", response.token)
+                if (response.isSuccessful) {
+                    val token = response.body()?.token.orEmpty()
 
-                loadUser()
+                    sessionManager.saveAuthToken(token)
+                    Log.d("API_RESPONSE", token)
 
-                _isLoading.postValue(false)
-                showToast("Login successful")
+                    loadUser() // Aquí se asume que esta función carga al usuario con el token
+                    showToast("Login successful")
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.d("API_RESPONSE", "Error: $errorBody")
+                    showToast("Error: $errorBody")
+                }
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+                showToast("Error: ${e.message}")
+            } finally {
                 _isLoading.postValue(false)
-                showToast(e.message.toString())
             }
         }
     }
@@ -94,8 +101,16 @@ class AdminViewModel(
                 apiService.loadUser(userUrl)
             }
 
-            sessionManager.saveUser(response)
-            Log.d("API_RESPONSE", response.toString())
+            if (response.isSuccessful) {
+                val user = response.body()!!
+                Log.d("API_RESPONSE", "User: $user")
+                sessionManager.saveUser(user)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.d("API_RESPONSE", "Error: $errorBody")
+                showToast("Error: $errorBody")
+            }
+            
         } catch (e: Exception) {
             Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
             showToast(e.message.toString())

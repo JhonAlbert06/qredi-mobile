@@ -14,9 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.collect.CollectViewModel
-import com.pixelbrew.qredi.data.network.model.DownloadModel
+import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -24,9 +23,8 @@ import com.pixelbrew.qredi.data.network.model.DownloadModel
 fun LoanDetailDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
-    loan: DownloadModel,
+    loan: LoanDownloadModel,
     viewModel: CollectViewModel,
-    context: MainActivity,
     modifier: Modifier = Modifier
 ) {
     if (showDialog) {
@@ -46,8 +44,7 @@ fun LoanDetailDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     FeeItems(
                         viewModel = viewModel,
-                        loan = loan,
-                        context = context
+                        loan = loan
                     )
                 }
             },

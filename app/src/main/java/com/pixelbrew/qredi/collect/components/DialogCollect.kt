@@ -9,7 +9,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.collect.CollectViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -19,7 +18,6 @@ fun DialogCollect(
     showDialog: Boolean,
     onDismiss: () -> Unit,
     viewModel: CollectViewModel,
-    context: MainActivity,
     amount: String,
 ) {
 
@@ -41,7 +39,7 @@ fun DialogCollect(
                     onClick = {
                         viewModel.collectFee()
                         onDismiss()
-                        viewModel.printCollect(context)
+                        viewModel.printCollect()
                     },
                     enabled = !amount.isEmpty() && amount.toDouble() > 0 && amount.toDouble() <= cuote,
                 ) {

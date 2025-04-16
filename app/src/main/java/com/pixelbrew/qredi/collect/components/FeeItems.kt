@@ -27,18 +27,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.collect.CollectViewModel
-import com.pixelbrew.qredi.data.network.model.DownloadModel
+import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun FeeItems(
     viewModel: CollectViewModel,
-    loan: DownloadModel,
-    context: MainActivity,
+    loan: LoanDownloadModel
 ) {
 
     val amount: String by viewModel.amount.observeAsState("")
@@ -125,7 +123,6 @@ fun FeeItems(
         showDialog = showDialogCollect,
         onDismiss = { showDialogCollect = false },
         viewModel = viewModel,
-        context = context,
         amount
     )
 
