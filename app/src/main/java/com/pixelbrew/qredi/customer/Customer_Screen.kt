@@ -48,7 +48,7 @@ fun CustomerScreen(
         modifier = modifier
             .fillMaxSize()
     ) {
-        Customer(viewModel, modifier, context)
+        Customer(viewModel, modifier)
     }
 
     val viewModel: CustomerViewModel = viewModel
@@ -67,8 +67,7 @@ fun CustomerScreen(
 @Composable
 fun Customer(
     viewModel: CustomerViewModel,
-    modifier: Modifier = Modifier,
-    context: MainActivity,
+    modifier: Modifier = Modifier
 ) {
     val customerList by viewModel.customerList.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
