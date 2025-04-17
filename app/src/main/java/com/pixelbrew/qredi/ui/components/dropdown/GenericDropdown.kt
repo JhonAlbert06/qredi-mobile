@@ -1,4 +1,4 @@
-package com.pixelbrew.qredi.customer.components
+package com.pixelbrew.qredi.ui.components.dropdown
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
@@ -14,15 +14,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.pixelbrew.qredi.customer.Field
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FieldDropdown(
-    items: List<Field>,
-    selectedField: Field,
-    onFieldSelected: (Field) -> Unit,
-    modifier: Modifier
+fun <T> GenericDropdown(
+    items: List<T>,
+    selectedItem: T,
+    onItemSelected: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    itemLabel: (T) -> String = { it.toString() },
+    label: String = "Seleccionar"
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -32,32 +33,32 @@ fun FieldDropdown(
         modifier = modifier
     ) {
         OutlinedTextField(
-            value = selectedField.name,
+            value = itemLabel(selectedItem),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Campo") },
+            label = { Text(label) },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth()
-
         )
+
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            items.forEach { field ->
+            items.forEach { item ->
                 DropdownMenuItem(
                     text = {
                         Text(
-                            field.name,
-                            style = MaterialTheme.typography.bodySmall,
+                            itemLabel(item),
+                            style = MaterialTheme.typography.bodySmall
                         )
                     },
                     onClick = {
-                        onFieldSelected(field)
+                        onItemSelected(item)
                         expanded = false
                     }
                 )

@@ -1,6 +1,7 @@
 package com.pixelbrew.qredi.customer
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.customer.components.CreateCustomerDialog
-import com.pixelbrew.qredi.customer.components.FieldDropdown
+import com.pixelbrew.qredi.customer.components.FilterCustomerDialog
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 import kotlinx.coroutines.delay
 
@@ -46,10 +47,8 @@ fun CustomerScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
     ) {
         Customer(viewModel, modifier, context)
-        Spacer(modifier = Modifier.height(8.dp))
     }
 
     val viewModel: CustomerViewModel = viewModel
@@ -71,30 +70,18 @@ fun Customer(
     modifier: Modifier = Modifier,
     context: MainActivity,
 ) {
-
     val customerList by viewModel.customerList.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
+    val showFilterDialog by viewModel.showFilterCustomerDialog.observeAsState(initial = false)
     val fieldSelected by viewModel.fieldSelected.observeAsState(initial = Field("NONE", "NONE"))
+    val query by viewModel.query.observeAsState(initial = "")
 
-    Column {
-        HeaderCustomer(
-            viewModel = viewModel,
-            modifier = modifier
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Filtro de busqueda
-
-        // query: ""
-        FieldDropdown(
-            items = viewModel.fields,
-            selectedField = fieldSelected,
-            onFieldSelected = { field ->
-                viewModel.onFieldSelected(field)
-            },
-        )
-
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        HeaderCustomer(viewModel = viewModel)
         Spacer(modifier = Modifier.height(8.dp))
 
         if (isLoading) {
@@ -104,13 +91,12 @@ fun Customer(
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(Modifier.align(Alignment.Center))
+                CircularProgressIndicator()
             }
         } else {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(customerList.size) { index ->
@@ -122,8 +108,19 @@ fun Customer(
                 }
             }
         }
-    }
 
+        if (showFilterDialog) {
+            FilterCustomerDialog(
+                onDismiss = { viewModel.showFilterCustomerDialog(false) },
+                onApplyFilters = { field, query ->
+                    viewModel.onSearchButtonClicked(field, query)
+                },
+                fields = viewModel.fields,
+                selectedField = fieldSelected,
+                query = query
+            )
+        }
+    }
 }
 
 @Composable
@@ -263,7 +260,7 @@ fun HeaderCustomer(
                 disabledContentColor = Color(0xFF0C0C0C)
             ),
         ) {
-            Text("Crear Cliente")
+            Text("Nuevo")
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.user_plus_solid),
                 contentDescription = "Crear Cliente",
@@ -272,6 +269,28 @@ fun HeaderCustomer(
                     .size(20.dp)
             )
         }
+
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.filter_solid),
+            contentDescription = "Filtrar",
+            modifier = Modifier
+                .size(40.dp)
+                .clickable { viewModel.showFilterCustomerDialog(true) }
+                .padding(8.dp),
+            tint = Color(0xFF00BCD4)
+        )
+
+        // refresh icon
+
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.arrows_rotate_solid),
+            contentDescription = "Actualizar",
+            modifier = Modifier
+                .size(40.dp)
+                .clickable { viewModel.refreshCustomers() }
+                .padding(8.dp),
+            tint = Color(0xFF00BCD4)
+        )
 
     }
 

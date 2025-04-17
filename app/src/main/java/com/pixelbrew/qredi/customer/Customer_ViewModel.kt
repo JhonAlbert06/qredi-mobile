@@ -44,8 +44,14 @@ class CustomerViewModel(
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> get() = _isLoading
 
+    private val _showFilterCustomerDialog = MutableLiveData<Boolean>(false)
+    val showFilterCustomerDialog: LiveData<Boolean> get() = _showFilterCustomerDialog
+
     private val _fieldSelected = MutableLiveData<Field>()
     val fieldSelected: LiveData<Field> get() = _fieldSelected
+
+    private val _query = MutableLiveData<String>()
+    val query: LiveData<String> get() = _query
 
     val fields = listOf(
         Field("Nombre", "names"),
@@ -55,14 +61,24 @@ class CustomerViewModel(
     )
 
     init {
-
         _isLoading.postValue(true)
         fetchCustomers()
     }
 
-    fun onFieldSelected(field: Field) {
-        _fieldSelected.postValue(field)
+    fun refreshCustomers() {
+        _isLoading.postValue(true)
+        fetchCustomers()
+    }
 
+    fun showFilterCustomerDialog(value: Boolean) {
+        _showFilterCustomerDialog.postValue(value)
+    }
+
+    fun onSearchButtonClicked(field: Field, query: String) {
+        _isLoading.postValue(true)
+
+        Log.d("CustomerViewModel", "Search button clicked. Query: $query, Field: $field")
+        fetchCustomers(query, field.value)
     }
 
     private fun fetchCustomers(query: String = "", field: String = "") {

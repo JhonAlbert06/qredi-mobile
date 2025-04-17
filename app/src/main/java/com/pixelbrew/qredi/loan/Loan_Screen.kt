@@ -3,6 +3,7 @@ package com.pixelbrew.qredi.loan
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,10 +65,13 @@ fun Loan(
 ) {
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
 
-    if (isLoading) {
-        CircularProgressIndicator()
-    } else {
-        HeaderLoan(viewModel, modifier)
+    Column {
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            HeaderLoan(viewModel, modifier)
+            Spacer(modifier = Modifier.height(1.dp))
+        }
     }
 }
 
@@ -76,6 +80,7 @@ fun HeaderLoan(
     viewModel: LoanViewModel,
     modifier: Modifier = Modifier
 ) {
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -113,3 +118,4 @@ fun HeaderLoan(
     }
 
 }
+

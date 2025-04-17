@@ -265,7 +265,12 @@ fun DrawerContent(
                     Icon(
                         painter = painterResource(id = iconRes),
                         contentDescription = label,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(32.dp),
+                        tint = if (currentScreen::class == screen::class) {
+                            MaterialTheme.colorScheme.inverseOnSurface
+                        } else {
+                            MaterialTheme.colorScheme.onBackground
+                        }
                     )
                 },
                 onClick = { onItemSelected(screen) },
