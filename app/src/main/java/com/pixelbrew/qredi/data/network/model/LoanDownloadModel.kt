@@ -5,30 +5,30 @@ class LoanDownloadModel(
     var amount: Double = 0.0,
     var interest: Double = 0.0,
     var feesQuantity: Int = 0,
-    var fees: List<Fee> = emptyList(),
-    var date: Date = Date(0, 0, 0, 0, 0, 0, ""),
-    var customer: Customer = Customer("", "", ""),
+    var feeDownloadModels: List<FeeDownloadModel> = emptyList(),
+    var dateModel: DateModel = DateModel(0, 0, 0, 0, 0, 0, ""),
+    var customerDownLoadModel: CustomerDownLoadModel = CustomerDownLoadModel("", "", ""),
 )
 
-class Customer(
+class CustomerDownLoadModel(
     var id: String = "",
     var name: String = "",
     var cedula: String = "",
 )
 
-class Date(
+class DateModel(
     var day: Int = 0,
     var month: Int = 0,
     var year: Int = 0,
     var hour: Int = 0,
     var minute: Int = 0,
     var second: Int = 0,
-    var timezone: String = "",
+    var timezone: String = ""
 )
 
-class Fee(
+class FeeDownloadModel(
     var id: String = "",
     var paymentAmount: Double = 0.0,
     var number: Int = 0,
-    var date: Date = Date(0, 0, 0, 0, 0, 0, "")
+    var dateModel: DateModel = DateModel(0, 0, 0, 0, 0, 0, "")
 )

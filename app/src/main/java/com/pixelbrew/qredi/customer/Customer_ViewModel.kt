@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pixelbrew.qredi.data.local.repository.LoanRepository
 import com.pixelbrew.qredi.data.network.api.ApiService
 import com.pixelbrew.qredi.data.network.model.CustomerModel
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
@@ -20,7 +19,6 @@ data class Field(
 )
 
 class CustomerViewModel(
-    private val loanRepository: LoanRepository,
     private val apiService: ApiService,
     private val sessionManager: SessionManager,
 ) : ViewModel() {
@@ -145,6 +143,7 @@ class CustomerViewModel(
                     customer
                 )
                 val createdCustomer = res.body()!!
+
                 if (res.isSuccessful) {
                     Log.d(
                         "CustomerViewModel",

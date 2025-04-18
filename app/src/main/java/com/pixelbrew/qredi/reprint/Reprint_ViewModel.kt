@@ -14,7 +14,7 @@ import com.pixelbrew.qredi.data.local.entities.LoanWithNewFees
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.local.repository.LoanRepository
 import com.pixelbrew.qredi.data.network.api.ApiService
-import com.pixelbrew.qredi.data.network.model.Date
+import com.pixelbrew.qredi.data.network.model.DateModel
 import com.pixelbrew.qredi.data.network.model.UploadFee
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
@@ -147,7 +147,7 @@ class ReprintViewModel(
     fun printDayCloset() {
         val payments = newFees.value ?: emptyList()
         val date = LocalDateTime.now()
-        var dateAux = Date(
+        var dateModelAux = DateModel(
             day = date.dayOfMonth,
             month = date.monthValue,
             year = date.year,
@@ -157,7 +157,7 @@ class ReprintViewModel(
         )
 
         val cierre = DayCloseData(
-            date = "${dateAux.day}/${dateAux.month}/${dateAux.year}  ${dateAux.hour}:${dateAux.minute}",
+            date = "${dateModelAux.day}/${dateModelAux.month}/${dateModelAux.year}  ${dateModelAux.hour}:${dateModelAux.minute}",
             cashierName = user?.firstName + " " + user?.lastName,
             initialBalance = 0.0,
             totalLoans = 0.0,

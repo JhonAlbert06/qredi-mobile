@@ -22,13 +22,13 @@ fun LoanItem(
     Column(modifier = Modifier.padding(16.dp)) {
         LoanLabel(
             icon = ImageVector.vectorResource(id = R.drawable.user_solid),
-            text = loan.customer.name
+            text = loan.customerDownLoadModel.name
         )
         Spacer(modifier = Modifier.height(8.dp))
 
         LoanLabel(
             icon = ImageVector.vectorResource(id = R.drawable.address_card_solid),
-            text = viewModel.formatCedula(loan.customer.cedula)
+            text = viewModel.formatCedula(loan.customerDownLoadModel.cedula)
         )
         Spacer(modifier = Modifier.height(8.dp))
 

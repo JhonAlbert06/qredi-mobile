@@ -2,9 +2,9 @@ package com.pixelbrew.qredi.data.local.converter
 
 import com.pixelbrew.qredi.data.local.entities.FeeEntity
 import com.pixelbrew.qredi.data.local.entities.LoanEntity
-import com.pixelbrew.qredi.data.network.model.Customer
-import com.pixelbrew.qredi.data.network.model.Date
-import com.pixelbrew.qredi.data.network.model.Fee
+import com.pixelbrew.qredi.data.network.model.CustomerDownLoadModel
+import com.pixelbrew.qredi.data.network.model.DateModel
+import com.pixelbrew.qredi.data.network.model.FeeDownloadModel
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 
 
@@ -16,16 +16,16 @@ object LoanMapper {
             amount = model.amount,
             interest = model.interest,
             feesQuantity = model.feesQuantity,
-            loanDateDay = model.date.day,
-            loanDateMonth = model.date.month,
-            loanDateYear = model.date.year,
-            loanDateHour = model.date.hour,
-            loanDateMinute = model.date.minute,
-            loanDateSecond = model.date.second,
-            loanDateTimezone = model.date.timezone,
-            customerId = model.customer.id,
-            customerName = model.customer.name,
-            customerCedula = model.customer.cedula
+            loanDateDay = model.dateModel.day,
+            loanDateMonth = model.dateModel.month,
+            loanDateYear = model.dateModel.year,
+            loanDateHour = model.dateModel.hour,
+            loanDateMinute = model.dateModel.minute,
+            loanDateSecond = model.dateModel.second,
+            loanDateTimezone = model.dateModel.timezone,
+            customerId = model.customerDownLoadModel.id,
+            customerName = model.customerDownLoadModel.name,
+            customerCedula = model.customerDownLoadModel.cedula
         )
     }
 
@@ -35,7 +35,7 @@ object LoanMapper {
             amount = entity.amount,
             interest = entity.interest,
             feesQuantity = entity.feesQuantity,
-            date = Date(
+            dateModel = DateModel(
                 day = entity.loanDateDay,
                 month = entity.loanDateMonth,
                 year = entity.loanDateYear,
@@ -44,38 +44,38 @@ object LoanMapper {
                 second = entity.loanDateSecond,
                 timezone = entity.loanDateTimezone
             ),
-            customer = Customer(
+            customerDownLoadModel = CustomerDownLoadModel(
                 id = entity.customerId,
                 name = entity.customerName,
                 cedula = entity.customerCedula
             ),
-            fees = fees.map { feeEntityToModel(it) }
+            feeDownloadModels = fees.map { feeEntityToModel(it) }
         )
     }
 
 
-    fun feeModelToEntity(model: Fee, loanId: String): FeeEntity {
+    fun feeModelToEntity(model: FeeDownloadModel, loanId: String): FeeEntity {
         return FeeEntity(
             id = model.id,
             loanId = loanId,
             paymentAmount = model.paymentAmount,
             number = model.number,
-            dateDay = model.date.day,
-            dateMonth = model.date.month,
-            dateYear = model.date.year,
-            dateHour = model.date.hour,
-            dateMinute = model.date.minute,
-            dateSecond = model.date.second,
-            dateTimezone = model.date.timezone
+            dateDay = model.dateModel.day,
+            dateMonth = model.dateModel.month,
+            dateYear = model.dateModel.year,
+            dateHour = model.dateModel.hour,
+            dateMinute = model.dateModel.minute,
+            dateSecond = model.dateModel.second,
+            dateTimezone = model.dateModel.timezone
         )
     }
 
-    fun feeEntityToModel(entity: FeeEntity): Fee {
-        return Fee(
+    fun feeEntityToModel(entity: FeeEntity): FeeDownloadModel {
+        return FeeDownloadModel(
             id = entity.id,
             paymentAmount = entity.paymentAmount,
             number = entity.number,
-            date = Date(
+            dateModel = DateModel(
                 day = entity.dateDay,
                 month = entity.dateMonth,
                 year = entity.dateYear,

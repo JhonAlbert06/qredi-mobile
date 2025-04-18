@@ -38,4 +38,5 @@ class CustomerModelRes {
     var phone: String = ""
     var reference: String = ""
 
+    constructor() {}
 }

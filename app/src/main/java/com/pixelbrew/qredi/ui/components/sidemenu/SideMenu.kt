@@ -146,7 +146,7 @@ fun SideMenu(
                 )
 
                 Screen.Customer -> CustomerScreen(
-                    CustomerViewModel(loanRepository, apiService, sessionManager),
+                    CustomerViewModel(apiService, sessionManager),
                     modifier = modifier.padding(top = 25.dp),
                     context,
                 )

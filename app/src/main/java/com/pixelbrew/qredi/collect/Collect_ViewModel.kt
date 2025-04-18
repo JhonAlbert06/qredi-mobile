@@ -14,7 +14,7 @@ import com.pixelbrew.qredi.data.local.entities.FeeEntity
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.local.repository.LoanRepository
 import com.pixelbrew.qredi.data.network.api.ApiService
-import com.pixelbrew.qredi.data.network.model.Fee
+import com.pixelbrew.qredi.data.network.model.FeeDownloadModel
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.data.network.model.RouteModel
 import com.pixelbrew.qredi.data.network.model.UserModel
@@ -51,8 +51,8 @@ class CollectViewModel(
     private val _downloadLoanSelected = MutableLiveData<LoanDownloadModel>()
     val downloadLoanSelected: LiveData<LoanDownloadModel> = _downloadLoanSelected
 
-    private val _selectedFee = MutableLiveData<Fee>()
-    val selectedFee: LiveData<Fee> get() = _selectedFee
+    private val _selectedFeeDownloadModel = MutableLiveData<FeeDownloadModel>()
+    val selectedFeeDownloadModel: LiveData<FeeDownloadModel> get() = _selectedFeeDownloadModel
 
     private val _amount = MutableLiveData<String>()
     val amount: LiveData<String> get() = _amount
@@ -97,8 +97,8 @@ class CollectViewModel(
         _toastMessage.postValue(message)
     }
 
-    fun setFeeSelected(fee: Fee) {
-        _selectedFee.postValue(fee)
+    fun setFeeSelected(feeDownloadModel: FeeDownloadModel) {
+        _selectedFeeDownloadModel.postValue(feeDownloadModel)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -112,10 +112,10 @@ class CollectViewModel(
             try {
                 var newFeeEntity = NewFeeEntity(
                     id = 0,
-                    feeId = _selectedFee.value?.id ?: "",
+                    feeId = _selectedFeeDownloadModel.value?.id ?: "",
                     loanId = downloadLoanSelected.value?.id ?: "",
                     paymentAmount = amountValue,
-                    number = _selectedFee.value?.number ?: 0,
+                    number = _selectedFeeDownloadModel.value?.number ?: 0,
                     dateDay = date.dayOfMonth,
                     dateMonth = date.monthValue,
                     dateYear = date.year,
@@ -123,11 +123,10 @@ class CollectViewModel(
                     dateMinute = date.minute,
                     dateSecond = date.second,
                     dateTimezone = ZoneId.systemDefault().id,
-                    clientName = downloadLoanSelected.value?.customer?.name.toString(),
+                    clientName = downloadLoanSelected.value?.customerDownLoadModel?.name.toString(),
                     companyName = userSession?.company?.name ?: "J & J Prestamos",
                     numberTotal = downloadLoanSelected.value?.feesQuantity ?: 0,
                     companyNumber = "${userSession?.company?.phone1}/${userSession?.company?.phone2}"
-                        ?: "809-123-4567 / 809-123-4567"
                 )
                 loanRepository.insertNewFee(newFeeEntity)
                 getLoansFromDatabase()
@@ -175,7 +174,7 @@ class CollectViewModel(
                 val newLoan = LoanMapper.loanModelToEntity(loan)
                 loanRepository.insertLoan(newLoan)
 
-                loan.fees.forEach { fee ->
+                loan.feeDownloadModels.forEach { fee ->
                     val newFee = LoanMapper.feeModelToEntity(fee, newLoan.id)
                     loanRepository.insertFee(newFee)
                 }
@@ -299,7 +298,7 @@ class CollectViewModel(
         }
 
 
-        val fee = selectedFee.value ?: run {
+        val fee = selectedFeeDownloadModel.value ?: run {
             showToast("No se ha seleccionado ninguna cuota")
             return
         }
@@ -332,7 +331,7 @@ class CollectViewModel(
                             numberTotal = loan.feesQuantity,
                             companyName = "J & J Prestamos",
                             companyNumber = "809-123-4567 / 809-123-4567",
-                            clientName = loan.customer.name
+                            clientName = loan.customerDownLoadModel.name
                         )
                     )
 

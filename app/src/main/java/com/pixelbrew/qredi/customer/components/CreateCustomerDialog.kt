@@ -162,7 +162,6 @@ fun CreateCustomerDialog(
                                 phone,
                                 reference
                             )
-                            onDismiss()
                         }
                     ) {
                         Text("Guardar")
