@@ -1,6 +1,7 @@
 package com.pixelbrew.qredi.collect
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -28,10 +29,12 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneId
 
+@SuppressLint("StaticFieldLeak")
 class CollectViewModel(
     private val loanRepository: LoanRepository,
     private val apiService: ApiService,
     private val sessionManager: SessionManager,
+    private val context: android.content.Context
 ) : ViewModel() {
 
     private val baseUrl = sessionManager.fetchApiUrl()
@@ -67,10 +70,6 @@ class CollectViewModel(
         getLoansFromDatabase()
         Log.d("DEBUG", "CollectViewModel initialized")
         Log.d("DEBUG", "${userSession?.firstName}")
-    }
-
-    fun resetAmount() {
-        _amount.postValue("")
     }
 
     fun getCuote(amount: Double) {
@@ -312,6 +311,7 @@ class CollectViewModel(
 
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
+                        context = context,
                         sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
                         feeEntity = NewFeeEntity(

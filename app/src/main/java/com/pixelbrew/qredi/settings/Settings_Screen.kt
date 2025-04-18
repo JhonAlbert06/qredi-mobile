@@ -26,7 +26,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
+import com.pixelbrew.qredi.ui.components.dropdown.GenericDropdown
 
+@androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
@@ -36,6 +38,8 @@ fun SettingsScreen(
 
     val printerName by viewModel.printerName.observeAsState("")
     val apiUrl by viewModel.apiUrl.observeAsState("")
+    val pairedDevices by viewModel.pairedDevices.observeAsState(emptyList())
+    val selectedDevice by viewModel.selectedDevice.observeAsState()
 
     Column(
         modifier = modifier
@@ -56,6 +60,20 @@ fun SettingsScreen(
             printerName,
             onValueChange = { viewModel.onPrinterNameChange(it) }
         )
+
+        GenericDropdown(
+            items = pairedDevices,
+            selectedItem = selectedDevice,
+            onItemSelected = { device ->
+                viewModel.onDeviceSelected(device)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            label = "Seleccionar impresora",
+            itemLabel = {
+                it?.name ?: ""
+            },
+        )
+
 
         Spacer(modifier = Modifier.height(24.dp))
         Text("Seguridad", style = MaterialTheme.typography.titleLarge)
@@ -104,7 +122,8 @@ fun PrinterField(name: String, onValueChange: (String) -> Unit) {
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-        )
+        ),
+        readOnly = true
     )
 }
 

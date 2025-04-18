@@ -2,6 +2,7 @@ package com.pixelbrew.qredi.reprint
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -26,13 +27,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 
+
+@SuppressLint("StaticFieldLeak")
 class ReprintViewModel(
     private val loanRepository: LoanRepository,
     private val apiService: ApiService,
     private val sessionManager: SessionManager,
+    private val context: Context
 ) : ViewModel() {
     private val baseUrl = sessionManager.fetchApiUrl()
-
     private val user = sessionManager.fetchUser()
 
     private val _newFees = MutableLiveData<List<NewFeeEntity>>(emptyList())
@@ -51,9 +54,11 @@ class ReprintViewModel(
 
     private val _selectedLoan = MutableLiveData<LoanWithNewFees>()
 
+
     init {
         getAllNewFees()
     }
+
 
     fun getLoanById(loanId: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -166,6 +171,7 @@ class ReprintViewModel(
 
         viewModelScope.launch(Dispatchers.IO) {
             val recibo = BluetoothPrinter.printDocument(
+                context = context,
                 sessionManager.fetchPrinterName().toString(),
                 BluetoothPrinter.DocumentType.DAY_CLOSE,
                 data = cierre
@@ -190,6 +196,7 @@ class ReprintViewModel(
 
             while (attempts < 3 && !success) {
                 success = BluetoothPrinter.printDocument(
+                    context,
                     sessionManager.fetchPrinterName().toString(),
                     BluetoothPrinter.DocumentType.PAYMENT,
                     feeEntity = fee,

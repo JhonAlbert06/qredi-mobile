@@ -1,15 +1,19 @@
 package com.pixelbrew.qredi.ui.components.services.invoice
 
 import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 import com.pixelbrew.qredi.ui.components.services.invoice.InvoiceGenerator.DayCloseData
 import java.io.IOException
@@ -26,8 +30,68 @@ object BluetoothPrinter {
 
     enum class DocumentType { PAYMENT, DAY_CLOSE }
 
+    /**
+     * Verifica si el adaptador Bluetooth está disponible y activado.
+     */
+    fun isBluetoothEnabled(): Boolean {
+        val adapter = BluetoothAdapter.getDefaultAdapter()
+        return adapter != null && adapter.isEnabled
+    }
+
+    /**
+     * Solicita al usuario que active el Bluetooth si está desactivado.
+     */
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun requestEnableBluetooth(context: Context) {
+        val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+        if (context is Activity) {
+            context.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+        } else {
+            Toast.makeText(
+                context,
+                "No se puede solicitar activar Bluetooth desde este contexto.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    /**
+     * Verifica si la aplicación tiene los permisos necesarios de Bluetooth.
+     */
+    fun hasBluetoothPermissions(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.BLUETOOTH_SCAN
+                    ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    /**
+     * Solicita los permisos necesarios de Bluetooth al usuario.
+     */
+    fun requestBluetoothPermissions(activity: android.app.Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val permissions = arrayOf(
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_SCAN
+            )
+            ActivityCompat.requestPermissions(activity, permissions, REQUEST_BLUETOOTH_PERMISSIONS)
+        }
+    }
+
+    /**
+     * Imprime un documento en la impresora Bluetooth especificada.
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printDocument(
+        context: Context,
         printerName: String,
         type: DocumentType,
         data: DayCloseData = DayCloseData("", "", 0.0, 0.0, emptyList()),
@@ -70,6 +134,9 @@ object BluetoothPrinter {
         }
     }
 
+    /**
+     * Asegura la conexión con la impresora Bluetooth especificada.
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     @Throws(IOException::class)
     private fun ensureConnection(printerName: String): BluetoothSocket? {
@@ -107,11 +174,17 @@ object BluetoothPrinter {
         }
     }
 
+    /**
+     * Busca la impresora Bluetooth emparejada por nombre.
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun findPrinter(adapter: BluetoothAdapter, name: String): BluetoothDevice? {
         return adapter.bondedDevices.firstOrNull { it.name.equals(name, ignoreCase = true) }
     }
 
+    /**
+     * Restablece la conexión Bluetooth actual.
+     */
     private fun resetConnection() {
         try {
             currentSocket?.close()
@@ -123,14 +196,6 @@ object BluetoothPrinter {
         }
     }
 
-    fun hasBluetoothPermissions(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-    }
+    private const val REQUEST_ENABLE_BT = 1001
+    private const val REQUEST_BLUETOOTH_PERMISSIONS = 1002
 }

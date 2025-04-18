@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import com.pixelbrew.qredi.data.network.di.NetworkModule
 import com.pixelbrew.qredi.ui.components.services.SessionManager
+import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
 import com.pixelbrew.qredi.ui.components.sidemenu.SideMenu
 import com.pixelbrew.qredi.ui.theme.QrediTheme
 
@@ -39,6 +40,11 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        if (!BluetoothPrinter.hasBluetoothPermissions(this)) {
+            BluetoothPrinter.requestBluetoothPermissions(this)
+            return
+        }
+        
     }
 }
 

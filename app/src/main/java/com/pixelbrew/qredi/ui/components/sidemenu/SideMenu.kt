@@ -140,7 +140,7 @@ fun SideMenu(
                 )
 
                 Screen.Collect -> CollectScreen(
-                    CollectViewModel(loanRepository, apiService, sessionManager),
+                    CollectViewModel(loanRepository, apiService, sessionManager, context),
                     modifier = modifier.padding(top = 25.dp),
                     context,
                 )
@@ -158,14 +158,14 @@ fun SideMenu(
                 )
 
                 Screen.Reprint -> ReprintScreen(
-                    ReprintViewModel(loanRepository, apiService, sessionManager),
+                    ReprintViewModel(loanRepository, apiService, sessionManager, context),
                     modifier = modifier.padding(top = 25.dp),
                     context
                 )
 
                 Screen.Statistics -> StatisticsScreen(modifier = modifier.padding(padding))
                 Screen.Settings -> SettingsScreen(
-                    SettingsViewModel(sessionManager),
+                    SettingsViewModel(sessionManager, context),
                     modifier = modifier.padding(padding),
                     context = context
                 )
