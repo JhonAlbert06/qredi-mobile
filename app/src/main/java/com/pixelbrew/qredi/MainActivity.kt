@@ -1,11 +1,13 @@
 package com.pixelbrew.qredi
 
+import android.Manifest
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -40,11 +42,24 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        checkBluetoothSetup()
+
+
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private fun checkBluetoothSetup() {
         if (!BluetoothPrinter.hasBluetoothPermissions(this)) {
+            // Pide permisos y espera al resultado antes de continuar
             BluetoothPrinter.requestBluetoothPermissions(this)
             return
         }
-        
+
+        if (!BluetoothPrinter.isBluetoothEnabled()) {
+            // Pide que se active el Bluetooth y espera al resultado antes de continuar
+            BluetoothPrinter.requestEnableBluetooth(this)
+            return
+        }
     }
 }
 

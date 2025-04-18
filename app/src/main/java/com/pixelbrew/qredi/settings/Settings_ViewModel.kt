@@ -45,12 +45,16 @@ class SettingsViewModel(
         try {
             _printerName.value = sessionManager.fetchPrinterName() ?: ""
             _apiUrl.value = sessionManager.fetchApiUrl() ?: ""
-            loadPairedDevices()
         } catch (e: Exception) {
             _printerName.value = ""
             _apiUrl.value = ""
             Log.e("SettingsViewModel", "Error al cargar configuración", e)
         }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun refreshPairedDevices() {
+        loadPairedDevices()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -73,6 +77,7 @@ class SettingsViewModel(
         _toastMessage.value = "Configuración guardada"
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun loadPairedDevices() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
