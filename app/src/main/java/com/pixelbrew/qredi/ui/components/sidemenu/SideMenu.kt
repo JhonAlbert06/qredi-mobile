@@ -39,22 +39,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
-import com.pixelbrew.qredi.admin.AdminScreen
-import com.pixelbrew.qredi.admin.AdminViewModel
-import com.pixelbrew.qredi.collect.CollectScreen
-import com.pixelbrew.qredi.collect.CollectViewModel
-import com.pixelbrew.qredi.customer.CustomerScreen
-import com.pixelbrew.qredi.customer.CustomerViewModel
 import com.pixelbrew.qredi.data.local.repository.LoanRepository
 import com.pixelbrew.qredi.data.network.api.ApiService
-import com.pixelbrew.qredi.loan.LoanScreen
-import com.pixelbrew.qredi.loan.LoanViewModel
-import com.pixelbrew.qredi.reprint.ReprintScreen
-import com.pixelbrew.qredi.reprint.ReprintViewModel
-import com.pixelbrew.qredi.settings.SettingsScreen
-import com.pixelbrew.qredi.settings.SettingsViewModel
-import com.pixelbrew.qredi.statistics.StatisticsScreen
+import com.pixelbrew.qredi.ui.admin.AdminScreen
+import com.pixelbrew.qredi.ui.admin.AdminViewModel
+import com.pixelbrew.qredi.ui.collect.CollectScreen
+import com.pixelbrew.qredi.ui.collect.CollectViewModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
+import com.pixelbrew.qredi.ui.customer.CustomerScreen
+import com.pixelbrew.qredi.ui.customer.CustomerViewModel
+import com.pixelbrew.qredi.ui.loan.LoanScreen
+import com.pixelbrew.qredi.ui.loan.LoanViewModel
+import com.pixelbrew.qredi.ui.reprint.ReprintScreen
+import com.pixelbrew.qredi.ui.reprint.ReprintViewModel
+import com.pixelbrew.qredi.ui.settings.SettingsScreen
+import com.pixelbrew.qredi.ui.settings.SettingsViewModel
+import com.pixelbrew.qredi.ui.statistics.StatisticsScreen
 import kotlinx.coroutines.launch
 
 sealed class Screen(val route: String) {
