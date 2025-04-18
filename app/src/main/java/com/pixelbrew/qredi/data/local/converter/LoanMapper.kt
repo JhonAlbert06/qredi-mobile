@@ -23,9 +23,9 @@ object LoanMapper {
             loanDateMinute = model.dateModel.minute,
             loanDateSecond = model.dateModel.second,
             loanDateTimezone = model.dateModel.timezone,
-            customerId = model.customerDownLoadModel.id,
-            customerName = model.customerDownLoadModel.name,
-            customerCedula = model.customerDownLoadModel.cedula
+            customerId = model.customer.id,
+            customerName = model.customer.name,
+            customerCedula = model.customer.cedula
         )
     }
 
@@ -44,12 +44,12 @@ object LoanMapper {
                 second = entity.loanDateSecond,
                 timezone = entity.loanDateTimezone
             ),
-            customerDownLoadModel = CustomerDownLoadModel(
+            customer = CustomerDownLoadModel(
                 id = entity.customerId,
                 name = entity.customerName,
                 cedula = entity.customerCedula
             ),
-            feeDownloadModels = fees.map { feeEntityToModel(it) }
+            fees = fees.map { feeEntityToModel(it) }
         )
     }
 

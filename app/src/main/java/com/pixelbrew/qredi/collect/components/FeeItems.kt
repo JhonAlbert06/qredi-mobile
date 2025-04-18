@@ -44,7 +44,7 @@ fun FeeItems(
     var showDialogCollect by remember { mutableStateOf(false) }
     var totalLoanPaid = 0.0
 
-    loan.feeDownloadModels.forEach { fee ->
+    loan.fees.forEach { fee ->
         totalLoanPaid += fee.paymentAmount
     }
 
@@ -57,7 +57,7 @@ fun FeeItems(
     cuote = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
 
     LazyColumn {
-        items(loan.feeDownloadModels.filter { it.paymentAmount < cuote }) { fee ->
+        items(loan.fees.filter { it.paymentAmount < cuote }) { fee ->
 
             Card(
                 modifier = Modifier

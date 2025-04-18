@@ -5,9 +5,9 @@ class LoanDownloadModel(
     var amount: Double = 0.0,
     var interest: Double = 0.0,
     var feesQuantity: Int = 0,
-    var feeDownloadModels: List<FeeDownloadModel> = emptyList(),
+    var fees: List<FeeDownloadModel> = emptyList(),
     var dateModel: DateModel = DateModel(0, 0, 0, 0, 0, 0, ""),
-    var customerDownLoadModel: CustomerDownLoadModel = CustomerDownLoadModel("", "", ""),
+    var customer: CustomerDownLoadModel = CustomerDownLoadModel("", "", ""),
 )
 
 class CustomerDownLoadModel(

@@ -123,7 +123,7 @@ class CollectViewModel(
                     dateMinute = date.minute,
                     dateSecond = date.second,
                     dateTimezone = ZoneId.systemDefault().id,
-                    clientName = downloadLoanSelected.value?.customerDownLoadModel?.name.toString(),
+                    clientName = downloadLoanSelected.value?.customer?.name.toString(),
                     companyName = userSession?.company?.name ?: "J & J Prestamos",
                     numberTotal = downloadLoanSelected.value?.feesQuantity ?: 0,
                     companyNumber = "${userSession?.company?.phone1}/${userSession?.company?.phone2}"
@@ -174,7 +174,7 @@ class CollectViewModel(
                 val newLoan = LoanMapper.loanModelToEntity(loan)
                 loanRepository.insertLoan(newLoan)
 
-                loan.feeDownloadModels.forEach { fee ->
+                loan.fees.forEach { fee ->
                     val newFee = LoanMapper.feeModelToEntity(fee, newLoan.id)
                     loanRepository.insertFee(newFee)
                 }
@@ -312,7 +312,6 @@ class CollectViewModel(
 
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
-
                         sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
                         feeEntity = NewFeeEntity(
@@ -330,8 +329,8 @@ class CollectViewModel(
                             number = fee.number,
                             numberTotal = loan.feesQuantity,
                             companyName = "J & J Prestamos",
-                            companyNumber = "809-123-4567 / 809-123-4567",
-                            clientName = loan.customerDownLoadModel.name
+                            companyNumber = "${userSession?.company?.phone1}/${userSession?.company?.phone2}",
+                            clientName = loan.customer.name
                         )
                     )
 
