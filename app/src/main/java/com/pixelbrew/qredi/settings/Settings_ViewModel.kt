@@ -40,11 +40,12 @@ class SettingsViewModel(
 
     private val _selectedDevice = MutableLiveData<BluetoothDevice?>()
     val selectedDevice: LiveData<BluetoothDevice?> get() = _selectedDevice
-
+    
     init {
         try {
             _printerName.value = sessionManager.fetchPrinterName() ?: ""
             _apiUrl.value = sessionManager.fetchApiUrl() ?: ""
+            refreshPairedDevices()
         } catch (e: Exception) {
             _printerName.value = ""
             _apiUrl.value = ""
@@ -52,7 +53,6 @@ class SettingsViewModel(
         }
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun refreshPairedDevices() {
         loadPairedDevices()
     }
@@ -77,10 +77,10 @@ class SettingsViewModel(
         _toastMessage.value = "Configuración guardada"
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun loadPairedDevices() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+
                 val bluetoothManager =
                     context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
                 val bluetoothAdapter: BluetoothAdapter? = bluetoothManager?.adapter
