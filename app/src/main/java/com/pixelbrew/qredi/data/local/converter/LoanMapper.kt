@@ -16,13 +16,13 @@ object LoanMapper {
             amount = model.amount,
             interest = model.interest,
             feesQuantity = model.feesQuantity,
-            loanDateDay = model.dateModel.day,
-            loanDateMonth = model.dateModel.month,
-            loanDateYear = model.dateModel.year,
-            loanDateHour = model.dateModel.hour,
-            loanDateMinute = model.dateModel.minute,
-            loanDateSecond = model.dateModel.second,
-            loanDateTimezone = model.dateModel.timezone,
+            loanDateDay = model.date.day,
+            loanDateMonth = model.date.month,
+            loanDateYear = model.date.year,
+            loanDateHour = model.date.hour,
+            loanDateMinute = model.date.minute,
+            loanDateSecond = model.date.second,
+            loanDateTimezone = model.date.timezone,
             customerId = model.customer.id,
             customerName = model.customer.name,
             customerCedula = model.customer.cedula
@@ -35,7 +35,7 @@ object LoanMapper {
             amount = entity.amount,
             interest = entity.interest,
             feesQuantity = entity.feesQuantity,
-            dateModel = DateModel(
+            date = DateModel(
                 day = entity.loanDateDay,
                 month = entity.loanDateMonth,
                 year = entity.loanDateYear,
@@ -60,13 +60,13 @@ object LoanMapper {
             loanId = loanId,
             paymentAmount = model.paymentAmount,
             number = model.number,
-            dateDay = model.dateModel.day,
-            dateMonth = model.dateModel.month,
-            dateYear = model.dateModel.year,
-            dateHour = model.dateModel.hour,
-            dateMinute = model.dateModel.minute,
-            dateSecond = model.dateModel.second,
-            dateTimezone = model.dateModel.timezone
+            dateDay = model.date.day,
+            dateMonth = model.date.month,
+            dateYear = model.date.year,
+            dateHour = model.date.hour,
+            dateMinute = model.date.minute,
+            dateSecond = model.date.second,
+            dateTimezone = model.date.timezone
         )
     }
 
@@ -75,7 +75,7 @@ object LoanMapper {
             id = entity.id,
             paymentAmount = entity.paymentAmount,
             number = entity.number,
-            dateModel = DateModel(
+            date = DateModel(
                 day = entity.dateDay,
                 month = entity.dateMonth,
                 year = entity.dateYear,

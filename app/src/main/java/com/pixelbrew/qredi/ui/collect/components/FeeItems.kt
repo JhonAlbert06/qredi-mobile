@@ -72,7 +72,7 @@ fun FeeItems(
 
                     FeeLabel(
                         "${fee.number}/${loan.feesQuantity}",
-                        "${fee.dateModel.day}/${fee.dateModel.month}/${fee.dateModel.year}"
+                        "${fee.date.day}/${fee.date.month}/${fee.date.year}"
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 

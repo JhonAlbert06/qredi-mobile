@@ -62,4 +62,9 @@ interface ApiService {
         @Url url: String,
         @Body loan: LoanModel
     ): Response<LoanModelRes>
+
+    @GET
+    suspend fun getLoans(
+        @Url url: String
+    ): Response<List<LoanModelRes>>
 }

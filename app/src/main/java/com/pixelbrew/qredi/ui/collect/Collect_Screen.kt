@@ -42,7 +42,7 @@ import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.ui.collect.components.LoanDetailDialog
-import com.pixelbrew.qredi.ui.collect.components.LoanItem
+import com.pixelbrew.qredi.ui.collect.components.LoanItemCollect
 import com.pixelbrew.qredi.ui.collect.components.RouteSelectionDialog
 import kotlinx.coroutines.delay
 
@@ -189,7 +189,7 @@ fun LoansList(
                             showDialogLoan = true
                         }
                 ) {
-                    LoanItem(loan, viewModel)
+                    LoanItemCollect(loan, viewModel)
                 }
             }
         }

@@ -14,7 +14,7 @@ import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.ui.collect.CollectViewModel
 
 @Composable
-fun LoanItem(
+fun LoanItemCollect(
     loan: LoanDownloadModel,
     viewModel: CollectViewModel
 ) {

@@ -1,7 +1,9 @@
 package com.pixelbrew.qredi.ui.loan
 
-import android.util.Log
 import android.widget.Toast
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,11 +15,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -44,7 +50,10 @@ import androidx.compose.ui.window.DialogProperties
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
+import com.pixelbrew.qredi.data.network.model.LoanModel
+import com.pixelbrew.qredi.data.network.model.LoanModelRes
 import com.pixelbrew.qredi.data.network.model.RouteModel
+import com.pixelbrew.qredi.ui.collect.components.LoanLabel
 import com.pixelbrew.qredi.ui.components.dropdown.GenericDropdown
 import kotlinx.coroutines.delay
 
@@ -56,11 +65,9 @@ fun LoanScreen(
 ) {
     Box(
         modifier = modifier
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            .fillMaxSize(),
     ) {
         Loan(viewModel, modifier, context)
-        Spacer(modifier = Modifier.height(8.dp))
     }
 
     val viewModel: LoanViewModel = viewModel
@@ -81,13 +88,46 @@ fun Loan(
     context: MainActivity,
 ) {
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
+    val loans by viewModel.loans.observeAsState(initial = emptyList())
 
-    Column {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        HeaderLoan(viewModel)
+        Spacer(modifier = Modifier.height(8.dp))
+
         if (isLoading) {
-            CircularProgressIndicator()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
+            }
         } else {
-            HeaderLoan(viewModel, modifier)
-            Spacer(modifier = Modifier.height(1.dp))
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(loans.size) { index ->
+                    val loan = loans[index]
+                    Card(
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .clickable {
+                                //viewModel.setDownloadRouteSelected(loan)
+                                //showDialogLoan = true
+                            }
+                    ) {
+                        LoanItem(loan, viewModel)
+                    }
+                }
+            }
+
         }
     }
 }
@@ -97,7 +137,6 @@ fun HeaderLoan(
     viewModel: LoanViewModel,
     modifier: Modifier = Modifier
 ) {
-
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -108,29 +147,41 @@ fun HeaderLoan(
             style = MaterialTheme.typography.headlineMedium
         )
 
-        Button(
-            onClick = {
-                viewModel.setShowCreationDialog(true)
-            },
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.square_plus_regular),
+            contentDescription = "Crear",
             modifier = Modifier
-                .padding(start = 8.dp)
-                .align(Alignment.CenterVertically),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF00BCD4),
-                contentColor = Color.Black,
-                disabledContainerColor = Color(0x2C00BCD4),
-                disabledContentColor = Color(0xFF0C0C0C)
-            ),
-        ) {
-            Text("Nuevo Prestamo")
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.user_plus_solid),
-                contentDescription = "Crear Prestamo",
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(20.dp)
-            )
-        }
+                .size(40.dp)
+                .clickable {
+                    viewModel.setShowCreationDialog(true)
+                }
+                .padding(8.dp),
+            tint = Color(0xFF71FF78)
+        )
+
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.filter_solid),
+            contentDescription = "Filtrar",
+            modifier = Modifier
+                .size(40.dp)
+                .clickable {
+                    //viewModel.showFilterCustomerDialog(true)
+                }
+                .padding(8.dp),
+            tint = Color(0xFF6BEDFF)
+        )
+
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.arrows_rotate_solid),
+            contentDescription = "Actualizar",
+            modifier = Modifier
+                .size(40.dp)
+                .clickable {
+                    // viewModel.refreshCustomers()
+                }
+                .padding(8.dp),
+            tint = Color(0xFF00BCD4)
+        )
     }
 
     if (viewModel.showCreationDialog.observeAsState().value == true) {
@@ -138,16 +189,147 @@ fun HeaderLoan(
             viewModel = viewModel,
             onDismiss = { viewModel.setShowCreationDialog(false) },
             onSubmit = { customerId, routeId, amount, interest, feesQuantity ->
-                // Handle the submit action here
-                Log.d("CreateLoanDialog", "Customer ID: $customerId")
-                Log.d("CreateLoanDialog", "Route ID: $routeId")
-                Log.d("CreateLoanDialog", "Amount: $amount")
-                Log.d("CreateLoanDialog", "Interest: $interest")
-                Log.d("CreateLoanDialog", "Fees Quantity: $feesQuantity")
+
+                var loan = LoanModel(
+                    customerId = customerId,
+                    routeId = routeId,
+                    amount = amount.toDouble(),
+                    interest = interest.toDouble(),
+                    feesQuantity = feesQuantity.toInt()
+                )
+
+                viewModel.createNewLoan(loan)
             }
         )
     }
 
+}
+
+
+@Composable
+fun LoanItem(
+    loan: LoanModelRes,
+    viewModel: LoanViewModel
+) {
+
+    Column(modifier = Modifier.padding(16.dp)) {
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.calendar_solid),
+            text = "${loan.date.day}/${loan.date.month}/${loan.date.year}"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.user_solid),
+            text = loan.customer.firstName + " " + loan.customer.lastName
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.address_card_solid),
+            text = viewModel.formatCedula(loan.customer.cedula)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.coins_solid),
+            text = "${viewModel.formatNumber(loan.amount)} $"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.hashtag_solid),
+            text = "${loan.feesQuantity} cuotas"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.percent_solid),
+            text = "${viewModel.formatNumber(loan.interest)} interes"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LoanLabel(
+            icon = ImageVector.vectorResource(id = R.drawable.wallet_solid),
+            text = "${viewModel.formatNumber(loan.amount + ((loan.interest / 100) * loan.amount) * loan.feesQuantity)} $"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            if (loan.loanIsPaid) {
+                Tag(
+                    text = "Pagado",
+                    icon = R.drawable.check_solid,
+                    backgroundColor = Color(0xFFEEFFFA),
+                    contentColor = Color(0xFF00D455)
+                )
+            } else {
+                Tag(
+                    text = "No Pagado",
+                    icon = R.drawable.xmark_solid,
+                    backgroundColor = Color(0xFFFFEDED),
+                    contentColor = Color(0xFFEF4444)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(3.dp))
+
+            if (loan.isCurrentLoan) {
+                Tag(
+                    text = "Actual",
+                    icon = R.drawable.check_to_slot_solid,
+                    backgroundColor = Color(0xFFEFFBF5),
+                    contentColor = Color(0xFF00D455)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(3.dp))
+
+            Tag(
+                text = loan.route.name,
+                icon = R.drawable.location_dot_solid,
+                backgroundColor = Color(0xFF000000),
+                contentColor = Color(0xFFFFFFFF)
+            )
+        }
+
+
+    }
+
+}
+
+@Composable
+fun Tag(
+    text: String,
+    @DrawableRes icon: Int,
+    backgroundColor: Color,
+    contentColor: Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .background(backgroundColor, shape = RoundedCornerShape(50))
+            .padding(horizontal = 6.dp, vertical = 6.dp)
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(id = icon),
+            contentDescription = text,
+            tint = contentColor,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = text,
+            color = contentColor,
+            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
+        )
+    }
 }
 
 @Composable

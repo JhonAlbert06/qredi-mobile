@@ -1,11 +1,27 @@
 package com.pixelbrew.qredi.data.network.model
 
 class LoanModel {
-    val customerId = ""
-    val routeId = ""
-    val amount = 0.0
-    val interest = 0.0
-    val feesQuantity = 0
+    var customerId = ""
+    var routeId = ""
+    var amount = 0.0
+    var interest = 0.0
+    var feesQuantity = 0
+
+    constructor() {}
+
+    constructor(
+        customerId: String,
+        routeId: String,
+        amount: Double,
+        interest: Double,
+        feesQuantity: Int
+    ) {
+        this.customerId = customerId
+        this.routeId = routeId
+        this.amount = amount
+        this.interest = interest
+        this.feesQuantity = feesQuantity
+    }
 }
 
 class LoanModelRes {
@@ -15,8 +31,22 @@ class LoanModelRes {
     val feesQuantity = 0
     val loanIsPaid = false
     val isCurrentLoan = false
-    val DateModel = DateModel()
+    val date = DateModel()
     val customer = CustomerModelRes()
     val route = RouteModel()
-    val feeDownloadModels = listOf<FeeDownloadModel>()
+    val fee = listOf<FeeModelRes>()
+}
+
+class FeeModelRes {
+    val id = ""
+    val number = 0
+    val expectedDate = DateModel()
+    val payments = listOf<PaymentModelRes>()
+}
+
+class PaymentModelRes {
+    val id = ""
+    val paidAmount = 0.0
+    val date = DateModel()
+    val user = UserModel()
 }

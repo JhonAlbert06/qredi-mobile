@@ -37,7 +37,7 @@ fun LoanDetailDialog(
             },
             text = {
                 Column {
-                    LoanItem(
+                    LoanItemCollect(
                         loan = loan,
                         viewModel = viewModel
                     )

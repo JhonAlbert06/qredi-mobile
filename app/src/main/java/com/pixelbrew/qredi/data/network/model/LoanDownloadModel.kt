@@ -6,7 +6,7 @@ class LoanDownloadModel(
     var interest: Double = 0.0,
     var feesQuantity: Int = 0,
     var fees: List<FeeDownloadModel> = emptyList(),
-    var dateModel: DateModel = DateModel(0, 0, 0, 0, 0, 0, ""),
+    var date: DateModel = DateModel(0, 0, 0, 0, 0, 0, ""),
     var customer: CustomerDownLoadModel = CustomerDownLoadModel("", "", ""),
 )
 
@@ -30,5 +30,5 @@ class FeeDownloadModel(
     var id: String = "",
     var paymentAmount: Double = 0.0,
     var number: Int = 0,
-    var dateModel: DateModel = DateModel(0, 0, 0, 0, 0, 0, "")
+    var date: DateModel = DateModel(0, 0, 0, 0, 0, 0, "")
 )
