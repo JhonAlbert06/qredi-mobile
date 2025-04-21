@@ -5,8 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.pixelbrew.qredi.data.local.repository.LoanRepository
 import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 import com.pixelbrew.qredi.data.network.model.LoanModel
 import com.pixelbrew.qredi.data.network.model.LoanModelRes
@@ -61,8 +63,10 @@ class LoanViewModel(
                     fetchLoans()
                     _showCreationDialog.postValue(false)
                 } else {
-                    Log.e("LoanViewModel", "Error creating loan: ${response.errorBody()}")
-                    showToast("Error creating loan: ${response.errorBody()}")
+                    val errorBody = response.errorBody()?.string()
+                    val error = Gson().fromJson(errorBody, ApiError::class.java)
+                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    showToast("Error: ${error.message}")
                 }
             } catch (e: Exception) {
                 Log.e("LoanViewModel", "Error creating loan: ${e.message}")
@@ -88,8 +92,10 @@ class LoanViewModel(
                     Log.d("LoanViewModel", "Fetched loans: $loans")
                     _isLoading.postValue(false)
                 } else {
-                    Log.e("LoanViewModel", "Error fetching loans: ${response.errorBody()}")
-                    showToast("Error fetching loans: ${response.errorBody()}")
+                    val errorBody = response.errorBody()?.string()
+                    val error = Gson().fromJson(errorBody, ApiError::class.java)
+                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    showToast("Error: ${error.message}")
                     _isLoading.postValue(false)
                 }
 
@@ -113,8 +119,10 @@ class LoanViewModel(
                     customers = response.body() ?: emptyList()
                     Log.d("CustomerViewModel", "Fetched customers: $customers")
                 } else {
-                    Log.e("CustomerViewModel", "Error fetching customers: ${response.errorBody()}")
-                    showToast("Error fetching customers: ${response.errorBody()}")
+                    val errorBody = response.errorBody()?.string()
+                    val error = Gson().fromJson(errorBody, ApiError::class.java)
+                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    showToast("Error: ${error.message}")
                 }
 
                 _customerList.postValue(customers)
@@ -142,8 +150,9 @@ class LoanViewModel(
                     _routes.postValue(routes)
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.d("API_RESPONSE", "Error: $errorBody")
-                    showToast("Error: $errorBody")
+                    val error = Gson().fromJson(errorBody, ApiError::class.java)
+                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    showToast("Error: ${error.message}")
                 }
 
             } catch (e: Exception) {

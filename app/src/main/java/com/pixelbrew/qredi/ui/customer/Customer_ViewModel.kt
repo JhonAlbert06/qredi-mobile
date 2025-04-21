@@ -5,7 +5,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.CustomerModel
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 import com.pixelbrew.qredi.data.network.model.UserModel
@@ -90,8 +92,10 @@ class CustomerViewModel(
                     customers = response.body() ?: emptyList()
                     Log.d("CustomerViewModel", "Fetched customers: $customers")
                 } else {
-                    Log.e("CustomerViewModel", "Error fetching customers: ${response.errorBody()}")
-                    showToast("Error fetching customers: ${response.errorBody()}")
+                    val errorBody = response.errorBody()?.string()
+                    val error = Gson().fromJson(errorBody, ApiError::class.java)
+                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    showToast("Error: ${error.message}")
                 }
 
                 _customerList.postValue(customers)
@@ -138,13 +142,13 @@ class CustomerViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val url = "$baseUrl/customer"
-                val res = apiService.createCustomer(
+                val response = apiService.createCustomer(
                     url,
                     customer
                 )
-                val createdCustomer = res.body()!!
+                val createdCustomer = response.body()!!
 
-                if (res.isSuccessful) {
+                if (response.isSuccessful) {
                     Log.d(
                         "CustomerViewModel",
                         "Creating customer: ${createdCustomer.firstName} ${createdCustomer.lastName}"
@@ -152,8 +156,10 @@ class CustomerViewModel(
                     hideCreationDialog()
                     fetchCustomers()
                 } else {
-                    Log.e("CustomerViewModel", "Error creating customer: ${res.errorBody()}")
-                    showToast("Error creating customer: ${res.errorBody()}")
+                    val errorBody = response.errorBody()?.string()
+                    val error = Gson().fromJson(errorBody, ApiError::class.java)
+                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    showToast("Error: ${error.message}")
                 }
             } catch (e: Exception) {
                 Log.e("CustomerViewModel", "Error creating customer: ${e.message}")

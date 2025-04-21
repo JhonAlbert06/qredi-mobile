@@ -11,11 +11,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.pixelbrew.qredi.data.local.converter.LoanMapper
 import com.pixelbrew.qredi.data.local.entities.FeeEntity
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.local.repository.LoanRepository
 import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.FeeDownloadModel
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.data.network.model.RouteModel
@@ -152,8 +154,9 @@ class CollectViewModel(
                     _routes.postValue(routes)
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.d("API_RESPONSE", "Error: $errorBody")
-                    showToast("Error: $errorBody")
+                    val error = Gson().fromJson(errorBody, ApiError::class.java)
+                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    showToast("Error: ${error.message}")
                 }
 
             } catch (e: Exception) {
@@ -249,8 +252,9 @@ class CollectViewModel(
                     loans.forEach { saveLoansOnDatabase(it) }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.d("API_RESPONSE", "Error: $errorBody")
-                    showToast("Error: $errorBody")
+                    val error = Gson().fromJson(errorBody, ApiError::class.java)
+                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    showToast("Error: ${error.message}")
                 }
 
                 delay(1000)

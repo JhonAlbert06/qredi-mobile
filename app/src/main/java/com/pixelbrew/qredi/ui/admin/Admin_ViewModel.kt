@@ -6,7 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.LoginRequest
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import kotlinx.coroutines.Dispatchers
@@ -77,12 +79,13 @@ class AdminViewModel(
                     sessionManager.saveAuthToken(token)
                     Log.d("API_RESPONSE", token)
 
-                    loadUser() // Aquí se asume que esta función carga al usuario con el token
+                    loadUser()
                     showToast("Login successful")
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.d("API_RESPONSE", "Error: $errorBody")
-                    showToast("Error: $errorBody")
+                    val error = Gson().fromJson(errorBody, ApiError::class.java)
+                    Log.e("API", "Error: ${error.message}")
+                    showToast("Error: ${error.message}")
                 }
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al obtener datos: ${e.message}")

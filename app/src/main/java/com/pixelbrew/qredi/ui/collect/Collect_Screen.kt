@@ -59,7 +59,7 @@ fun CollectScreen(
             .fillMaxSize()
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
     ) {
-        Collect(viewModel, modifier, context)
+        Collect(viewModel, modifier)
         Spacer(modifier = Modifier.height(8.dp))
     }
 
@@ -79,8 +79,7 @@ fun CollectScreen(
 @Composable
 fun Collect(
     viewModel: CollectViewModel,
-    modifier: Modifier,
-    context: MainActivity,
+    modifier: Modifier
 ) {
     val loans by viewModel.downloadedLoans.observeAsState(emptyList())
 
@@ -89,8 +88,7 @@ fun Collect(
 
         LoansList(
             loans = loans,
-            viewModel = viewModel,
-            context = context
+            viewModel = viewModel
         )
     }
 }
@@ -159,8 +157,7 @@ fun HeaderCollect(
 @Composable
 fun LoansList(
     loans: List<LoanDownloadModel>,
-    viewModel: CollectViewModel,
-    context: MainActivity
+    viewModel: CollectViewModel
 ) {
     var showDialogLoan by remember { mutableStateOf(false) }
     val loanSelectedState =
