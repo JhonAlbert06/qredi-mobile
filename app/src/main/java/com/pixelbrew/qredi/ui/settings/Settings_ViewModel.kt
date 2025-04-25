@@ -41,6 +41,9 @@ class SettingsViewModel(
     private val _selectedDevice = MutableLiveData<BluetoothDevice?>()
     val selectedDevice: LiveData<BluetoothDevice?> get() = _selectedDevice
 
+    private val _isDarkTheme = MutableLiveData<Boolean>()
+    val isDarkTheme: LiveData<Boolean> get() = _isDarkTheme
+
     init {
         try {
             _printerName.value = sessionManager.fetchPrinterName() ?: ""
@@ -57,6 +60,7 @@ class SettingsViewModel(
         loadPairedDevices()
     }
 
+
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun onDeviceSelected(device: BluetoothDevice?) {
         _selectedDevice.postValue(device)
@@ -69,6 +73,11 @@ class SettingsViewModel(
 
     fun onApiUrlChange(url: String) {
         _apiUrl.postValue(url)
+    }
+
+    fun onThemeChange(isDark: Boolean) {
+        _isDarkTheme.postValue(isDark)
+        sessionManager.saveDarkTheme(isDark)
     }
 
     fun saveSettings() {

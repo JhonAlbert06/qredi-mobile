@@ -21,7 +21,7 @@ import com.pixelbrew.qredi.ui.theme.QrediTheme
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

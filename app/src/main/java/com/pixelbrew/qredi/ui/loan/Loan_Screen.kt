@@ -20,9 +20,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -137,6 +139,13 @@ fun HeaderLoan(
     viewModel: LoanViewModel,
     modifier: Modifier = Modifier
 ) {
+
+    var routeId by remember { mutableStateOf("") }
+    var customerId by remember { mutableStateOf("") }
+    var isPaid by remember { mutableStateOf(false) }
+
+    val routesList by viewModel.routesList.observeAsState(initial = emptyList())
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -165,7 +174,7 @@ fun HeaderLoan(
             modifier = Modifier
                 .size(40.dp)
                 .clickable {
-                    //viewModel.showFilterCustomerDialog(true)
+                    viewModel.setShowFilterLoanDialog(true)
                 }
                 .padding(8.dp),
             tint = Color(0xFF6BEDFF)
@@ -177,7 +186,7 @@ fun HeaderLoan(
             modifier = Modifier
                 .size(40.dp)
                 .clickable {
-                    // viewModel.refreshCustomers()
+                    viewModel.refreshLoans()
                 }
                 .padding(8.dp),
             tint = Color(0xFF00BCD4)
@@ -190,18 +199,116 @@ fun HeaderLoan(
             onDismiss = { viewModel.setShowCreationDialog(false) },
             onSubmit = { customerId, routeId, amount, interest, feesQuantity ->
 
-                var loan = LoanModel(
-                    customerId = customerId,
-                    routeId = routeId,
-                    amount = amount.toDouble(),
-                    interest = interest.toDouble(),
-                    feesQuantity = feesQuantity.toInt()
-                )
+                var loan = LoanModel()
 
-                viewModel.createNewLoan(loan)
+                try {
+                    loan = LoanModel(
+                        customerId = customerId,
+                        routeId = routeId,
+                        amount = amount.toDouble(),
+                        interest = interest.toDouble(),
+                        feesQuantity = feesQuantity.toInt(),
+                    )
+
+                    viewModel.createNewLoan(loan)
+                } catch (e: Exception) {
+                    //viewModel("Error al crear el prestamo")
+                }
+
+
             }
         )
     }
+
+    if (viewModel.showFilterLoanDialog.observeAsState().value == true) {
+        FilterLoanDialog(
+            onDismiss = { viewModel.setShowFilterLoanDialog(false) },
+            onApplyFilters = { userId, routeId, isPaid ->
+                viewModel.fetchLoans(userId, routeId, isPaid)
+            },
+            routesList = routesList,
+            userId = customerId,
+            routeId = routeId,
+            isPaid = isPaid
+        )
+    }
+
+}
+
+@Composable
+fun FilterLoanDialog(
+    onDismiss: () -> Unit,
+    onApplyFilters: (String, String, Boolean) -> Unit,
+    usersList: List<CustomerModelRes> = emptyList(),
+    routesList: List<RouteModel> = emptyList(),
+    userId: String,
+    routeId: String,
+    isPaid: Boolean,
+) {
+
+    var userSelected by remember { mutableStateOf(CustomerModelRes()) }
+    var routeSelected by remember { mutableStateOf(RouteModel()) }
+    var isPaidAux by remember { mutableStateOf(isPaid) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Filtrar Prestamos") },
+        text = {
+
+            Column {
+                GenericDropdown(
+                    items = usersList,
+                    selectedItem = userSelected,
+                    onItemSelected = { userSelected = it },
+                    itemLabel = { it.firstName + " " + it.lastName },
+                    label = "Cliente",
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                GenericDropdown(
+                    items = routesList,
+                    selectedItem = routeSelected,
+                    onItemSelected = { routeSelected = it },
+                    itemLabel = { it.name },
+                    label = "Ruta",
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = isPaidAux,
+                        onCheckedChange = { isPaidAux = it }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Pagado")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+
+                    val userIdAux = if (userSelected.id.isNotEmpty()) userSelected.id else userId
+                    val routeIdAux =
+                        if (routeSelected.id.isNotEmpty()) routeSelected.id else routeId
+                    onApplyFilters(userIdAux, routeIdAux, isPaidAux)
+                    onDismiss()
+                }
+            ) {
+                Text("Aplicar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+
 
 }
 
@@ -260,7 +367,7 @@ fun LoanItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(4.dp),
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             if (loan.loanIsPaid) {
                 Tag(
@@ -315,7 +422,7 @@ fun Tag(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .background(backgroundColor, shape = RoundedCornerShape(50))
-            .padding(horizontal = 6.dp, vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         Icon(
             imageVector = ImageVector.vectorResource(id = icon),

@@ -55,7 +55,6 @@ class CustomerViewModel(
 
     val fields = listOf(
         Field("Nombre", "names"),
-        Field("Apellido", "lastNames"),
         Field("Cedula", "cedula"),
         Field("Celular", "phone")
     )
@@ -128,6 +127,7 @@ class CustomerViewModel(
         phone: String,
         reference: String
     ) {
+
         val customer = CustomerModel(
             companyId = userSession?.company?.id ?: "",
             cedula = cedula,
@@ -141,6 +141,7 @@ class CustomerViewModel(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
+
                 val url = "$baseUrl/customer"
                 val response = apiService.createCustomer(
                     url,

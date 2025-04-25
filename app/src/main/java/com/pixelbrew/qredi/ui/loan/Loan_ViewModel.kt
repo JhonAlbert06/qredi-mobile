@@ -33,6 +33,9 @@ class LoanViewModel(
     private val _showCreationDialog = MutableLiveData<Boolean>(false)
     val showCreationDialog: LiveData<Boolean> get() = _showCreationDialog
 
+    private val _showFilterLoanDialog = MutableLiveData<Boolean>(false)
+    val showFilterLoanDialog: LiveData<Boolean> get() = _showFilterLoanDialog
+
     private val _toastMessage = MutableLiveData<String>()
     val toastMessage: LiveData<String> get() = _toastMessage
 
@@ -81,10 +84,21 @@ class LoanViewModel(
         getRoutes()
     }
 
-    private fun fetchLoans() {
+    fun setShowFilterLoanDialog(show: Boolean) {
+        _showFilterLoanDialog.postValue(show)
+        fetchCustomers()
+        getRoutes()
+    }
+
+    fun refreshLoans() {
+        _isLoading.postValue(true)
+        fetchLoans()
+    }
+
+    fun fetchLoans(userId: String = "", routeId: String = "", isPaid: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val url = "$baseUrl/loan"
+                val url = "$baseUrl/loan?userId=${userId}&routeId=${routeId}&loan_is_paid=${isPaid}"
                 val response = apiService.getLoans(url)
 
                 if (response.isSuccessful) {

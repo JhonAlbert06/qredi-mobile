@@ -20,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -50,6 +51,7 @@ fun SettingsScreen(
     val apiUrl by viewModel.apiUrl.observeAsState("")
     val pairedDevices by viewModel.pairedDevices.observeAsState(emptyList())
     val selectedDevice by viewModel.selectedDevice.observeAsState()
+    val isDarkTheme by viewModel.isDarkTheme.observeAsState(false)
 
     Column(
         modifier = modifier
@@ -82,6 +84,23 @@ fun SettingsScreen(
 
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        // Switch theme
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                "Modo oscuro",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            SwitchTheme(
+                isDarkTheme,
+                onCheckedChange = { viewModel.onThemeChange(isDarkTheme) }
+            )
+        }
 
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -129,6 +148,20 @@ fun SettingsScreen(
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
     }
+}
+
+@Composable
+fun SwitchTheme(x0: Boolean, onCheckedChange: () -> Unit) {
+    Switch(
+        checked = x0,
+        onCheckedChange = { onCheckedChange() },
+        colors = androidx.compose.material3.SwitchDefaults.colors(
+            checkedThumbColor = Color(0xFF00BCD4),
+            uncheckedThumbColor = Color(0xFF00BCD4),
+            checkedTrackColor = Color(0xFF00BCD4),
+            uncheckedTrackColor = Color(0xFF00BCD4)
+        )
+    )
 }
 
 @Composable

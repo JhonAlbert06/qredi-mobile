@@ -65,8 +65,9 @@ fun CreateCustomerDialog(
             shape = MaterialTheme.shapes.large,
             tonalElevation = 8.dp,
             modifier = Modifier
+                .height(500.dp)
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(top = 10.dp, bottom = 10.dp, start = 10.dp, end = 10.dp)
         ) {
             Column(
                 modifier = Modifier
