@@ -2,6 +2,7 @@ package com.pixelbrew.qredi.ui.loan.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -28,10 +29,11 @@ fun Tag(
     contentColor: Color
 ) {
     Row(
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .background(backgroundColor, shape = RoundedCornerShape(50))
-            .padding(horizontal = 8.dp, vertical = 8.dp)
+            .background(backgroundColor, shape = RoundedCornerShape(20))
+            .padding(horizontal = 10.dp, vertical = 10.dp)
     ) {
         Icon(
             imageVector = ImageVector.vectorResource(id = icon),

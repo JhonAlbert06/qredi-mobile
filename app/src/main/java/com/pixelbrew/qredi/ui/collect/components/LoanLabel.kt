@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LoanLabel(
     icon: ImageVector,
-    text: String
+    text: String,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
