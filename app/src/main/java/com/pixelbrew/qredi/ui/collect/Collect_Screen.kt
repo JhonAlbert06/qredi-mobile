@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
-import com.pixelbrew.qredi.ui.collect.components.LoanDetailDialog
+import com.pixelbrew.qredi.ui.collect.components.LoanDetailBottomSheet
 import com.pixelbrew.qredi.ui.collect.components.LoanItemCollect
 import com.pixelbrew.qredi.ui.collect.components.RouteSelectionDialog
 import kotlinx.coroutines.delay
@@ -192,8 +192,8 @@ fun LoansList(
         }
     }
 
-    LoanDetailDialog(
-        showDialog = showDialogLoan,
+    LoanDetailBottomSheet(
+        showBottomSheet = showDialogLoan,
         onDismiss = { showDialogLoan = false },
         loan = loanSelected,
         viewModel = viewModel

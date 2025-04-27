@@ -30,7 +30,9 @@ class MainActivity : ComponentActivity() {
         var networkModule = NetworkModule.createApiService(sessionManager)
 
         setContent {
-            QrediTheme {
+            QrediTheme(
+                darkTheme = false,
+            ) {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     SideMenu(
                         modifier = Modifier.padding(innerPadding),
