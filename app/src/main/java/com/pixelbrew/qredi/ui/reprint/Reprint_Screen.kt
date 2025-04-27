@@ -190,7 +190,7 @@ fun HeaderReprint(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            "Reimprimir",
+            "",
             style = MaterialTheme.typography.headlineMedium,
         )
 

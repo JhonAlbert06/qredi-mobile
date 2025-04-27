@@ -37,7 +37,7 @@ fun LoanDetailBottomSheet(
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = onDismiss,
-            dragHandle = { BottomSheetDefaults.DragHandle() } // Agregar controlador de arrastre
+            dragHandle = { BottomSheetDefaults.DragHandle() }
         ) {
             Column(
                 modifier = modifier

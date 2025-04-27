@@ -12,12 +12,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -77,18 +78,32 @@ fun CustomerContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Clientes") },
+                title = { Text("") },
                 actions = {
-                    IconButton(onClick = { viewModel.refreshCustomers() }) {
+                    Button(
+                        onClick = {
+                            viewModel.refreshCustomers()
+                        },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .align(Alignment.CenterVertically),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF00BCD4),
+                            contentColor = Color.Black,
+                            disabledContainerColor = Color(0x2C00BCD4),
+                            disabledContentColor = Color(0xFF0C0C0C)
+                        )
+                    ) {
+                        Text("Actualizar")
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.arrows_rotate_solid),
                             contentDescription = "Actualizar",
-                            tint = Color(0xFF00BCD4),
                             modifier = Modifier
-                                .size(40.dp)
-                                .padding(8.dp),
+                                .size(20.dp)
+                                .padding(start = 8.dp)
                         )
                     }
+
                 }
             )
         },

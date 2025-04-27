@@ -51,6 +51,9 @@ class LoanViewModel(
     init {
         _isLoading.postValue(true)
         fetchLoans()
+
+        fetchCustomers()
+        getRoutes()
     }
 
     fun createNewLoan(loan: LoanModel) {
@@ -80,14 +83,12 @@ class LoanViewModel(
 
     fun setShowCreationDialog(show: Boolean) {
         _showCreationDialog.postValue(show)
-        fetchCustomers()
-        getRoutes()
+
     }
 
     fun setShowFilterLoanDialog(show: Boolean) {
         _showFilterLoanDialog.postValue(show)
-        fetchCustomers()
-        getRoutes()
+
     }
 
     fun refreshLoans() {
@@ -95,15 +96,37 @@ class LoanViewModel(
         fetchLoans()
     }
 
-    fun fetchLoans(userId: String = "", routeId: String = "", isPaid: Boolean = false) {
+    fun fetchLoans(
+        userId: String? = null,
+        routeId: String? = null,
+        isPaid: Boolean? = null,
+        isCurrentLoan: Boolean? = null
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val url = "$baseUrl/loan?userId=${userId}&routeId=${routeId}&loan_is_paid=${isPaid}"
+                // Construir la URL con solo los parámetros no nulos o no vacíos
+                val urlBuilder = StringBuilder("$baseUrl/loan?")
+                val queryParams = mutableListOf<String>()
+
+                // Agregar cada parámetro solo si no es nulo o vacío
+                userId?.takeIf { it.isNotEmpty() }?.let { queryParams.add("userId=$it") }
+                routeId?.takeIf { it.isNotEmpty() }?.let { queryParams.add("routeId=$it") }
+                isPaid?.let { queryParams.add("loan_is_paid=$it") }
+                isCurrentLoan?.let { queryParams.add("is_current_loan=$it") }
+
+                // Unir los parámetros en la URL
+                if (queryParams.isNotEmpty()) {
+                    urlBuilder.append(queryParams.joinToString("&"))
+                }
+
+                val url = urlBuilder.toString()
+
+                // Realizar la solicitud a la API
                 val response = apiService.getLoans(url)
 
                 if (response.isSuccessful) {
                     _loans.postValue(response.body() ?: emptyList())
-                    Log.d("LoanViewModel", "Fetched loans: $loans")
+                    Log.d("LoanViewModel", "Fetched loans: ${_loans.value}")
                     _isLoading.postValue(false)
                 } else {
                     val errorBody = response.errorBody()?.string()

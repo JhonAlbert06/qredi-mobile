@@ -90,21 +90,6 @@ fun LoanItem(
             text = "${viewModel.formatNumber(loan.amount)} $"
         )
 
-        LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.hashtag_solid),
-            text = "${loan.feesQuantity} Cuotas"
-        )
-
-        LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.percent_solid),
-            text = "${viewModel.formatNumber(loan.interest)} Interés"
-        )
-
-        LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.percent_solid),
-            text = "0.00 Mora"
-        )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(

@@ -127,7 +127,8 @@ fun SideMenu(
                                 if (isClosed) open() else close()
                             }
                         }
-                    }
+                    },
+                    currentScreen = currentScreen
                 )
             }
         ) { padding ->
@@ -176,7 +177,19 @@ fun SideMenu(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(onOpenDrawer: () -> Unit) {
+fun TopBar(onOpenDrawer: () -> Unit, currentScreen: Screen) {
+
+    val drawerItems = listOf(
+        Triple("Administrar", R.drawable.gear_solid, Screen.Admin),
+        Triple("Cobrar", R.drawable.wallet_solid, Screen.Collect),
+        Triple("Reimprimir", R.drawable.print_solid, Screen.Reprint),
+        Triple("Cliente", R.drawable.user_solid, Screen.Customer),
+        Triple("Préstamo", R.drawable.coins_solid, Screen.Loan),
+        Triple("Estadísticas", R.drawable.chart_simple_solid, Screen.Statistics),
+        Triple("Configuración", R.drawable.gears_solid, Screen.Settings),
+    )
+
+
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f),
@@ -196,7 +209,12 @@ fun TopBar(onOpenDrawer: () -> Unit) {
             )
         },
         title = {
-            Text("Qredi")
+            // Screen name or logo can be added here
+            Text(
+                text = drawerItems.first { it.third == currentScreen }.first,
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         },
         actions = {
             Icon(
