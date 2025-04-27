@@ -153,7 +153,7 @@ fun SideMenu(
                 )
 
                 Screen.Loan -> LoanScreen(
-                    LoanViewModel(loanRepository, apiService, sessionManager),
+                    LoanViewModel(apiService, sessionManager),
                     modifier = modifier.padding(top = 25.dp),
                     context,
                 )

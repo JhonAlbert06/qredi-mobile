@@ -54,13 +54,11 @@ fun FilterLoanBottomSheet(
             Text("Filtrar Préstamos", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Dropdown para elegir el tipo de filtro
             GenericDropdown(
                 items = listOf("Cliente", "Ruta", "Pagado", "Préstamo Actual"),
                 selectedItem = selectedFilter ?: "Seleccione uno",
                 onItemSelected = { filter ->
                     selectedFilter = filter
-                    // Limpiar otros campos cuando cambia el filtro
                     userSelected = CustomerModelRes()
                     routeSelected = RouteModel()
                     isPaidAux = null
@@ -74,7 +72,6 @@ fun FilterLoanBottomSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Mostrar solo el filtro seleccionado
             when (selectedFilter) {
                 "Cliente" -> {
                     GenericDropdown(
@@ -137,7 +134,6 @@ fun FilterLoanBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botones de acción
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End

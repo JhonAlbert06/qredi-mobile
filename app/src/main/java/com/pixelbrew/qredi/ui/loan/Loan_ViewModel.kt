@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.pixelbrew.qredi.data.local.repository.LoanRepository
 import com.pixelbrew.qredi.data.network.api.ApiService
 import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
@@ -20,7 +19,6 @@ import kotlinx.coroutines.withContext
 
 
 class LoanViewModel(
-    private val loanRepository: LoanRepository,
     private val apiService: ApiService,
     private val sessionManager: SessionManager,
 ) : ViewModel() {
