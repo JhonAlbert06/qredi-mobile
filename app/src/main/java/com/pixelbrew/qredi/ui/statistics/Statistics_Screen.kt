@@ -26,7 +26,7 @@ fun StatisticsScreen(modifier: Modifier = Modifier) {
             .padding(16.dp)
     ) {
         Text(
-            "Estadísticas",
+            "",
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(24.dp))

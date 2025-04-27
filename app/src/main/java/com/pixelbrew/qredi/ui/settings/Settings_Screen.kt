@@ -66,7 +66,7 @@ fun SettingsScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                "Configuración",
+                "",
                 style = MaterialTheme.typography.headlineMedium
             )
             Icon(
