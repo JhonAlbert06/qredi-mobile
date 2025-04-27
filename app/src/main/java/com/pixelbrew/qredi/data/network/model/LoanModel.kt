@@ -34,19 +34,19 @@ class LoanModelRes {
     val date = DateModel()
     val customer = CustomerModelRes()
     val route = RouteModel()
-    val fee = listOf<FeeModelRes>()
+    val fees = listOf<FeeModelRes>()
 }
 
 class FeeModelRes {
     val id = ""
     val number = 0
     val expectedDate = DateModel()
-    val payments = listOf<PaymentModelRes>()
+    val payments = listOf<Payments>()
 }
 
-class PaymentModelRes {
+class Payments {
     val id = ""
     val paidAmount = 0.0
-    val date = DateModel()
+    val paidDate = DateModel()
     val user = UserModel()
 }

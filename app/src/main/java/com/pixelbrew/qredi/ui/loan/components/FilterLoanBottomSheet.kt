@@ -31,22 +31,17 @@ import com.pixelbrew.qredi.ui.components.dropdown.GenericDropdown
 @Composable
 fun FilterLoanBottomSheet(
     onDismiss: () -> Unit,
-    onApplyFilters: (String?, String?, Boolean?, Boolean?) -> Unit,
+    onApplyFilters: (String, String) -> Unit,
     usersList: List<CustomerModelRes> = emptyList(),
     routesList: List<RouteModel> = emptyList(),
-    userId: String?,
-    routeId: String?,
-    isPaid: Boolean?,
-    isCurrentLoan: Boolean?,
 ) {
-    var userSelected by remember {
-        mutableStateOf(usersList.find { it.id == userId } ?: CustomerModelRes())
-    }
-    var routeSelected by remember {
-        mutableStateOf(routesList.find { it.id == routeId } ?: RouteModel())
-    }
-    var isPaidAux by remember { mutableStateOf(isPaid) }
-    var isCurrentLoanAux by remember { mutableStateOf(isCurrentLoan) }
+    var selectedFilter by remember { mutableStateOf<String?>(null) }
+    var userSelected by remember { mutableStateOf(CustomerModelRes()) }
+    var routeSelected by remember { mutableStateOf(RouteModel()) }
+    var isPaidAux by remember { mutableStateOf<Boolean?>(null) }
+    var isCurrentLoanAux by remember { mutableStateOf<Boolean?>(null) }
+    var selectedField by remember { mutableStateOf<String?>(null) }
+    var selectedQuery by remember { mutableStateOf<String?>(null) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss
@@ -57,77 +52,107 @@ fun FilterLoanBottomSheet(
                 .padding(16.dp)
         ) {
             Text("Filtrar Préstamos", style = MaterialTheme.typography.titleLarge)
-
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Dropdown para seleccionar el cliente
+            // Dropdown para elegir el tipo de filtro
             GenericDropdown(
-                items = usersList,
-                selectedItem = userSelected,
-                onItemSelected = { userSelected = it },
-                itemLabel = { it.firstName + " " + it.lastName },
-                label = "Cliente",
+                items = listOf("Cliente", "Ruta", "Pagado", "Préstamo Actual"),
+                selectedItem = selectedFilter ?: "Seleccione uno",
+                onItemSelected = { filter ->
+                    selectedFilter = filter
+                    // Limpiar otros campos cuando cambia el filtro
+                    userSelected = CustomerModelRes()
+                    routeSelected = RouteModel()
+                    isPaidAux = null
+                    isCurrentLoanAux = null
+                    selectedField = null
+                    selectedQuery = null
+                },
+                itemLabel = { it },
+                label = "Filtrar por",
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Dropdown para seleccionar la ruta
-            GenericDropdown(
-                items = routesList,
-                selectedItem = routeSelected,
-                onItemSelected = { routeSelected = it },
-                itemLabel = { it.name },
-                label = "Ruta",
-            )
+            // Mostrar solo el filtro seleccionado
+            when (selectedFilter) {
+                "Cliente" -> {
+                    GenericDropdown(
+                        items = usersList,
+                        selectedItem = userSelected,
+                        onItemSelected = {
+                            userSelected = it
+                            selectedField = "customerId"
+                            selectedQuery = it.id
+                        },
+                        itemLabel = { it.firstName + " " + it.lastName },
+                        label = "Cliente",
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                "Ruta" -> {
+                    GenericDropdown(
+                        items = routesList,
+                        selectedItem = routeSelected,
+                        onItemSelected = {
+                            routeSelected = it
+                            selectedField = "routeId"
+                            selectedQuery = it.id
+                        },
+                        itemLabel = { it.name },
+                        label = "Ruta",
+                    )
+                }
 
-            // Checkbox para "Pagado"
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(
-                    checked = isPaidAux == true,  // Si es true, está marcado
-                    onCheckedChange = { isPaidAux = it }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Pagado")
-            }
+                "Pagado" -> {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = isPaidAux == true,
+                            onCheckedChange = {
+                                isPaidAux = it
+                                selectedField = "loan_is_paid"
+                                selectedQuery = it.toString()
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Pagado")
+                    }
+                }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Checkbox para "Préstamo Actual"
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(
-                    checked = isCurrentLoanAux == true,  // Si es true, está marcado
-                    onCheckedChange = { isCurrentLoanAux = it }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Préstamo Actual")
+                "Préstamo Actual" -> {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = isCurrentLoanAux == true,
+                            onCheckedChange = {
+                                isCurrentLoanAux = it
+                                selectedField = "is_current_loan"
+                                selectedQuery = it.toString()
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Préstamo Actual")
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Fila con los botones
+            // Botones de acción
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                // Botón para cancelar
                 TextButton(onClick = onDismiss) {
                     Text("Cancelar")
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // Botón para aplicar los filtros
                 Button(
                     onClick = {
-                        val userIdAux = userSelected.id.takeIf { it.isNotEmpty() } ?: userId
-                        val routeIdAux = routeSelected.id.takeIf { it.isNotEmpty() } ?: routeId
-                        onApplyFilters(userIdAux, routeIdAux, isPaidAux, isCurrentLoanAux)
+                        if (selectedField != null && selectedQuery != null) {
+                            onApplyFilters(selectedField!!, selectedQuery!!)
+                        }
                         onDismiss()
                     }
                 ) {
@@ -137,4 +162,3 @@ fun FilterLoanBottomSheet(
         }
     }
 }
-

@@ -42,6 +42,7 @@ import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.data.network.model.LoanModel
 import com.pixelbrew.qredi.ui.loan.components.CreateLoanBottomSheet
 import com.pixelbrew.qredi.ui.loan.components.FilterLoanBottomSheet
+import com.pixelbrew.qredi.ui.loan.components.LoanDetailBottomSheet
 import com.pixelbrew.qredi.ui.loan.components.LoanItem
 import kotlinx.coroutines.delay
 
@@ -74,6 +75,8 @@ fun LoanContent(
 
     val routesList by viewModel.routesList.observeAsState(initial = emptyList())
     val customers by viewModel.customerList.observeAsState(initial = emptyList())
+
+    val loanSelected by viewModel.loanSelected.observeAsState()
 
     var routeId by remember { mutableStateOf("") }
     var customerId by remember { mutableStateOf("") }
@@ -197,7 +200,8 @@ fun LoanContent(
                             modifier = Modifier
                                 .padding(bottom = 8.dp)
                                 .clickable {
-                                    // Acciones al hacer clic en un préstamo
+                                    viewModel.setLoanSelected(loan)
+                                    viewModel.setLoanDetailsDialog(true)
                                 }
                         ) {
                             LoanItem(loan, viewModel)
@@ -237,16 +241,24 @@ fun LoanContent(
     if (viewModel.showFilterLoanDialog.observeAsState().value == true) {
         FilterLoanBottomSheet(
             onDismiss = { viewModel.setShowFilterLoanDialog(false) },
-            onApplyFilters = { userId, routeId, isPaid, isCurrentLoan ->
-                viewModel.fetchLoans(userId, routeId, isPaid, isCurrentLoan)
+            onApplyFilters = { field, query ->
+                viewModel.fetchLoans(field, query)
             },
             routesList = routesList,
             usersList = customers,
-            userId = customerId,
-            routeId = routeId,
-            isPaid = isPaid,
-            isCurrentLoan = isCurrentLoan,
+        )
+    }
+
+    if (viewModel.showLoanDetailsDialog.observeAsState().value == true) {
+        LoanDetailBottomSheet(
+            loan = loanSelected!!,
+            onDismiss = { viewModel.setLoanDetailsDialog(false) },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         )
     }
 }
+
+
 

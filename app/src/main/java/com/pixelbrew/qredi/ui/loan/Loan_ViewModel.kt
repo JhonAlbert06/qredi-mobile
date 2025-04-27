@@ -36,6 +36,9 @@ class LoanViewModel(
     private val _showFilterLoanDialog = MutableLiveData<Boolean>(false)
     val showFilterLoanDialog: LiveData<Boolean> get() = _showFilterLoanDialog
 
+    private val _showLoanDetailsDialog = MutableLiveData<Boolean>(false)
+    val showLoanDetailsDialog: LiveData<Boolean> get() = _showLoanDetailsDialog
+
     private val _toastMessage = MutableLiveData<String>()
     val toastMessage: LiveData<String> get() = _toastMessage
 
@@ -48,12 +51,23 @@ class LoanViewModel(
     private val _loans = MutableLiveData<List<LoanModelRes>>()
     val loans: LiveData<List<LoanModelRes>> get() = _loans
 
+    private val _loanSelected = MutableLiveData<LoanModelRes>()
+    val loanSelected: LiveData<LoanModelRes> get() = _loanSelected
+
     init {
         _isLoading.postValue(true)
         fetchLoans()
 
         fetchCustomers()
         getRoutes()
+    }
+
+    fun setLoanDetailsDialog(show: Boolean) {
+        _showLoanDetailsDialog.postValue(show)
+    }
+
+    fun setLoanSelected(loan: LoanModelRes) {
+        _loanSelected.postValue(loan)
     }
 
     fun createNewLoan(loan: LoanModel) {
@@ -83,12 +97,10 @@ class LoanViewModel(
 
     fun setShowCreationDialog(show: Boolean) {
         _showCreationDialog.postValue(show)
-
     }
 
     fun setShowFilterLoanDialog(show: Boolean) {
         _showFilterLoanDialog.postValue(show)
-
     }
 
     fun refreshLoans() {
@@ -97,26 +109,16 @@ class LoanViewModel(
     }
 
     fun fetchLoans(
-        userId: String? = null,
-        routeId: String? = null,
-        isPaid: Boolean? = null,
-        isCurrentLoan: Boolean? = null
+        field: String? = null,
+        query: String? = null,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Construir la URL con solo los parámetros no nulos o no vacíos
+                // Construir la URL base
                 val urlBuilder = StringBuilder("$baseUrl/loan?")
-                val queryParams = mutableListOf<String>()
 
-                // Agregar cada parámetro solo si no es nulo o vacío
-                userId?.takeIf { it.isNotEmpty() }?.let { queryParams.add("userId=$it") }
-                routeId?.takeIf { it.isNotEmpty() }?.let { queryParams.add("routeId=$it") }
-                isPaid?.let { queryParams.add("loan_is_paid=$it") }
-                isCurrentLoan?.let { queryParams.add("is_current_loan=$it") }
-
-                // Unir los parámetros en la URL
-                if (queryParams.isNotEmpty()) {
-                    urlBuilder.append(queryParams.joinToString("&"))
+                if (!field.isNullOrEmpty() && !query.isNullOrEmpty()) {
+                    urlBuilder.append("$field=$query")
                 }
 
                 val url = urlBuilder.toString()
@@ -127,13 +129,11 @@ class LoanViewModel(
                 if (response.isSuccessful) {
                     _loans.postValue(response.body() ?: emptyList())
                     Log.d("LoanViewModel", "Fetched loans: ${_loans.value}")
-                    _isLoading.postValue(false)
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val error = Gson().fromJson(errorBody, ApiError::class.java)
                     Log.e("API_RESPONSE", "Error: ${error.message}")
                     showToast("Error: ${error.message}")
-                    _isLoading.postValue(false)
                 }
 
                 _isLoading.postValue(false)

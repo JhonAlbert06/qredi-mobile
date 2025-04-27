@@ -27,7 +27,7 @@ import com.pixelbrew.qredi.ui.collect.CollectViewModel
 @RequiresApi(Build.VERSION_CODES.O)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
-fun LoanDetailBottomSheet(
+fun LoanDetailCollectBottomSheet(
     showBottomSheet: Boolean,
     onDismiss: () -> Unit,
     loan: LoanDownloadModel,
