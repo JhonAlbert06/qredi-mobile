@@ -7,6 +7,7 @@ import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,7 +31,7 @@ fun LoanDetailDialog(
     if (showDialog) {
         AlertDialog(
             properties = DialogProperties(usePlatformDefaultWidth = false),
-            modifier = modifier,
+            modifier = modifier.padding(16.dp),
             onDismissRequest = onDismiss,
             title = {
                 Text(text = "Préstamo")

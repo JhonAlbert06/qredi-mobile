@@ -2,6 +2,7 @@ package com.pixelbrew.qredi.ui.collect.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -19,7 +20,11 @@ fun LoanItemCollect(
     viewModel: CollectViewModel
 ) {
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
         LoanLabel(
             icon = ImageVector.vectorResource(id = R.drawable.user_solid),
             text = loan.customer.name

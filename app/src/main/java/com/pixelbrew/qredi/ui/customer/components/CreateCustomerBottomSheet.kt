@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,11 +30,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateCustomerDialog(
+fun CreateCustomerBottomSheet(
     onDismiss: () -> Unit = {},
     onSubmit: (
         cedula: String,
@@ -57,116 +58,108 @@ fun CreateCustomerDialog(
 
     val scrollState = rememberScrollState()
 
-    Dialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
-        Surface(
-            shape = MaterialTheme.shapes.large,
-            tonalElevation = 8.dp,
+        Column(
             modifier = Modifier
-                .height(500.dp)
                 .fillMaxWidth()
-                .padding(top = 10.dp, bottom = 10.dp, start = 10.dp, end = 10.dp)
+                .verticalScroll(scrollState)
+                .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .verticalScroll(scrollState)
-                    .padding(16.dp)
+            Text("Crear Cliente", style = MaterialTheme.typography.titleLarge)
+
+            Spacer(modifier = Modifier.height(8.dp))
+            CedulaField(
+                cedula = cedula,
+                onValueChange = { cedula = it }
+            )
+
+            NamesField(
+                names = names,
+                onValueChange = { names = it }
+            )
+
+            LastNamesField(
+                lastNames = lastNames,
+                onValueChange = { lastNames = it }
+            )
+
+            PhoneField(
+                phone = phone,
+                onValueChange = { phone = it }
+            )
+
+            ReferenceField(
+                reference = reference,
+                onValueChange = { reference = it }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("Dirección", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(4.dp))
+
+            CityField(
+                city = city,
+                onValueChange = { city = it }
+            )
+
+            SectorField(
+                sector = sector,
+                onValueChange = { sector = it }
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Crear Cliente", style = MaterialTheme.typography.titleLarge)
-
-                Spacer(modifier = Modifier.height(8.dp))
-                CedulaField(
-                    cedula = cedula,
-                    onValueChange = { cedula = it }
+                StreetField(
+                    street = street,
+                    onValueChange = { street = it },
+                    modifier = Modifier.weight(1f)
                 )
-
-                NamesField(
-                    names = names,
-                    onValueChange = { names = it }
+                HouseNumberField(
+                    houseNumber = houseNumber,
+                    onValueChange = { houseNumber = it },
+                    modifier = Modifier.weight(1f)
                 )
+            }
 
-                LastNamesField(
-                    lastNames = lastNames,
-                    onValueChange = { lastNames = it }
-                )
+            Spacer(modifier = Modifier.height(24.dp))
 
-                PhoneField(
-                    phone = phone,
-                    onValueChange = { phone = it }
-                )
-
-                ReferenceField(
-                    reference = reference,
-                    onValueChange = { reference = it }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Dirección", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(4.dp))
-
-                CityField(
-                    city = city,
-                    onValueChange = { city = it }
-                )
-
-                SectorField(
-                    sector = sector,
-                    onValueChange = { sector = it }
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(
+                    onClick = onDismiss
                 ) {
-                    StreetField(
-                        street = street,
-                        onValueChange = { street = it },
-                        modifier = Modifier.weight(1f)
-                    )
-                    HouseNumberField(
-                        houseNumber = houseNumber,
-                        onValueChange = { houseNumber = it },
-                        modifier = Modifier.weight(1f)
-                    )
+                    Text("Cancelar")
                 }
-
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                Spacer(modifier = Modifier.width(16.dp))
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF00BCD4),
+                        contentColor = Color.Black,
+                        disabledContainerColor = Color(0x2C00BCD4),
+                        disabledContentColor = Color(0xFF0C0C0C)
+                    ),
+                    onClick = {
+                        val fullAddress =
+                            "${city.trim()}, ${sector.trim()}, Calle ${street.trim()}, Casa #${houseNumber.trim()}"
+                        onSubmit(
+                            cedula,
+                            names,
+                            lastNames,
+                            fullAddress,
+                            phone,
+                            reference
+                        )
+                        onDismiss()
+                    }
                 ) {
-                    TextButton(
-                        onClick = onDismiss
-                    ) {
-                        Text("Cancelar")
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF00BCD4),
-                            contentColor = Color.Black,
-                            disabledContainerColor = Color(0x2C00BCD4),
-                            disabledContentColor = Color(0xFF0C0C0C)
-                        ),
-                        onClick = {
-                            val fullAddress =
-                                "${city.trim()}, ${sector.trim()}, Calle ${street.trim()}, Casa #${houseNumber.trim()}"
-                            onSubmit(
-                                cedula,
-                                names,
-                                lastNames,
-                                fullAddress,
-                                phone,
-                                reference
-                            )
-                        }
-                    ) {
-                        Text("Guardar")
-                    }
+                    Text("Guardar")
                 }
             }
         }

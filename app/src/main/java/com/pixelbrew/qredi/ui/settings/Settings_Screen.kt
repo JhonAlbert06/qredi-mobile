@@ -51,7 +51,6 @@ fun SettingsScreen(
     val apiUrl by viewModel.apiUrl.observeAsState("")
     val pairedDevices by viewModel.pairedDevices.observeAsState(emptyList())
     val selectedDevice by viewModel.selectedDevice.observeAsState()
-    val isDarkTheme by viewModel.isDarkTheme.observeAsState(false)
 
     Column(
         modifier = modifier
@@ -84,24 +83,6 @@ fun SettingsScreen(
 
 
         Spacer(modifier = Modifier.height(24.dp))
-
-        // Switch theme
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                "Modo oscuro",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            SwitchTheme(
-                isDarkTheme,
-                onCheckedChange = { viewModel.onThemeChange(isDarkTheme) }
-            )
-        }
-
 
         Spacer(modifier = Modifier.height(24.dp))
         Text("Impresora", style = MaterialTheme.typography.titleLarge)
