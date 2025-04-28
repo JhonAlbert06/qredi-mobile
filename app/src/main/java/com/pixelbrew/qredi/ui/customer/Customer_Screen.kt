@@ -76,8 +76,10 @@ fun CustomerContent(
     var isFabExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
+
         topBar = {
             TopAppBar(
+                modifier = Modifier.padding(top = 12.dp),
                 title = { Text("") },
                 actions = {
                     Button(

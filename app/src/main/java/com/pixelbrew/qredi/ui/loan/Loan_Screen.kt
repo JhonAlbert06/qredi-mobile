@@ -78,17 +78,14 @@ fun LoanContent(
 
     val loanSelected by viewModel.loanSelected.observeAsState()
 
-    var routeId by remember { mutableStateOf("") }
-    var customerId by remember { mutableStateOf("") }
-    var isPaid by remember { mutableStateOf(false) }
-    var isCurrentLoan by remember { mutableStateOf(false) }
-
     // Estado para el botón flotante expandible
     var isFabExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
+
             TopAppBar(
+                modifier = Modifier.padding(top = 12.dp),
                 title = { Text("") },
                 actions = {
 
