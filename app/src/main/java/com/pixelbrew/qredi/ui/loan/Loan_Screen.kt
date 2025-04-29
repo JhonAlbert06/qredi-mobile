@@ -1,7 +1,9 @@
 package com.pixelbrew.qredi.ui.loan
 
+import android.Manifest
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +48,7 @@ import com.pixelbrew.qredi.ui.loan.components.LoanDetailBottomSheet
 import com.pixelbrew.qredi.ui.loan.components.LoanItem
 import kotlinx.coroutines.delay
 
+@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun LoanScreen(
     viewModel: LoanViewModel,
@@ -65,6 +68,7 @@ fun LoanScreen(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun LoanContent(
     viewModel: LoanViewModel,

@@ -2,7 +2,6 @@ package com.pixelbrew.qredi.ui.collect
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -36,8 +35,7 @@ import java.time.ZoneId
 class CollectViewModel(
     private val loanRepository: LoanRepository,
     private val apiService: ApiService,
-    private val sessionManager: SessionManager,
-    private val context: Context
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val baseUrl = sessionManager.fetchApiUrl()
@@ -316,7 +314,6 @@ class CollectViewModel(
 
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
-                        context = context,
                         sessionManager.fetchPrinterName().toString(),
                         BluetoothPrinter.DocumentType.PAYMENT,
                         feeEntity = NewFeeEntity(

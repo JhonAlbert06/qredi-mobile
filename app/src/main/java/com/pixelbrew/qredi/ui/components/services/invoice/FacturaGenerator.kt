@@ -1,5 +1,6 @@
 package com.pixelbrew.qredi.ui.components.services.invoice
 
+import com.pixelbrew.qredi.data.local.entities.LoanEntity
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 
 object InvoiceGenerator {
@@ -15,6 +16,48 @@ object InvoiceGenerator {
         val finalBalance: Double get() = initialBalance + totalPayments
         val transactionsCount: Int get() = payments.size
         val uniqueClients: Int get() = payments.map { it.clientName }.distinct().count()
+    }
+
+    fun generateLoanContent(loanEntity: LoanEntity): String {
+        val builder = StringBuilder()
+        val fecha = "%02d/%02d/%04d %02d:%02d:%02d".format(
+            loanEntity.loanDateDay,
+            loanEntity.loanDateMonth,
+            loanEntity.loanDateYear,
+            loanEntity.loanDateHour,
+            loanEntity.loanDateMinute,
+            loanEntity.loanDateSecond
+        )
+
+        builder.appendLine("=".repeat(32))
+        builder.appendLine(centerText("* PRESTAMO OTORGADO *", 32))
+        builder.appendLine("=".repeat(32))
+
+        // Información del cliente
+        builder.appendLine("CLIENTE    : ${loanEntity.customerName.take(26).uppercase()}")
+        builder.appendLine("CEDULA     : ${loanEntity.customerCedula}")
+        builder.appendLine("-".repeat(32))
+
+        // Información del préstamo
+        builder.appendLine("MONTO      : RD$ ${"%,.2f".format(loanEntity.amount)}")
+        builder.appendLine("INTERES    : ${"%.2f".format(loanEntity.interest)}%")
+        builder.appendLine("CUOTAS     : ${loanEntity.feesQuantity}")
+        builder.appendLine("FECHA      : $fecha")
+        builder.appendLine("-".repeat(32))
+
+        builder.appendLine(centerText("* FIRMA CLIENTE *", 32))
+        builder.appendLine("_".repeat(32))
+        builder.appendLine("_".repeat(32))
+        builder.appendLine("-".repeat(32))
+
+        // Notas de responsabilidad
+        builder.appendLine(centerText("NO NOS HACEMOS RESPONSABLES", 32))
+        builder.appendLine(centerText("DEL DINERO ENTREGADO SIN", 32))
+        builder.appendLine(centerText("RECIBO", 32))
+        builder.appendLine("=".repeat(32))
+        builder.appendLine("\n\n")
+
+        return builder.toString()
     }
 
     fun generatePaymentContent(fee: NewFeeEntity): String {

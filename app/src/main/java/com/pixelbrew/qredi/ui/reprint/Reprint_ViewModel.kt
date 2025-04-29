@@ -171,7 +171,6 @@ class ReprintViewModel(
 
         viewModelScope.launch(Dispatchers.IO) {
             val recibo = BluetoothPrinter.printDocument(
-                context = context,
                 sessionManager.fetchPrinterName().toString(),
                 BluetoothPrinter.DocumentType.DAY_CLOSE,
                 data = cierre
@@ -196,7 +195,6 @@ class ReprintViewModel(
 
             while (attempts < 3 && !success) {
                 success = BluetoothPrinter.printDocument(
-                    context,
                     sessionManager.fetchPrinterName().toString(),
                     BluetoothPrinter.DocumentType.PAYMENT,
                     feeEntity = fee,

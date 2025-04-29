@@ -1,11 +1,16 @@
 package com.pixelbrew.qredi.ui.loan
 
+import android.Manifest
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.pixelbrew.qredi.data.local.entities.LoanEntity
 import com.pixelbrew.qredi.data.network.api.ApiService
 import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
@@ -13,9 +18,13 @@ import com.pixelbrew.qredi.data.network.model.LoanModel
 import com.pixelbrew.qredi.data.network.model.LoanModelRes
 import com.pixelbrew.qredi.data.network.model.RouteModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
+import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 
 class LoanViewModel(
@@ -68,6 +77,8 @@ class LoanViewModel(
         _loanSelected.postValue(loan)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun createNewLoan(loan: LoanModel) {
         _isLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
@@ -80,6 +91,8 @@ class LoanViewModel(
                     showToast("Loan created successfully")
                     fetchLoans()
                     _showCreationDialog.postValue(false)
+
+                    printLoan(loan)
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val error = Gson().fromJson(errorBody, ApiError::class.java)
@@ -211,5 +224,56 @@ class LoanViewModel(
         } else {
             cedula
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun printLoan(loan: LoanModel) {
+
+        try {
+
+            val customer = customerList.value?.find { it.id == loan.customerId }
+
+            viewModelScope.launch(Dispatchers.IO) {
+                var attempts = 0
+                var success = false
+
+                while (attempts < 3 && !success) {
+                    success = BluetoothPrinter.printDocument(
+                        sessionManager.fetchPrinterName().toString(),
+                        BluetoothPrinter.DocumentType.LOAN,
+                        loanEntity = LoanEntity(
+                            id = "",
+                            amount = loan.amount,
+                            interest = loan.interest,
+                            feesQuantity = loan.feesQuantity,
+                            loanDateDay = LocalDateTime.now().dayOfMonth,
+                            loanDateMonth = LocalDateTime.now().monthValue,
+                            loanDateYear = LocalDateTime.now().year,
+                            loanDateHour = LocalDateTime.now().hour,
+                            loanDateMinute = LocalDateTime.now().minute,
+                            loanDateSecond = LocalDateTime.now().second,
+                            loanDateTimezone = ZoneId.systemDefault().id,
+                            customerId = customer?.id.toString(),
+                            customerName = customer?.firstName.toString() + " " + customer?.lastName.toString(),
+                            customerCedula = customer?.cedula.toString()
+                        )
+                    )
+
+                    if (!success) {
+                        attempts++
+                        delay(1000)
+                    }
+                }
+
+
+            }
+
+        } catch (e: NumberFormatException) {
+            //showToast("El monto ingresado no es válido: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            //showToast("Error al generar el recibo: ${e.localizedMessage}")
+        }
+
     }
 }

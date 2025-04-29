@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.pixelbrew.qredi.data.local.entities.LoanEntity
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 import com.pixelbrew.qredi.ui.components.services.invoice.InvoiceGenerator.DayCloseData
 import java.io.IOException
@@ -28,7 +29,7 @@ object BluetoothPrinter {
     private var currentSocket: BluetoothSocket? = null
     private var currentDevice: BluetoothDevice? = null
 
-    enum class DocumentType { PAYMENT, DAY_CLOSE }
+    enum class DocumentType { PAYMENT, DAY_CLOSE, LOAN }
 
     /**
      * Verifica si el adaptador Bluetooth está disponible y activado.
@@ -91,9 +92,24 @@ object BluetoothPrinter {
      */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printDocument(
-        context: Context,
         printerName: String,
         type: DocumentType,
+        loanEntity: LoanEntity = LoanEntity(
+            id = "",
+            amount = 0.0,
+            interest = 0.0,
+            feesQuantity = 0,
+            loanDateDay = 0,
+            loanDateMonth = 0,
+            loanDateYear = 0,
+            loanDateHour = 0,
+            loanDateMinute = 0,
+            loanDateSecond = 0,
+            loanDateTimezone = "",
+            customerId = "",
+            customerName = "",
+            customerCedula = ""
+        ),
         data: DayCloseData = DayCloseData("", "", 0.0, 0.0, emptyList()),
         feeEntity: NewFeeEntity = NewFeeEntity(
             feeId = "",
@@ -121,6 +137,7 @@ object BluetoothPrinter {
                 val content = when (type) {
                     DocumentType.PAYMENT -> InvoiceGenerator.generatePaymentContent(feeEntity)
                     DocumentType.DAY_CLOSE -> InvoiceGenerator.generateDayCloseContent(data)
+                    DocumentType.LOAN -> InvoiceGenerator.generateLoanContent(loanEntity)
                 }
                 PrinterUtils.sendDataPrinter(content, outputStream)
                 true
