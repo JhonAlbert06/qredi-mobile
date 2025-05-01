@@ -45,8 +45,6 @@ class MainActivity : ComponentActivity() {
         }
 
         checkBluetoothSetup()
-
-
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
