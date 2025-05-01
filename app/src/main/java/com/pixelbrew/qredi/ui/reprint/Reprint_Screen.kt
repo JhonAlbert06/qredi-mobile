@@ -49,12 +49,11 @@ fun ReprintScreen(
     modifier: Modifier = Modifier,
     context: MainActivity
 ) {
-    val toastMessage by viewModel.toastMessage.observeAsState()
+    val toastEvent by viewModel.toastMessage.observeAsState()
 
-    LaunchedEffect(toastMessage) {
-        toastMessage?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-            viewModel.clearToast()
+    LaunchedEffect(toastEvent) {
+        toastEvent?.getContentIfNotHandled()?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
 

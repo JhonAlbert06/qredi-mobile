@@ -12,13 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.pixelbrew.qredi.data.network.di.NetworkModule
-import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
 import com.pixelbrew.qredi.ui.components.sidemenu.SideMenu
 import com.pixelbrew.qredi.ui.theme.QrediTheme
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -26,8 +25,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val sessionManager = SessionManager(this)
-        var networkModule = NetworkModule.createApiService(sessionManager)
 
         setContent {
             QrediTheme(
@@ -36,8 +33,6 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     SideMenu(
                         modifier = Modifier.padding(innerPadding),
-                        sessionManager = sessionManager,
-                        apiService = networkModule,
                         context = this
                     )
                 }
@@ -50,13 +45,11 @@ class MainActivity : ComponentActivity() {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun checkBluetoothSetup() {
         if (!BluetoothPrinter.hasBluetoothPermissions(this)) {
-            // Pide permisos y espera al resultado antes de continuar
             BluetoothPrinter.requestBluetoothPermissions(this)
             return
         }
 
         if (!BluetoothPrinter.isBluetoothEnabled()) {
-            // Pide que se active el Bluetooth y espera al resultado antes de continuar
             BluetoothPrinter.requestEnableBluetooth(this)
             return
         }

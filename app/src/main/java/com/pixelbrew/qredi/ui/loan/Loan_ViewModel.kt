@@ -19,35 +19,35 @@ import com.pixelbrew.qredi.data.network.model.LoanModelRes
 import com.pixelbrew.qredi.data.network.model.RouteModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
+import com.pixelbrew.qredi.utils.Event
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneId
+import javax.inject.Inject
 
-
-class LoanViewModel(
+@HiltViewModel
+class LoanViewModel @Inject constructor(
     private val apiService: ApiService,
-    private val sessionManager: SessionManager,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val baseUrl = sessionManager.fetchApiUrl()
 
-    private val _isLoading = MutableLiveData<Boolean>(false)
+    private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> get() = _isLoading
 
-    private val _showCreationDialog = MutableLiveData<Boolean>(false)
+    private val _showCreationDialog = MutableLiveData(false)
     val showCreationDialog: LiveData<Boolean> get() = _showCreationDialog
 
-    private val _showFilterLoanDialog = MutableLiveData<Boolean>(false)
+    private val _showFilterLoanDialog = MutableLiveData(false)
     val showFilterLoanDialog: LiveData<Boolean> get() = _showFilterLoanDialog
 
-    private val _showLoanDetailsDialog = MutableLiveData<Boolean>(false)
+    private val _showLoanDetailsDialog = MutableLiveData(false)
     val showLoanDetailsDialog: LiveData<Boolean> get() = _showLoanDetailsDialog
-
-    private val _toastMessage = MutableLiveData<String>()
-    val toastMessage: LiveData<String> get() = _toastMessage
 
     private val _customerList = MutableLiveData<List<CustomerModelRes>>()
     val customerList: LiveData<List<CustomerModelRes>> get() = _customerList
@@ -61,97 +61,70 @@ class LoanViewModel(
     private val _loanSelected = MutableLiveData<LoanModelRes>()
     val loanSelected: LiveData<LoanModelRes> get() = _loanSelected
 
-    init {
-        _isLoading.postValue(true)
-        fetchLoans()
+    private val _toastMessage = MutableLiveData<Event<String>>()
+    val toastMessage: LiveData<Event<String>> get() = _toastMessage
 
+    init {
+        _isLoading.value = true
+        fetchLoans()
         fetchCustomers()
         getRoutes()
     }
 
+    private fun showToast(message: String) {
+        _toastMessage.postValue(Event(message))
+    }
+
     fun setLoanDetailsDialog(show: Boolean) {
-        _showLoanDetailsDialog.postValue(show)
+        _showLoanDetailsDialog.value = show
     }
 
     fun setLoanSelected(loan: LoanModelRes) {
-        _loanSelected.postValue(loan)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun createNewLoan(loan: LoanModel) {
-        _isLoading.postValue(true)
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val url = "$baseUrl/loan"
-                val response = apiService.createLoan(url, loan)
-
-                if (response.isSuccessful) {
-                    Log.d("LoanViewModel", "Loan created successfully: ${response.body()}")
-                    showToast("Loan created successfully")
-                    fetchLoans()
-                    _showCreationDialog.postValue(false)
-
-                    printLoan(loan)
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    val error = Gson().fromJson(errorBody, ApiError::class.java)
-                    Log.e("API_RESPONSE", "Error: ${error.message}")
-                    showToast("Error: ${error.message}")
-                }
-            } catch (e: Exception) {
-                Log.e("LoanViewModel", "Error creating loan: ${e.message}")
-                showToast("Error creating loan: ${e.message}")
-            }
-        }
+        _loanSelected.value = loan
     }
 
     fun setShowCreationDialog(show: Boolean) {
-        _showCreationDialog.postValue(show)
+        _showCreationDialog.value = show
     }
 
     fun setShowFilterLoanDialog(show: Boolean) {
-        _showFilterLoanDialog.postValue(show)
+        _showFilterLoanDialog.value = show
     }
 
     fun refreshLoans() {
-        _isLoading.postValue(true)
+        _isLoading.value = true
         fetchLoans()
     }
 
-    fun fetchLoans(
-        field: String? = null,
-        query: String? = null,
-    ) {
+    fun fetchLoans(field: String? = null, query: String? = null) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Construir la URL base
-                val urlBuilder = StringBuilder("$baseUrl/loan?")
-
-                if (!field.isNullOrEmpty() && !query.isNullOrEmpty()) {
-                    urlBuilder.append("$field=$query")
+                val url = buildString {
+                    append("$baseUrl/loan?")
+                    if (!field.isNullOrEmpty() && !query.isNullOrEmpty()) {
+                        append("$field=$query")
+                    }
                 }
-
-                val url = urlBuilder.toString()
-
-                // Realizar la solicitud a la API
                 val response = apiService.getLoans(url)
 
-                if (response.isSuccessful) {
-                    _loans.postValue(response.body() ?: emptyList())
-                    Log.d("LoanViewModel", "Fetched loans: ${_loans.value}")
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    val error = Gson().fromJson(errorBody, ApiError::class.java)
-                    Log.e("API_RESPONSE", "Error: ${error.message}")
-                    showToast("Error: ${error.message}")
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        _loans.value = response.body() ?: emptyList()
+                        Log.d("LoanViewModel", "Fetched loans: ${_loans.value?.size}")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        val error = Gson().fromJson(errorBody, ApiError::class.java)
+                        Log.e("API_RESPONSE", "Fetch loans error: ${error.message}")
+                        showToast("Error: ${error.message}")
+                    }
+                    _isLoading.value = false
                 }
-
-                _isLoading.postValue(false)
             } catch (e: Exception) {
-                Log.e("LoanViewModel", "Error fetching loans: ${e.message}")
-                showToast("Error fetching loans: ${e.message}")
-                _isLoading.postValue(false)
+                Log.e("LoanViewModel", "Exception fetching loans: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error al obtener préstamos: ${e.message}")
+                    _isLoading.value = false
+                }
             }
         }
     }
@@ -161,24 +134,28 @@ class LoanViewModel(
             try {
                 val url = "$baseUrl/customer?query=$query&field=$field"
                 val response = apiService.getCustomers(url)
-                var customers = emptyList<CustomerModelRes>()
 
-                if (response.isSuccessful) {
-                    customers = response.body() ?: emptyList()
-                    Log.d("CustomerViewModel", "Fetched customers: $customers")
+                val customers = if (response.isSuccessful) {
+                    response.body() ?: emptyList()
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val error = Gson().fromJson(errorBody, ApiError::class.java)
-                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    Log.e("API_RESPONSE", "Fetch customers error: ${error.message}")
                     showToast("Error: ${error.message}")
+                    emptyList()
                 }
 
-                _customerList.postValue(customers)
-                _isLoading.postValue(false)
+                withContext(Dispatchers.Main) {
+                    _customerList.value = customers
+                    _isLoading.value = false
+                    Log.d("LoanViewModel", "Fetched ${customers.size} customers")
+                }
             } catch (e: Exception) {
-                Log.e("CustomerViewModel", "Error fetching customers: ${e.message}")
-                showToast("Error fetching customers: ${e.message}")
-                _isLoading.postValue(false)
+                Log.e("LoanViewModel", "Exception fetching customers: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error al obtener clientes: ${e.message}")
+                    _isLoading.value = false
+                }
             }
         }
     }
@@ -187,60 +164,78 @@ class LoanViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val routesUrl = "$baseUrl/routes"
+                val response = apiService.getRoutes(routesUrl)
 
-                val response = withContext(Dispatchers.Main) {
-                    apiService.getRoutes(routesUrl)
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        _routes.value = response.body() ?: emptyList()
+                        Log.d("API_RESPONSE", "Fetched routes: ${_routes.value?.size}")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        val error = Gson().fromJson(errorBody, ApiError::class.java)
+                        Log.e("API_RESPONSE", "Fetch routes error: ${error.message}")
+                        showToast("Error: ${error.message}")
+                    }
                 }
-
-                if (response.isSuccessful) {
-                    val routes = response.body() ?: emptyList()
-                    Log.d("API_RESPONSE", "Rutas: $routes")
-                    _routes.postValue(routes)
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    val error = Gson().fromJson(errorBody, ApiError::class.java)
-                    Log.e("API_RESPONSE", "Error: ${error.message}")
-                    showToast("Error: ${error.message}")
-                }
-
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
-                showToast(e.message.toString())
+                Log.e("LoanViewModel", "Exception fetching routes: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error al obtener rutas: ${e.message}")
+                }
             }
         }
     }
 
-    private fun showToast(message: String) {
-        _toastMessage.postValue(message)
-    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun createNewLoan(loan: LoanModel) {
+        _isLoading.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val url = "$baseUrl/loan"
+                val response = apiService.createLoan(url, loan)
 
-    fun formatNumber(number: Double): String {
-        return "%,.2f".format(number)
-    }
-
-    fun formatCedula(cedula: String): String {
-        return if (cedula.length == 11) {
-            "${cedula.substring(0, 3)}-${cedula.substring(3, 10)}-${cedula.substring(10)}"
-        } else {
-            cedula
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        Log.d("LoanViewModel", "Loan created successfully: ${response.body()}")
+                        showToast("Loan created successfully")
+                        fetchLoans()
+                        _showCreationDialog.value = false
+                        printLoan(loan)
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        val error = Gson().fromJson(errorBody, ApiError::class.java)
+                        Log.e("API_RESPONSE", "Create loan error: ${error.message}")
+                        showToast("Error: ${error.message}")
+                    }
+                    _isLoading.value = false
+                }
+            } catch (e: Exception) {
+                Log.e("LoanViewModel", "Exception creating loan: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error al crear préstamo: ${e.message}")
+                    _isLoading.value = false
+                }
+            }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun printLoan(loan: LoanModel) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val customer = customerList.value?.find { it.id == loan.customerId }
+                if (customer == null) {
+                    Log.e("LoanViewModel", "No customer found for loan ${loan.customerId}")
+                    return@launch
+                }
 
-        try {
-
-            val customer = customerList.value?.find { it.id == loan.customerId }
-
-            viewModelScope.launch(Dispatchers.IO) {
                 var attempts = 0
                 var success = false
-
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
-                        sessionManager.fetchPrinterName().toString(),
+                        sessionManager.fetchPrinterName().orEmpty(),
                         BluetoothPrinter.DocumentType.LOAN,
                         loanEntity = LoanEntity(
                             id = "",
@@ -254,26 +249,26 @@ class LoanViewModel(
                             loanDateMinute = LocalDateTime.now().minute,
                             loanDateSecond = LocalDateTime.now().second,
                             loanDateTimezone = ZoneId.systemDefault().id,
-                            customerId = customer?.id.toString(),
-                            customerName = customer?.firstName.toString() + " " + customer?.lastName.toString(),
-                            customerCedula = customer?.cedula.toString()
+                            customerId = customer.id,
+                            customerName = "${customer.firstName} ${customer.lastName}",
+                            customerCedula = customer.cedula
                         )
                     )
-
                     if (!success) {
                         attempts++
                         delay(1000)
                     }
                 }
-
-
+                Log.d("LoanViewModel", "Print loan success: $success after $attempts attempts")
+            } catch (e: Exception) {
+                Log.e("LoanViewModel", "Exception printing loan: ${e.message}", e)
             }
-
-        } catch (e: NumberFormatException) {
-            //showToast("El monto ingresado no es válido: ${e.localizedMessage}")
-        } catch (e: Exception) {
-            //showToast("Error al generar el recibo: ${e.localizedMessage}")
         }
-
     }
+
+    fun formatNumber(number: Double): String = "%,.2f".format(number)
+
+    fun formatCedula(cedula: String): String = if (cedula.length == 11) {
+        "${cedula.substring(0, 3)}-${cedula.substring(3, 10)}-${cedula.substring(10)}"
+    } else cedula
 }

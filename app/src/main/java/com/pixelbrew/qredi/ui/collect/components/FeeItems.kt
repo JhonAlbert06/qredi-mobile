@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,26 +39,26 @@ fun FeeItems(
     viewModel: CollectViewModel,
     loan: LoanDownloadModel
 ) {
+    val updatedLoans by viewModel.downloadedLoans.observeAsState(emptyList())
+
+    // Busca el loan actualizado de la lista LiveData
+    val updatedLoan = updatedLoans.find { it.id == loan.id } ?: loan
 
     val amount: String by viewModel.amount.observeAsState("")
 
     var showDialogCollect by remember { mutableStateOf(false) }
-    var totalLoanPaid = 0.0
-
-    loan.fees.forEach { fee ->
-        totalLoanPaid += fee.paymentAmount
-    }
+    val totalLoanPaid = updatedLoan.fees.sumOf { it.paymentAmount }
 
     FeeLabel(
         "Cobrado:",
-        "${viewModel.formatNumber(totalLoanPaid)}$ / ${viewModel.formatNumber(loan.amount)}$"
+        "${viewModel.formatNumber(totalLoanPaid)}$ / ${viewModel.formatNumber(updatedLoan.amount)}$"
     )
 
-    var cuote by remember { mutableDoubleStateOf(0.0) }
-    cuote = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
+    val cuote =
+        ((updatedLoan.interest / 100) * updatedLoan.amount) + (updatedLoan.amount / updatedLoan.feesQuantity)
 
     LazyColumn {
-        items(loan.fees.filter { it.paymentAmount < cuote }) { fee ->
+        items(updatedLoan.fees.filter { it.paymentAmount < cuote }) { fee ->
 
             Card(
                 modifier = Modifier
@@ -71,15 +70,13 @@ fun FeeItems(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     FeeLabel(
-                        "${fee.number}/${loan.feesQuantity}",
+                        "${fee.number}/${updatedLoan.feesQuantity}",
                         "${fee.date.day}/${fee.date.month}/${fee.date.year}"
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
                     FeeLabel(
-                        "${
-                            viewModel.formatNumber(fee.paymentAmount)
-                        }$ / ${
+                        "${viewModel.formatNumber(fee.paymentAmount)}$ / ${
                             viewModel.formatNumber(
                                 cuote
                             )
@@ -92,8 +89,7 @@ fun FeeItems(
                         onClick = {
                             showDialogCollect = true
                             viewModel.setFeeSelected(fee)
-                            viewModel.getCuote(fee.paymentAmount);
-                            //viewModel.resetAmount()
+                            viewModel.getCuote(fee.paymentAmount)
                         },
                         modifier = Modifier
                             .padding(top = 8.dp)
@@ -120,14 +116,10 @@ fun FeeItems(
         }
     }
 
-
     DialogCollect(
         showDialog = showDialogCollect,
         onDismiss = { showDialogCollect = false },
         viewModel = viewModel,
         amount
     )
-
-
 }
-

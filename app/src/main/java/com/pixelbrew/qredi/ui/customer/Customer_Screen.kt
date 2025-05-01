@@ -40,7 +40,6 @@ import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.ui.customer.components.CreateCustomerBottomSheet
 import com.pixelbrew.qredi.ui.customer.components.CustomerItem
 import com.pixelbrew.qredi.ui.customer.components.FilterCustomerBottomSheet
-import kotlinx.coroutines.delay
 
 @Composable
 fun CustomerScreen(
@@ -48,12 +47,11 @@ fun CustomerScreen(
     modifier: Modifier = Modifier,
     context: MainActivity,
 ) {
-    val toastMessage by viewModel.toastMessage.observeAsState()
+    val toastEvent by viewModel.toastMessage.observeAsState()
 
-    LaunchedEffect(toastMessage) {
-        toastMessage?.let {
-            delay(200)
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(toastEvent) {
+        toastEvent?.getContentIfNotHandled()?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
 

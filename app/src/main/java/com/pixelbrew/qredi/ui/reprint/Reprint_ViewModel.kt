@@ -2,7 +2,6 @@ package com.pixelbrew.qredi.ui.reprint
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -20,29 +19,29 @@ import com.pixelbrew.qredi.data.network.model.UploadFee
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
 import com.pixelbrew.qredi.ui.components.services.invoice.InvoiceGenerator.DayCloseData
+import com.pixelbrew.qredi.utils.Event
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
+import javax.inject.Inject
 
-
+@HiltViewModel
 @SuppressLint("StaticFieldLeak")
-class ReprintViewModel(
+class ReprintViewModel @Inject constructor(
     private val loanRepository: LoanRepository,
     private val apiService: ApiService,
-    private val sessionManager: SessionManager,
-    private val context: Context
+    private val sessionManager: SessionManager
 ) : ViewModel() {
+
     private val baseUrl = sessionManager.fetchApiUrl()
     private val user = sessionManager.fetchUser()
 
     private val _newFees = MutableLiveData<List<NewFeeEntity>>(emptyList())
-    val newFees: MutableLiveData<List<NewFeeEntity>> get() = _newFees
+    val newFees: LiveData<List<NewFeeEntity>> get() = _newFees
 
-    private val _toastMessage = MutableLiveData<String?>()
-    val toastMessage: LiveData<String?> get() = _toastMessage
 
     private val _showUploadDialog = MutableLiveData<Boolean>(false)
     val showUploadDialog: LiveData<Boolean> get() = _showUploadDialog
@@ -51,22 +50,33 @@ class ReprintViewModel(
     val showReprintDialog: LiveData<Boolean> get() = _showReprintDialog
 
     private val _feeSelected = MutableLiveData<NewFeeEntity>()
-
     private val _selectedLoan = MutableLiveData<LoanWithNewFees>()
+
+    private val _toastMessage = MutableLiveData<Event<String>>()
+    val toastMessage: LiveData<Event<String>> get() = _toastMessage
 
 
     init {
         getAllNewFees()
     }
 
+    private fun showToast(message: String) {
+        _toastMessage.postValue(Event(message))
+    }
+
 
     fun getLoanById(loanId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val loan = loanRepository.getLoanById(loanId).first()
-                _selectedLoan.postValue(loan)
+                loanRepository.getLoanById(loanId).collect { loan ->
+                    withContext(Dispatchers.Main) {
+                        _selectedLoan.value = loan
+                        Log.d("ReprintViewModel", "Loan loaded: $loan")
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("ReprintViewModel", "Error fetching loan: ${e.message}", e)
+                showToast("Error al cargar el préstamo: ${e.message}")
             }
         }
     }
@@ -109,7 +119,6 @@ class ReprintViewModel(
 
                 if (uploadFeeModel.isNotEmpty()) {
                     val response = apiService.uploadFees(uploadUrl, uploadFeeModel)
-
                     if (response.isSuccessful) {
                         resetDatabase()
                         showToast("Recibos subidos correctamente")
@@ -118,6 +127,8 @@ class ReprintViewModel(
                         Log.d("API_RESPONSE", "Error: $errorBody")
                         showToast("Error: $errorBody")
                     }
+                } else {
+                    showToast("No hay recibos para subir")
                 }
             } catch (e: Exception) {
                 Log.e("ReprintViewModel", "Error uploading fees: ${e.message}", e)
@@ -132,17 +143,24 @@ class ReprintViewModel(
             loanRepository.deleteAllFees()
             loanRepository.deleteAllNewFees()
             Log.d("ReprintViewModel", "Base de datos limpiada correctamente")
+            withContext(Dispatchers.Main) {
+                _newFees.value = emptyList()
+            }
         }
-        _newFees.postValue(emptyList())
     }
 
     fun getAllNewFees() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val responseDB = loanRepository.getAllNewFees().first()
-                newFees.postValue(responseDB)
+                loanRepository.getAllNewFees().collect { fees ->
+                    withContext(Dispatchers.Main) {
+                        _newFees.value = fees
+                        Log.d("ReprintViewModel", "Recibos obtenidos correctamente: ${fees.size}")
+                    }
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("ReprintViewModel", "Error al obtener recibos: ${e.message}", e)
+                showToast("Error al obtener recibos: ${e.message}")
             }
         }
     }
@@ -152,7 +170,7 @@ class ReprintViewModel(
     fun printDayCloset() {
         val payments = newFees.value ?: emptyList()
         val date = LocalDateTime.now()
-        var dateModelAux = DateModel(
+        val dateModelAux = DateModel(
             day = date.dayOfMonth,
             month = date.monthValue,
             year = date.year,
@@ -163,7 +181,7 @@ class ReprintViewModel(
 
         val cierre = DayCloseData(
             date = "${dateModelAux.day}/${dateModelAux.month}/${dateModelAux.year}  ${dateModelAux.hour}:${dateModelAux.minute}",
-            cashierName = user?.firstName + " " + user?.lastName,
+            cashierName = "${user?.firstName} ${user?.lastName}",
             initialBalance = 0.0,
             totalLoans = 0.0,
             payments = payments
@@ -175,14 +193,8 @@ class ReprintViewModel(
                 BluetoothPrinter.DocumentType.DAY_CLOSE,
                 data = cierre
             )
-            println(recibo)
+            Log.d("ReprintViewModel", "Impresión cierre: $recibo")
         }
-
-
-    }
-
-    fun clearToast() {
-        _toastMessage.postValue(null)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -197,7 +209,7 @@ class ReprintViewModel(
                 success = BluetoothPrinter.printDocument(
                     sessionManager.fetchPrinterName().toString(),
                     BluetoothPrinter.DocumentType.PAYMENT,
-                    feeEntity = fee,
+                    feeEntity = fee
                 )
 
                 if (!success) {
@@ -206,29 +218,23 @@ class ReprintViewModel(
                 }
             }
 
-            val message = if (success) {
-                "Recibo impreso correctamente"
-            } else {
-                "No se pudo imprimir el recibo después de 3 intentos"
-            }
-
             withContext(Dispatchers.Main) {
+                val message = if (success) {
+                    "Recibo impreso correctamente"
+                } else {
+                    "No se pudo imprimir el recibo después de 3 intentos"
+                }
                 showToast(message)
             }
         }
     }
 
     @SuppressLint("DefaultLocale")
-    fun formatDate(day: Int, month: Int, year: Int): String {
-        return String.format("%02d/%02d/%04d", day, month, year)
-    }
+    fun formatDate(day: Int, month: Int, year: Int): String =
+        String.format("%02d/%02d/%04d", day, month, year)
 
     @SuppressLint("DefaultLocale")
-    fun formatTime(hour: Int, minute: Int, second: Int): String {
-        return String.format("%02d:%02d:%02d", hour, minute, second)
-    }
+    fun formatTime(hour: Int, minute: Int, second: Int): String =
+        String.format("%02d:%02d:%02d", hour, minute, second)
 
-    private fun showToast(message: String) {
-        _toastMessage.postValue(message)
-    }
 }

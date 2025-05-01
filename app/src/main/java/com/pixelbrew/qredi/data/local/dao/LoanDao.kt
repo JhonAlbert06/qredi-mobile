@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.pixelbrew.qredi.data.local.entities.FeeEntity
 import com.pixelbrew.qredi.data.local.entities.LoanEntity
+import com.pixelbrew.qredi.data.local.entities.LoanWithFeesAndNewFees
 import com.pixelbrew.qredi.data.local.entities.LoanWithNewFees
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 import kotlinx.coroutines.flow.Flow
@@ -47,4 +48,9 @@ interface LoanDao {
     @Transaction
     @Query("SELECT * FROM loans WHERE id = :loanId")
     fun getLoanById(loanId: String): Flow<LoanWithNewFees>
+
+    @Transaction
+    @Query("SELECT * FROM loans")
+    fun getLoansWithFeesAndNewFees(): Flow<List<LoanWithFeesAndNewFees>>
+
 }

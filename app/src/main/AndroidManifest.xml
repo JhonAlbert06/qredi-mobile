@@ -17,6 +17,7 @@
 
 
     <application
+        android:name=".QrediApp"
         android:windowSoftInputMode="adjustResize"
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
@@ -39,13 +40,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="SideMenu"
-            android:exported="false"
-            android:label="@string/title_activity_side_menu"
-            android:theme="@style/Theme.Qredi"
-            tools:ignore="MissingClass" />
+        
 
         <activity
             android:name=".MainActivity"

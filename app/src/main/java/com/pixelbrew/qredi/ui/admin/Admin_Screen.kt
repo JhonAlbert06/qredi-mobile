@@ -21,16 +21,19 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.ui.admin.components.EmailField
 import com.pixelbrew.qredi.ui.admin.components.ForgotPassword
 import com.pixelbrew.qredi.ui.admin.components.HeaderImage
 import com.pixelbrew.qredi.ui.admin.components.LoginButton
 import com.pixelbrew.qredi.ui.admin.components.PasswordField
-import kotlinx.coroutines.delay
 
 @Composable
-fun AdminScreen(viewModel: AdminViewModel, modifier: Modifier = Modifier, context: MainActivity) {
+fun AdminScreen(modifier: Modifier = Modifier, context: MainActivity) {
+    
+    val viewModel: AdminViewModel = hiltViewModel()
+
     Box(
         modifier = modifier
             .background(
@@ -44,15 +47,14 @@ fun AdminScreen(viewModel: AdminViewModel, modifier: Modifier = Modifier, contex
         Login(viewModel, modifier.align(Alignment.Center))
     }
 
-    val viewModel: AdminViewModel = viewModel
-    val toastMessage by viewModel.toastMessage.observeAsState()
+    val toastEvent by viewModel.toastMessage.observeAsState()
 
-    LaunchedEffect(toastMessage) {
-        toastMessage?.let {
-            delay(200)
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(toastEvent) {
+        toastEvent?.getContentIfNotHandled()?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
+
 }
 
 @Composable

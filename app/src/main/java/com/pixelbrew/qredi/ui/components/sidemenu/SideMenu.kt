@@ -18,15 +18,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.pixelbrew.qredi.MainActivity
-import com.pixelbrew.qredi.data.local.repository.LoanRepository
-import com.pixelbrew.qredi.data.network.api.ApiService
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.admin.AdminScreen
 import com.pixelbrew.qredi.ui.admin.AdminViewModel
 import com.pixelbrew.qredi.ui.collect.CollectScreen
 import com.pixelbrew.qredi.ui.collect.CollectViewModel
-import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.ui.components.sidemenu.components.DrawerContent
 import com.pixelbrew.qredi.ui.components.sidemenu.components.Screen
 import com.pixelbrew.qredi.ui.components.sidemenu.components.ScreenSaver
@@ -49,10 +47,15 @@ import kotlinx.coroutines.launch
 @Composable
 fun SideMenu(
     modifier: Modifier = Modifier,
-    apiService: ApiService,
-    sessionManager: SessionManager,
-    context: MainActivity
+    context: android.content.Context
 ) {
+    val adminViewModel: AdminViewModel = hiltViewModel()
+    val collectViewModel: CollectViewModel = hiltViewModel()
+    val customerViewModel: CustomerViewModel = hiltViewModel()
+    val loanViewModel: LoanViewModel = hiltViewModel()
+    val reprintViewModel: ReprintViewModel = hiltViewModel()
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var currentScreen by rememberSaveable(stateSaver = ScreenSaver) {
@@ -66,16 +69,14 @@ fun SideMenu(
 
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
-    val loanRepository = LoanRepository(context)
+    val user = settingsViewModel.getUser() ?: UserModel()
 
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = { showBottomSheet = false },
             sheetState = bottomSheetState
         ) {
-            UserInfoSheet(
-                user = sessionManager.fetchUser() ?: UserModel(),
-            )
+            UserInfoSheet(user = user)
         }
     }
 
@@ -85,9 +86,7 @@ fun SideMenu(
             DrawerContent(
                 onItemSelected = { screen ->
                     currentScreen = screen
-                    scope.launch {
-                        drawerState.close()
-                    }
+                    scope.launch { drawerState.close() }
                 },
                 currentScreen = currentScreen
             )
@@ -98,62 +97,52 @@ fun SideMenu(
                 TopBar(
                     onOpenDrawer = {
                         scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
-                            }
+                            drawerState.apply { if (isClosed) open() else close() }
                         }
                     },
-                    onProfileClick = {
-                        scope.launch {
-                            showBottomSheet = true
-                        }
-                    },
+                    onProfileClick = { scope.launch { showBottomSheet = true } },
                     currentScreen = currentScreen
                 )
             }
         ) { padding ->
             when (currentScreen) {
-
                 Screen.Admin -> AdminScreen(
-                    AdminViewModel(apiService, sessionManager),
                     modifier = modifier,
-                    context = context
+                    context = context as MainActivity
                 )
 
                 Screen.Collect -> CollectScreen(
-                    CollectViewModel(loanRepository, apiService, sessionManager),
+                    viewModel = collectViewModel,
                     modifier = modifier.padding(top = 25.dp),
-                    context,
+                    context = context as MainActivity
                 )
 
                 Screen.Customer -> CustomerScreen(
-                    CustomerViewModel(apiService, sessionManager),
+                    viewModel = customerViewModel,
                     modifier = modifier.padding(top = 25.dp),
-                    context,
+                    context = context as MainActivity
                 )
 
                 Screen.Loan -> LoanScreen(
-                    LoanViewModel(apiService, sessionManager),
+                    viewModel = loanViewModel,
                     modifier = modifier.padding(top = 25.dp),
-                    context,
+                    context = context as MainActivity
                 )
 
                 Screen.Reprint -> ReprintScreen(
-                    ReprintViewModel(loanRepository, apiService, sessionManager, context),
+                    viewModel = reprintViewModel,
                     modifier = modifier.padding(top = 25.dp),
-                    context
+                    context = context as MainActivity
                 )
 
                 Screen.Statistics -> StatisticsScreen(modifier = modifier.padding(padding))
+
                 Screen.Settings -> SettingsScreen(
-                    SettingsViewModel(sessionManager, context),
+                    viewModel = settingsViewModel,
                     modifier = modifier.padding(padding),
-                    context = context
+                    context = context as MainActivity
                 )
             }
         }
     }
 }
-
-
-

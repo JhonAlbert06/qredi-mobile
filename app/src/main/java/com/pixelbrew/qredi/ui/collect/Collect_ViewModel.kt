@@ -23,16 +23,20 @@ import com.pixelbrew.qredi.data.network.model.RouteModel
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
+import com.pixelbrew.qredi.utils.Event
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneId
+import javax.inject.Inject
 
+
+@HiltViewModel
 @SuppressLint("StaticFieldLeak")
-class CollectViewModel(
+class CollectViewModel @Inject constructor(
     private val loanRepository: LoanRepository,
     private val apiService: ApiService,
     private val sessionManager: SessionManager
@@ -61,28 +65,28 @@ class CollectViewModel(
     private val _amount = MutableLiveData<String>()
     val amount: LiveData<String> get() = _amount
 
-    private val _toastMessage = MutableLiveData<String>()
-    val toastMessage: LiveData<String> get() = _toastMessage
-
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> get() = _isLoading
 
+    private val _toastMessage = MutableLiveData<Event<String>>()
+    val toastMessage: LiveData<Event<String>> get() = _toastMessage
+
     init {
-        getLoansFromDatabase()
+        observeLoansFromDatabase()
         Log.d("DEBUG", "CollectViewModel initialized")
         Log.d("DEBUG", "${userSession?.firstName}")
+    }
+
+    private fun showToast(message: String) {
+        _toastMessage.postValue(Event(message))
     }
 
     fun getCuote(amount: Double) {
         val loan = downloadLoanSelected.value ?: return
         var cuoteAUX = ((loan.interest / 100) * loan.amount) + (loan.amount / loan.feesQuantity)
-
         _cuote.postValue(cuoteAUX)
-
         cuoteAUX -= amount
-
         _amount.postValue(cuoteAUX.toString())
-
     }
 
     fun setDownloadRouteSelected(downloadRoute: LoanDownloadModel) {
@@ -93,9 +97,6 @@ class CollectViewModel(
         _amount.postValue(amount)
     }
 
-    private fun showToast(message: String) {
-        _toastMessage.postValue(message)
-    }
 
     fun setFeeSelected(feeDownloadModel: FeeDownloadModel) {
         _selectedFeeDownloadModel.postValue(feeDownloadModel)
@@ -104,13 +105,10 @@ class CollectViewModel(
     @RequiresApi(Build.VERSION_CODES.O)
     fun collectFee() {
         val date = LocalDateTime.now(ZoneId.systemDefault())
-        Log.d("DEBUG_AMOUNT", "Valor de _amount antes de conversión: ${_amount.value}")
-        var amountValue: Double = _amount.value?.toDoubleOrNull() ?: 0.0
-        Log.d("DEBUG_AMOUNT", "Valor de paymentAmount después de conversión: $amountValue")
-
+        val amountValue = _amount.value?.toDoubleOrNull() ?: 0.0
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                var newFeeEntity = NewFeeEntity(
+                val newFeeEntity = NewFeeEntity(
                     id = 0,
                     feeId = _selectedFeeDownloadModel.value?.id ?: "",
                     loanId = downloadLoanSelected.value?.id ?: "",
@@ -129,9 +127,8 @@ class CollectViewModel(
                     companyNumber = "${userSession?.company?.phone1}/${userSession?.company?.phone2}"
                 )
                 loanRepository.insertNewFee(newFeeEntity)
-                getLoansFromDatabase()
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+                Log.e("API_ERROR", "Error al insertar cuota: ${e.message}")
                 showToast(e.message.toString())
             }
         }
@@ -141,38 +138,32 @@ class CollectViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val routesUrl = "$baseUrl/routes"
-
-                val response = withContext(Dispatchers.Main) {
-                    apiService.getRoutes(routesUrl)
-                }
-
+                val response = withContext(Dispatchers.Main) { apiService.getRoutes(routesUrl) }
                 if (response.isSuccessful) {
-                    val routes = response.body() ?: emptyList()
-                    Log.d("API_RESPONSE", "Rutas: $routes")
-                    _routes.postValue(routes)
+                    _routes.postValue(response.body() ?: emptyList())
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    val error = Gson().fromJson(errorBody, ApiError::class.java)
-                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    val error =
+                        Gson().fromJson(response.errorBody()?.string(), ApiError::class.java)
                     showToast("Error: ${error.message}")
                 }
-
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Error al obtener datos: ${e.message}")
+                Log.e("API_ERROR", "Error al obtener rutas: ${e.message}")
                 showToast(e.message.toString())
             }
         }
-
         viewModelScope.launch(Dispatchers.IO) {
             loanRepository.deleteAllLoans()
             loanRepository.deleteAllFees()
         }
     }
 
+
     fun saveLoansOnDatabase(loan: LoanDownloadModel) {
-        viewModelScope.launch(Dispatchers.IO) { // ← Mover a IO
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val newLoan = LoanMapper.loanModelToEntity(loan)
+
+                // Inserta loan limpio
                 loanRepository.insertLoan(newLoan)
 
                 loan.fees.forEach { fee ->
@@ -186,54 +177,27 @@ class CollectViewModel(
         }
     }
 
-    fun getLoansFromDatabase() {
-        Log.d("ROOM_DB", "Ejecutando getLoansFromDatabase()...")
-
+    fun observeLoansFromDatabase() {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val downloadedRoutesAux =
-                    loanRepository.getAllLoans().first()
+            loanRepository.getLoansWithFeesAndNewFees().collect { loanRelations ->
 
-                Log.d("ROOM_DB", "Cantidad de préstamos recuperados: ${downloadedRoutesAux.size}")
-
-                val newLoans = downloadedRoutesAux.map { loan ->
-
-                    val feesDB = loanRepository.getFeesByLoanId(loan.id)
-                        .first()
-
-                    val feesNewDB = loanRepository.getNewFeesByLoanId(loan.id)
-                        .first()
-
-                    val feesRes = feesFusionAmount(feesDB, feesNewDB)
-
-                    val newLoan = LoanMapper.loanEntityToModel(loan, feesRes)
-                    newLoan
+                val processedLoans = loanRelations.map { relation ->
+                    val mergedFees = feesFusionAmount(relation.fees, relation.newFees)
+                    LoanMapper.loanEntityToModel(relation.loan, mergedFees)
                 }
 
                 withContext(Dispatchers.Main) {
-                    Log.d("ROOM_DB", "Actualizando LiveData con ${newLoans.size} préstamos")
-                    _downloadedLoans.value = newLoans
-
-                    newLoans.forEach { loan ->
-                        if (loan.id == downloadLoanSelected.value?.id) {
-                            _downloadLoanSelected.value = loan
-                        }
-                    }
+                    _downloadedLoans.value = processedLoans
                 }
-
-            } catch (e: Exception) {
-                Log.e("DB_ERROR", "Error al obtener datos: ${e.message}")
             }
         }
     }
 
     fun feesFusionAmount(feesDB: List<FeeEntity>, feesNewDB: List<NewFeeEntity>): List<FeeEntity> {
         val newFeesMap = feesNewDB.groupBy { it.loanId to it.number }
-
         return feesDB.map { fee ->
             val extraAmount =
                 newFeesMap[fee.loanId to fee.number]?.sumOf { it.paymentAmount } ?: 0.0
-
             fee.copy(paymentAmount = fee.paymentAmount + extraAmount)
         }
     }
@@ -244,23 +208,15 @@ class CollectViewModel(
             try {
                 val downloadUrl = "$baseUrl/route/download/$id"
                 val response = apiService.downloadRoute(downloadUrl)
-
                 if (response.isSuccessful) {
-                    val loans = response.body() ?: emptyList()
-                    loans.forEach { saveLoansOnDatabase(it) }
+                    response.body()?.forEach { saveLoansOnDatabase(it) }
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    val error = Gson().fromJson(errorBody, ApiError::class.java)
-                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    val error =
+                        Gson().fromJson(response.errorBody()?.string(), ApiError::class.java)
                     showToast("Error: ${error.message}")
                 }
-
                 delay(1000)
-                getLoansFromDatabase()
-
-                withContext(Dispatchers.Main) {
-                    _isLoading.postValue(false)
-                }
+                withContext(Dispatchers.Main) { _isLoading.postValue(false) }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     showToast("Error al descargar ruta: ${e.message}")
@@ -270,26 +226,15 @@ class CollectViewModel(
         }
     }
 
-    fun formatNumber(number: Double): String {
-        return "%,.2f".format(number)
-    }
+    fun formatNumber(number: Double): String = "%,.2f".format(number)
 
     fun formatCedula(cedula: String): String {
         return if (cedula.length == 11) {
             "${cedula.substring(0, 3)}-${cedula.substring(3, 10)}-${cedula.substring(10)}"
-        } else {
-            cedula
-        }
+        } else cedula
     }
 
-    fun stringToDouble(value: String): Double {
-        return try {
-            value.toDouble()
-        } catch (e: NumberFormatException) {
-            Log.e("DEBUG", "Error al convertir a Double: ${e.message}")
-            0.0
-        }
-    }
+    fun stringToDouble(value: String): Double = value.toDoubleOrNull() ?: 0.0
 
     @RequiresApi(Build.VERSION_CODES.O)
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -298,20 +243,15 @@ class CollectViewModel(
             showToast("No se ha seleccionado ningún préstamo")
             return
         }
-
-
         val fee = selectedFeeDownloadModel.value ?: run {
             showToast("No se ha seleccionado ninguna cuota")
             return
         }
-
         try {
             val feeAmount = stringToDouble(_amount.value.toString())
-
             viewModelScope.launch(Dispatchers.IO) {
                 var attempts = 0
                 var success = false
-
                 while (attempts < 3 && !success) {
                     success = BluetoothPrinter.printDocument(
                         sessionManager.fetchPrinterName().toString(),
@@ -330,31 +270,25 @@ class CollectViewModel(
                             dateTimezone = ZoneId.systemDefault().id,
                             number = fee.number,
                             numberTotal = loan.feesQuantity,
-                            companyName = "J & J Prestamos",
+                            companyName = userSession?.company?.name ?: "J & J Prestamos",
                             companyNumber = "${userSession?.company?.phone1}/${userSession?.company?.phone2}",
                             clientName = loan.customer.name
                         )
                     )
-
                     if (!success) {
                         attempts++
                         delay(1000)
                     }
                 }
-
                 withContext(Dispatchers.Main) {
-                    if (success) {
-                        showToast("Recibo impreso correctamente")
-                    } else {
-                        showToast("No se pudo imprimir el recibo después de 3 intentos")
-                    }
+                    showToast(
+                        if (success) "Recibo impreso correctamente"
+                        else "No se pudo imprimir el recibo después de 3 intentos"
+                    )
                 }
             }
-        } catch (e: NumberFormatException) {
-            showToast("El monto ingresado no es válido: ${e.localizedMessage}")
         } catch (e: Exception) {
             showToast("Error al generar el recibo: ${e.localizedMessage}")
         }
     }
-
 }

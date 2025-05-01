@@ -20,7 +20,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -122,27 +121,13 @@ fun SettingsScreen(
     }
 
     val viewModel: SettingsViewModel = viewModel
-    val toastMessage by viewModel.toastMessage.observeAsState()
+    val toastEvent by viewModel.toastMessage.observeAsState()
 
-    LaunchedEffect(toastMessage) {
-        toastMessage?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(toastEvent) {
+        toastEvent?.getContentIfNotHandled()?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
-}
-
-@Composable
-fun SwitchTheme(x0: Boolean, onCheckedChange: () -> Unit) {
-    Switch(
-        checked = x0,
-        onCheckedChange = { onCheckedChange() },
-        colors = androidx.compose.material3.SwitchDefaults.colors(
-            checkedThumbColor = Color(0xFF00BCD4),
-            uncheckedThumbColor = Color(0xFF00BCD4),
-            checkedTrackColor = Color(0xFF00BCD4),
-            uncheckedTrackColor = Color(0xFF00BCD4)
-        )
-    )
 }
 
 @Composable

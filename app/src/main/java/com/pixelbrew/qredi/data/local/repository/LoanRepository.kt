@@ -4,6 +4,7 @@ import android.content.Context
 import com.pixelbrew.qredi.data.local.AppDatabase
 import com.pixelbrew.qredi.data.local.entities.FeeEntity
 import com.pixelbrew.qredi.data.local.entities.LoanEntity
+import com.pixelbrew.qredi.data.local.entities.LoanWithFeesAndNewFees
 import com.pixelbrew.qredi.data.local.entities.LoanWithNewFees
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 import kotlinx.coroutines.flow.Flow
@@ -54,6 +55,10 @@ class LoanRepository(context: Context) {
 
     fun getLoanById(loanId: String): Flow<LoanWithNewFees> {
         return loanDao.getLoanById(loanId)
+    }
+
+    fun getLoansWithFeesAndNewFees(): Flow<List<LoanWithFeesAndNewFees>> {
+        return loanDao.getLoansWithFeesAndNewFees()
     }
 
 }

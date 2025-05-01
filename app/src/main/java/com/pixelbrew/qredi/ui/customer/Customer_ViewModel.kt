@@ -12,17 +12,22 @@ import com.pixelbrew.qredi.data.network.model.CustomerModel
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
+import com.pixelbrew.qredi.utils.Event
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 data class Field(
     val name: String,
     val value: String
 )
 
-class CustomerViewModel(
+@HiltViewModel
+class CustomerViewModel @Inject constructor(
     private val apiService: ApiService,
-    private val sessionManager: SessionManager,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _showCreationDialog = MutableLiveData<Boolean>(false)
@@ -38,9 +43,6 @@ class CustomerViewModel(
     val userSession: UserModel?
         get() = sessionManager.fetchUser()
 
-    private val _toastMessage = MutableLiveData<String>()
-    val toastMessage: LiveData<String> get() = _toastMessage
-
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> get() = _isLoading
 
@@ -53,6 +55,9 @@ class CustomerViewModel(
     private val _query = MutableLiveData<String>()
     val query: LiveData<String> get() = _query
 
+    private val _toastMessage = MutableLiveData<Event<String>>()
+    val toastMessage: LiveData<Event<String>> get() = _toastMessage
+
     val fields = listOf(
         Field("Nombre", "names"),
         Field("Cedula", "cedula"),
@@ -60,23 +65,26 @@ class CustomerViewModel(
     )
 
     init {
-        _isLoading.postValue(true)
+        _isLoading.value = true
         fetchCustomers()
     }
 
+    private fun showToast(message: String) {
+        _toastMessage.postValue(Event(message))
+    }
+
     fun refreshCustomers() {
-        _isLoading.postValue(true)
+        _isLoading.value = true
         fetchCustomers()
     }
 
     fun showFilterCustomerDialog(value: Boolean) {
-        _showFilterCustomerDialog.postValue(value)
+        _showFilterCustomerDialog.value = value
     }
 
     fun onSearchButtonClicked(field: Field, query: String) {
-        _isLoading.postValue(true)
-
-        Log.d("CustomerViewModel", "Search button clicked. Query: $query, Field: $field")
+        _isLoading.value = true
+        Log.d("CustomerViewModel", "Search initiated with query: $query, field: ${field.value}")
         fetchCustomers(query, field.value)
     }
 
@@ -85,38 +93,36 @@ class CustomerViewModel(
             try {
                 val url = "$baseUrl/customer?query=$query&field=$field"
                 val response = apiService.getCustomers(url)
-                var customers = emptyList<CustomerModelRes>()
-
-                if (response.isSuccessful) {
-                    customers = response.body() ?: emptyList()
-                    Log.d("CustomerViewModel", "Fetched customers: $customers")
+                val customers = if (response.isSuccessful) {
+                    response.body() ?: emptyList()
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val error = Gson().fromJson(errorBody, ApiError::class.java)
-                    Log.e("API_RESPONSE", "Error: ${error.message}")
+                    Log.e("API_RESPONSE", "Fetch error: ${error.message}")
                     showToast("Error: ${error.message}")
+                    emptyList()
                 }
-
-                _customerList.postValue(customers)
-                _isLoading.postValue(false)
+                withContext(Dispatchers.Main) {
+                    _customerList.value = customers
+                    _isLoading.value = false
+                    Log.d("CustomerViewModel", "Fetched ${customers.size} customers")
+                }
             } catch (e: Exception) {
-                Log.e("CustomerViewModel", "Error fetching customers: ${e.message}")
-                showToast("Error fetching customers: ${e.message}")
-                _isLoading.postValue(false)
+                Log.e("CustomerViewModel", "Exception fetching customers: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error al obtener clientes: ${e.message}")
+                    _isLoading.value = false
+                }
             }
         }
     }
-
-    private fun showToast(message: String) {
-        _toastMessage.postValue(message)
-    }
-
+    
     fun showCreationDialog() {
-        _showCreationDialog.postValue(true)
+        _showCreationDialog.value = true
     }
 
     fun hideCreationDialog() {
-        _showCreationDialog.postValue(false)
+        _showCreationDialog.value = false
     }
 
     fun createCustomer(
@@ -127,7 +133,6 @@ class CustomerViewModel(
         phone: String,
         reference: String
     ) {
-
         val customer = CustomerModel(
             companyId = userSession?.company?.id ?: "",
             cedula = cedula,
@@ -141,30 +146,33 @@ class CustomerViewModel(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-
                 val url = "$baseUrl/customer"
-                val response = apiService.createCustomer(
-                    url,
-                    customer
-                )
-                val createdCustomer = response.body()!!
+                val response = apiService.createCustomer(url, customer)
 
                 if (response.isSuccessful) {
+                    val createdCustomer = response.body()
                     Log.d(
                         "CustomerViewModel",
-                        "Creating customer: ${createdCustomer.firstName} ${createdCustomer.lastName}"
+                        "Customer created: ${createdCustomer?.firstName} ${createdCustomer?.lastName}"
                     )
-                    hideCreationDialog()
-                    fetchCustomers()
+                    withContext(Dispatchers.Main) {
+                        hideCreationDialog()
+                        fetchCustomers()
+                        showToast("Cliente creado correctamente")
+                    }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val error = Gson().fromJson(errorBody, ApiError::class.java)
-                    Log.e("API_RESPONSE", "Error: ${error.message}")
-                    showToast("Error: ${error.message}")
+                    Log.e("API_RESPONSE", "Create error: ${error.message}")
+                    withContext(Dispatchers.Main) {
+                        showToast("Error: ${error.message}")
+                    }
                 }
             } catch (e: Exception) {
-                Log.e("CustomerViewModel", "Error creating customer: ${e.message}")
-                showToast("Error creating customer: ${e.message}")
+                Log.e("CustomerViewModel", "Error creating customer: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error al crear cliente: ${e.message}")
+                }
             }
         }
     }
