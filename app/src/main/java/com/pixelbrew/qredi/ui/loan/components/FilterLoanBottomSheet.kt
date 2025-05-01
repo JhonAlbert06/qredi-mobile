@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,8 +44,14 @@ fun FilterLoanBottomSheet(
     var selectedField by remember { mutableStateOf<String?>(null) }
     var selectedQuery by remember { mutableStateOf<String?>(null) }
 
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true // 👈 Esto lo fuerza a abrirse completamente
+    )
+
     ModalBottomSheet(
-        onDismissRequest = onDismiss
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        dragHandle = null
     ) {
         Column(
             modifier = Modifier
