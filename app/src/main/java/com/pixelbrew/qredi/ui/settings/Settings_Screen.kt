@@ -4,9 +4,7 @@ import android.Manifest
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -58,36 +56,12 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState())
     ) {
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                "",
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.arrows_rotate_solid),
-                contentDescription = "Actualizar",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clickable { viewModel.refreshPairedDevices() }
-                    .padding(8.dp),
-                tint = Color(0xFF00BCD4)
-            )
-
-        }
-
-
-        Spacer(modifier = Modifier.height(24.dp))
-
         Spacer(modifier = Modifier.height(24.dp))
         Text("Impresora", style = MaterialTheme.typography.titleLarge)
         PrinterField(
-            printerName,
-            onValueChange = { viewModel.onPrinterNameChange(it) }
+            name = printerName,
+            onValueChange = { viewModel.onPrinterNameChange(it) },
+            onRefresh = { viewModel.refreshPairedDevices() }
         )
 
         GenericDropdown(
@@ -102,7 +76,6 @@ fun SettingsScreen(
                 it?.name ?: ""
             },
         )
-
 
         Spacer(modifier = Modifier.height(24.dp))
         Text("Seguridad", style = MaterialTheme.typography.titleLarge)
@@ -131,7 +104,7 @@ fun SettingsScreen(
 }
 
 @Composable
-fun PrinterField(name: String, onValueChange: (String) -> Unit) {
+fun PrinterField(name: String, onValueChange: (String) -> Unit, onRefresh: () -> Unit) {
     TextField(
         value = name,
         onValueChange = { onValueChange(it) },
@@ -140,6 +113,17 @@ fun PrinterField(name: String, onValueChange: (String) -> Unit) {
             Text(
                 text = "Impresora",
                 style = MaterialTheme.typography.bodyLarge
+            )
+        },
+        trailingIcon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.arrows_rotate_solid),
+                contentDescription = "Actualizar dispositivos",
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onRefresh() }
+                    .padding(4.dp),
+                tint = Color(0xFF00BCD4)
             )
         },
         keyboardOptions = KeyboardOptions(

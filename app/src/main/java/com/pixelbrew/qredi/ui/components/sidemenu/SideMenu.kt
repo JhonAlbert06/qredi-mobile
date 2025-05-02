@@ -113,25 +113,25 @@ fun SideMenu(
 
                 Screen.Collect -> CollectScreen(
                     viewModel = collectViewModel,
-                    modifier = modifier.padding(top = 25.dp),
+                    modifier = modifier.padding(top = 20.dp),
                     context = context as MainActivity
                 )
 
                 Screen.Customer -> CustomerScreen(
                     viewModel = customerViewModel,
-                    modifier = modifier.padding(top = 25.dp),
+                    modifier = modifier.padding(top = 18.dp),
                     context = context as MainActivity
                 )
 
                 Screen.Loan -> LoanScreen(
                     viewModel = loanViewModel,
-                    modifier = modifier.padding(top = 25.dp),
+                    modifier = modifier.padding(top = 18.dp),
                     context = context as MainActivity
                 )
 
                 Screen.Reprint -> ReprintScreen(
                     viewModel = reprintViewModel,
-                    modifier = modifier.padding(top = 25.dp),
+                    modifier = modifier.padding(top = 20.dp),
                     context = context as MainActivity
                 )
 
@@ -139,7 +139,7 @@ fun SideMenu(
 
                 Screen.Settings -> SettingsScreen(
                     viewModel = settingsViewModel,
-                    modifier = modifier.padding(padding),
+                    modifier = modifier.padding(top = 45.dp),
                     context = context as MainActivity
                 )
             }
