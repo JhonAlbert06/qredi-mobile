@@ -17,8 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,7 +27,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -109,49 +107,18 @@ fun LoanContent(
 
     val loanSelected by viewModel.loanSelected.observeAsState()
 
-    // Estado para el botón flotante expandible
     var isFabExpanded by remember { mutableStateOf(false) }
 
+    val refreshState = rememberPullToRefreshState()
+
+    // Scope for the pull to refresh
+
+
     Scaffold(
-        topBar = {
-
-            TopAppBar(
-                modifier = Modifier.padding(top = 12.dp),
-                title = { Text("") },
-                actions = {
-
-                    Button(
-                        onClick = {
-                            viewModel.refreshLoans()
-                        },
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .align(Alignment.CenterVertically),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xA413E2FD),
-                            contentColor = Color.Black,
-                            disabledContainerColor = Color(0x2C00BCD4),
-                            disabledContentColor = Color(0xFF0C0C0C)
-                        )
-                    ) {
-                        Text("Actualizar")
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.arrows_rotate_solid),
-                            contentDescription = "Actualizar",
-                            modifier = Modifier
-                                .size(20.dp)
-                                .padding(start = 8.dp)
-                        )
-                    }
-                }
-            )
-        },
         floatingActionButton = {
-            // Botón flotante expandible
             Column(
                 horizontalAlignment = Alignment.End,
-                modifier = Modifier
-                    .padding(16.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
                 if (isFabExpanded) {
                     ExtendedFloatingActionButton(
@@ -203,38 +170,45 @@ fun LoanContent(
         },
         modifier = modifier
     ) { innerPadding ->
-        Box(
+        PullToRefreshBox(
+            state = refreshState,
+            isRefreshing = isLoading,
+            onRefresh = {
+                viewModel.refreshLoans()
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(start = 12.dp, end = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(loans.size) { index ->
-                        val loan = loans[index]
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                            modifier = Modifier
-                                .padding(bottom = 8.dp)
-                                .clickable {
-                                    viewModel.setLoanSelected(loan)
-                                    viewModel.setLoanDetailsDialog(true)
-                                }
-                        ) {
-                            LoanItem(loan, viewModel)
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyColumn(
+                        contentPadding = innerPadding,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(loans.size) { index ->
+                            val loan = loans[index]
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                                modifier = Modifier
+                                    .clickable {
+                                        viewModel.setLoanSelected(loan)
+                                        viewModel.setLoanDetailsDialog(true)
+                                    }
+                            ) {
+                                LoanItem(loan, viewModel)
+                            }
                         }
                     }
                 }
@@ -247,9 +221,7 @@ fun LoanContent(
             viewModel = viewModel,
             onDismiss = { viewModel.setShowCreationDialog(false) },
             onSubmit = { customerId, routeId, amount, interest, feesQuantity ->
-
                 var loan = LoanModel()
-
                 try {
                     loan = LoanModel(
                         customerId = customerId,
@@ -258,11 +230,9 @@ fun LoanContent(
                         interest = interest.toDouble(),
                         feesQuantity = feesQuantity.toInt(),
                     )
-
                     viewModel.createNewLoan(loan)
                 } catch (e: Exception) {
                     Log.e("LoanScreen", "Error al crear el préstamo: ${e.message}")
-                    //Toast.makeText(context, "Error al crear el préstamo", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -289,6 +259,3 @@ fun LoanContent(
         )
     }
 }
-
-
-
