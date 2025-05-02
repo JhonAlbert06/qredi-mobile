@@ -22,7 +22,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.admin.AdminScreen
-import com.pixelbrew.qredi.ui.admin.AdminViewModel
 import com.pixelbrew.qredi.ui.collect.CollectScreen
 import com.pixelbrew.qredi.ui.collect.CollectViewModel
 import com.pixelbrew.qredi.ui.components.sidemenu.components.DrawerContent
@@ -49,7 +48,7 @@ fun SideMenu(
     modifier: Modifier = Modifier,
     context: android.content.Context
 ) {
-    val adminViewModel: AdminViewModel = hiltViewModel()
+
     val collectViewModel: CollectViewModel = hiltViewModel()
     val customerViewModel: CustomerViewModel = hiltViewModel()
     val loanViewModel: LoanViewModel = hiltViewModel()
