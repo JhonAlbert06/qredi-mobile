@@ -23,6 +23,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import java.time.LocalDateTime
@@ -45,10 +47,11 @@ import java.time.LocalDateTime
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReprintScreen(
-    viewModel: ReprintViewModel,
     modifier: Modifier = Modifier,
     context: MainActivity
 ) {
+
+    val viewModel: ReprintViewModel = hiltViewModel()
     val toastEvent by viewModel.toastMessage.observeAsState()
 
     LaunchedEffect(toastEvent) {
@@ -101,8 +104,9 @@ fun Reprint(
         LazyColumn {
             items(sortedFees) { fee ->
                 Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     modifier = Modifier
-                        .padding(8.dp)
                         .fillMaxWidth()
                         .clickable {
                             viewModel.setShowReprintDialog(true)

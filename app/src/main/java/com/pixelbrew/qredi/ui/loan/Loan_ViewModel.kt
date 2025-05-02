@@ -129,7 +129,7 @@ class LoanViewModel @Inject constructor(
         }
     }
 
-    private fun fetchCustomers(query: String = "", field: String = "") {
+    fun fetchCustomers(query: String = "", field: String = "") {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val url = "$baseUrl/customer?query=$query&field=$field"

@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
@@ -49,10 +51,11 @@ import com.pixelbrew.qredi.ui.collect.components.RouteSelectionDialog
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun CollectScreen(
-    viewModel: CollectViewModel,
     modifier: Modifier = Modifier,
     context: MainActivity,
 ) {
+    val viewModel: CollectViewModel = hiltViewModel()
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -62,7 +65,6 @@ fun CollectScreen(
         Spacer(modifier = Modifier.height(8.dp))
     }
 
-    val viewModel: CollectViewModel = viewModel
     val toastEvent by viewModel.toastMessage.observeAsState()
 
     LaunchedEffect(toastEvent) {
@@ -122,7 +124,7 @@ fun HeaderCollect(
                 .padding(start = 8.dp)
                 .align(Alignment.CenterVertically),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF00BCD4),
+                containerColor = Color(0xA413E2FD),
                 contentColor = Color.Black,
                 disabledContainerColor = Color(0x2C00BCD4),
                 disabledContentColor = Color(0xFF0C0C0C)
@@ -177,6 +179,8 @@ fun LoansList(
         LazyColumn {
             items(loans) { loan ->
                 Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     modifier = Modifier
                         .padding(bottom = 8.dp)
                         .clickable {

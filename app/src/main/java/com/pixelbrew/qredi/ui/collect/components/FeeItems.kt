@@ -15,7 +15,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -61,6 +63,8 @@ fun FeeItems(
         items(updatedLoan.fees.filter { it.paymentAmount < cuote }) { fee ->
 
             Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 modifier = Modifier
                     .padding(bottom = 8.dp)
                     .fillMaxWidth()
@@ -95,7 +99,7 @@ fun FeeItems(
                             .padding(top = 8.dp)
                             .fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF00BCD4),
+                            containerColor = Color(0x9A3EFFAA),
                             contentColor = Color.Black,
                             disabledContainerColor = Color(0x2C00BCD4),
                             disabledContentColor = Color(0xFF0C0C0C)

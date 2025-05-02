@@ -1,6 +1,8 @@
 package com.pixelbrew.qredi.ui.loan.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,10 +24,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.data.network.model.LoanModelRes
-import com.pixelbrew.qredi.ui.collect.components.LoanLabel
 import com.pixelbrew.qredi.ui.loan.LoanViewModel
 
 @Composable
@@ -31,103 +33,177 @@ fun LoanItem(
     loan: LoanModelRes,
     viewModel: LoanViewModel
 ) {
-    Column(modifier = Modifier.padding(16.dp)) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Tag(
-                text = loan.route.name,
-                icon = R.drawable.location_dot_solid,
-                backgroundColor = Color(0xFF000000),
-                contentColor = Color(0xFFFFFFFF)
-            )
+            // Primera fila: Ruta + Fecha
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.location_dot_solid),
+                        contentDescription = "Ruta",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .padding(end = 4.dp)
+                    )
+                    Text(
+                        text = loan.route.name,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
-            Text(
-                text = "${loan.date.day}/${loan.date.month}/${loan.date.year}",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(start = 8.dp)
-            )
+                Text(
+                    text = "${loan.date.day}/${loan.date.month}/${loan.date.year}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Nombre cliente
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconCircle(
+                    icon = R.drawable.user_solid,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "${loan.customer.firstName} ${loan.customer.lastName}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            // Cédula
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 4.dp)
+            ) {
+                IconCircle(
+                    icon = R.drawable.address_card_solid,
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+                Text(
+                    text = viewModel.formatCedula(loan.customer.cedula),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Monto
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.coins_solid),
+                    contentDescription = "Monto",
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "${viewModel.formatNumber(loan.amount)} $",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Estados
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                if (loan.loanIsPaid) {
+                    StatusTag(
+                        text = "Finalizado",
+                        icon = R.drawable.check_solid,
+                        backgroundColor = Color(0xFFEEFFFA),
+                        contentColor = Color(0xFF00D455)
+                    )
+                } else {
+                    StatusTag(
+                        text = "No Finalizado",
+                        icon = R.drawable.xmark_solid,
+                        backgroundColor = Color(0xFFFFEDED),
+                        contentColor = Color(0xFFEF4444)
+                    )
+                }
+
+                if (loan.isCurrentLoan) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    StatusTag(
+                        text = "Actual",
+                        icon = R.drawable.check_to_slot_solid,
+                        backgroundColor = Color(0xFFEFFBF5),
+                        contentColor = Color(0xFF00D455)
+                    )
+                }
+            }
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.user_solid),
-                contentDescription = "Loan Icon",
-                modifier = Modifier.size(24.dp)
-            )
-            Text(
-                text = "${loan.customer.firstName} ${loan.customer.lastName}",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(start = 8.dp),
-                fontWeight = FontWeight.Bold,
-                fontSize = 26.sp
-            )
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.address_card_solid),
-                contentDescription = "Loan Icon",
-                modifier = Modifier.size(24.dp)
-            )
-            Text(
-                text = viewModel.formatCedula(loan.customer.cedula),
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(start = 8.dp),
-                fontSize = 18.sp
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.coins_solid),
-            text = "${viewModel.formatNumber(loan.amount)} $"
+@Composable
+fun IconCircle(icon: Int, tint: Color) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .background(
+                color = tint.copy(alpha = 0.1f),
+                shape = MaterialTheme.shapes.small
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(id = icon),
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(16.dp)
         )
+    }
+}
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.End
-        ) {
-            // Estado de pago
-            if (loan.loanIsPaid) {
-                Tag(
-                    text = "Finalizado",
-                    icon = R.drawable.check_solid,
-                    backgroundColor = Color(0xFFEEFFFA),
-                    contentColor = Color(0xFF00D455)
-                )
-            } else {
-                Tag(
-                    text = "No Finalizado",
-                    icon = R.drawable.xmark_solid,
-                    backgroundColor = Color(0xFFFFEDED),
-                    contentColor = Color(0xFFEF4444)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(3.dp))
-
-            // Estado de préstamo actual
-            if (loan.isCurrentLoan) {
-                Tag(
-                    text = "Actual",
-                    icon = R.drawable.check_to_slot_solid,
-                    backgroundColor = Color(0xFFEFFBF5),
-                    contentColor = Color(0xFF00D455)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(3.dp))
-        }
+@Composable
+fun StatusTag(
+    text: String,
+    icon: Int,
+    backgroundColor: Color,
+    contentColor: Color
+) {
+    Row(
+        modifier = Modifier
+            .background(
+                color = backgroundColor,
+                shape = MaterialTheme.shapes.small
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(id = icon),
+            contentDescription = null,
+            tint = contentColor,
+            modifier = Modifier.size(14.dp)
+        )
+        Text(
+            text = text,
+            color = contentColor,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(start = 4.dp)
+        )
     }
 }

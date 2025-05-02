@@ -35,6 +35,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.ui.customer.components.CreateCustomerBottomSheet
@@ -43,10 +45,11 @@ import com.pixelbrew.qredi.ui.customer.components.FilterCustomerBottomSheet
 
 @Composable
 fun CustomerScreen(
-    viewModel: CustomerViewModel,
     modifier: Modifier = Modifier,
     context: MainActivity,
+    navController: NavHostController
 ) {
+    val viewModel: CustomerViewModel = hiltViewModel()
     val toastEvent by viewModel.toastMessage.observeAsState()
 
     LaunchedEffect(toastEvent) {
@@ -55,14 +58,15 @@ fun CustomerScreen(
         }
     }
 
-    CustomerContent(viewModel = viewModel, modifier = modifier)
+    CustomerContent(viewModel = viewModel, modifier = modifier, navController = navController)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerContent(
     viewModel: CustomerViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavHostController
 ) {
     val customerList by viewModel.customerList.observeAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.observeAsState(initial = false)
@@ -88,7 +92,7 @@ fun CustomerContent(
                             .padding(8.dp)
                             .align(Alignment.CenterVertically),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF00BCD4),
+                            containerColor = Color(0xA413E2FD),
                             contentColor = Color.Black,
                             disabledContainerColor = Color(0x2C00BCD4),
                             disabledContentColor = Color(0xFF0C0C0C)
@@ -216,6 +220,10 @@ fun CustomerContent(
                     phone = phone,
                     reference = reference,
                 )
+
+                navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("refreshCustomers", true)
             }
         )
     }

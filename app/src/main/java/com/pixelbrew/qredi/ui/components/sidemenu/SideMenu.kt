@@ -19,22 +19,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.admin.AdminScreen
 import com.pixelbrew.qredi.ui.collect.CollectScreen
-import com.pixelbrew.qredi.ui.collect.CollectViewModel
 import com.pixelbrew.qredi.ui.components.sidemenu.components.DrawerContent
 import com.pixelbrew.qredi.ui.components.sidemenu.components.Screen
 import com.pixelbrew.qredi.ui.components.sidemenu.components.ScreenSaver
 import com.pixelbrew.qredi.ui.components.sidemenu.components.TopBar
 import com.pixelbrew.qredi.ui.components.sidemenu.components.UserInfoSheet
 import com.pixelbrew.qredi.ui.customer.CustomerScreen
-import com.pixelbrew.qredi.ui.customer.CustomerViewModel
 import com.pixelbrew.qredi.ui.loan.LoanScreen
-import com.pixelbrew.qredi.ui.loan.LoanViewModel
 import com.pixelbrew.qredi.ui.reprint.ReprintScreen
-import com.pixelbrew.qredi.ui.reprint.ReprintViewModel
 import com.pixelbrew.qredi.ui.settings.SettingsScreen
 import com.pixelbrew.qredi.ui.settings.SettingsViewModel
 import com.pixelbrew.qredi.ui.statistics.StatisticsScreen
@@ -49,10 +46,6 @@ fun SideMenu(
     context: android.content.Context
 ) {
 
-    val collectViewModel: CollectViewModel = hiltViewModel()
-    val customerViewModel: CustomerViewModel = hiltViewModel()
-    val loanViewModel: LoanViewModel = hiltViewModel()
-    val reprintViewModel: ReprintViewModel = hiltViewModel()
     val settingsViewModel: SettingsViewModel = hiltViewModel()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -69,6 +62,8 @@ fun SideMenu(
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     val user = settingsViewModel.getUser() ?: UserModel()
+
+    val navController = rememberNavController()
 
     if (showBottomSheet) {
         ModalBottomSheet(
@@ -111,25 +106,23 @@ fun SideMenu(
                 )
 
                 Screen.Collect -> CollectScreen(
-                    viewModel = collectViewModel,
                     modifier = modifier.padding(top = 20.dp),
                     context = context as MainActivity
                 )
 
                 Screen.Customer -> CustomerScreen(
-                    viewModel = customerViewModel,
                     modifier = modifier.padding(top = 18.dp),
-                    context = context as MainActivity
+                    context = context as MainActivity,
+                    navController = navController
                 )
 
                 Screen.Loan -> LoanScreen(
-                    viewModel = loanViewModel,
                     modifier = modifier.padding(top = 18.dp),
-                    context = context as MainActivity
+                    context = context as MainActivity,
+                    navController = navController
                 )
 
                 Screen.Reprint -> ReprintScreen(
-                    viewModel = reprintViewModel,
                     modifier = modifier.padding(top = 20.dp),
                     context = context as MainActivity
                 )

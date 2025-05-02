@@ -1,8 +1,10 @@
 package com.pixelbrew.qredi.ui.loan
 
 import android.Manifest
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,11 +20,13 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -39,6 +43,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavHostController
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.data.network.model.LoanModel
@@ -47,14 +54,35 @@ import com.pixelbrew.qredi.ui.loan.components.FilterLoanBottomSheet
 import com.pixelbrew.qredi.ui.loan.components.LoanDetailBottomSheet
 import com.pixelbrew.qredi.ui.loan.components.LoanItem
 
+@RequiresApi(Build.VERSION_CODES.O)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun LoanScreen(
-    viewModel: LoanViewModel,
     modifier: Modifier = Modifier,
     context: MainActivity,
+    navController: NavHostController
 ) {
+    val viewModel: LoanViewModel = hiltViewModel()
     val toastEvent by viewModel.toastMessage.observeAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    val refreshCustomers = navController
+        .currentBackStackEntry
+        ?.savedStateHandle
+        ?.getLiveData<Boolean>("refreshCustomers")
+
+    LaunchedEffect(refreshCustomers) {
+        refreshCustomers?.observe(lifecycleOwner) { shouldRefresh ->
+            if (shouldRefresh == true) {
+                viewModel.fetchCustomers()
+                navController.currentBackStackEntry?.savedStateHandle?.set(
+                    "refreshCustomers",
+                    false
+                )
+            }
+        }
+    }
 
     LaunchedEffect(toastEvent) {
         toastEvent?.getContentIfNotHandled()?.let { message ->
@@ -65,6 +93,7 @@ fun LoanScreen(
     LoanContent(viewModel = viewModel, modifier = modifier)
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
@@ -99,7 +128,7 @@ fun LoanContent(
                             .padding(8.dp)
                             .align(Alignment.CenterVertically),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF00BCD4),
+                            containerColor = Color(0xA413E2FD),
                             contentColor = Color.Black,
                             disabledContainerColor = Color(0x2C00BCD4),
                             disabledContentColor = Color(0xFF0C0C0C)
@@ -196,6 +225,8 @@ fun LoanContent(
                     items(loans.size) { index ->
                         val loan = loans[index]
                         Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                             modifier = Modifier
                                 .padding(bottom = 8.dp)
                                 .clickable {
