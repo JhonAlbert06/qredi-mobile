@@ -43,7 +43,7 @@ fun LoanDetailBottomSheet(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(4.dp)
         ) {
             // Título
             Text(

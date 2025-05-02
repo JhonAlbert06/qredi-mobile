@@ -99,10 +99,10 @@ fun FeeItems(
                             .padding(top = 8.dp)
                             .fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0x9A3EFFAA),
+                            containerColor = MaterialTheme.colorScheme.inversePrimary,
                             contentColor = Color.Black,
                             disabledContainerColor = Color(0x2C00BCD4),
-                            disabledContentColor = Color(0xFF0C0C0C)
+                            disabledContentColor = Color(0xFFD9D3D3)
                         ),
                         enabled = fee.paymentAmount < cuote
                     ) {
