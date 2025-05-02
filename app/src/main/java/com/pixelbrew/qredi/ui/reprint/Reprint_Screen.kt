@@ -107,6 +107,7 @@ fun Reprint(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     modifier = Modifier
+                        .padding(bottom = 16.dp)
                         .fillMaxWidth()
                         .clickable {
                             viewModel.setShowReprintDialog(true)
