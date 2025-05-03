@@ -8,14 +8,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,11 +64,14 @@ fun FilterCustomerBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextField(
+            OutlinedTextField(
                 value = queryAux,
                 onValueChange = { queryAux = it },
-                placeholder = { Text("Escribe tu búsqueda") },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text("Escribe tu búsqueda") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true,
+                maxLines = 1
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -76,7 +80,10 @@ fun FilterCustomerBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                     Text("Cancelar")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -84,7 +91,8 @@ fun FilterCustomerBottomSheet(
                     onClick = {
                         onApplyFilters(fieldSelected, queryAux)
                         onDismiss()
-                    }
+                    },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Aplicar")
                 }

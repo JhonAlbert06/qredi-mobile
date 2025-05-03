@@ -10,10 +10,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
@@ -64,11 +67,8 @@ fun LoanScreen(
     val toastEvent by viewModel.toastMessage.observeAsState()
 
     val lifecycleOwner = LocalLifecycleOwner.current
-
-    val refreshCustomers = navController
-        .currentBackStackEntry
-        ?.savedStateHandle
-        ?.getLiveData<Boolean>("refreshCustomers")
+    val refreshCustomers =
+        navController.currentBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("refreshCustomers")
 
     LaunchedEffect(refreshCustomers) {
         refreshCustomers?.observe(lifecycleOwner) { shouldRefresh ->
@@ -99,67 +99,56 @@ fun LoanContent(
     viewModel: LoanViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val isLoading by viewModel.isLoading.observeAsState(initial = false)
-    val loans by viewModel.loans.observeAsState(initial = emptyList())
-
-    val routesList by viewModel.routesList.observeAsState(initial = emptyList())
-    val customers by viewModel.customerList.observeAsState(initial = emptyList())
-
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val loans by viewModel.loans.observeAsState(emptyList())
+    val routesList by viewModel.routesList.observeAsState(emptyList())
+    val customers by viewModel.customerList.observeAsState(emptyList())
     val loanSelected by viewModel.loanSelected.observeAsState()
 
     var isFabExpanded by remember { mutableStateOf(false) }
-
     val refreshState = rememberPullToRefreshState()
 
-    // Scope for the pull to refresh
-
-
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         floatingActionButton = {
-            Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier.padding(16.dp)
-            ) {
+            Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(16.dp)) {
                 if (isFabExpanded) {
                     ExtendedFloatingActionButton(
                         text = { Text("Filtrar") },
                         icon = {
                             Icon(
-                                imageVector = ImageVector.vectorResource(id = R.drawable.filter_solid),
+                                imageVector = ImageVector.vectorResource(R.drawable.filter_solid),
                                 contentDescription = null,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(8.dp),
+                                modifier = Modifier.size(24.dp)
                             )
                         },
                         onClick = {
                             isFabExpanded = false
                             viewModel.setShowFilterLoanDialog(true)
                         },
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-
                     ExtendedFloatingActionButton(
                         text = { Text("Crear") },
                         icon = {
                             Icon(
-                                imageVector = ImageVector.vectorResource(id = R.drawable.square_plus_regular),
+                                imageVector = ImageVector.vectorResource(R.drawable.square_plus_regular),
                                 contentDescription = null,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(8.dp),
+                                modifier = Modifier.size(24.dp)
                             )
                         },
                         onClick = {
                             isFabExpanded = false
                             viewModel.setShowCreationDialog(true)
                         },
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
-
                 FloatingActionButton(
-                    onClick = { isFabExpanded = !isFabExpanded }
+                    onClick = { isFabExpanded = !isFabExpanded },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
                         imageVector = if (isFabExpanded) Icons.Default.Close else Icons.Default.Menu,
@@ -168,47 +157,40 @@ fun LoanContent(
                 }
             }
         },
-        modifier = modifier
+        modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         PullToRefreshBox(
             state = refreshState,
             isRefreshing = isLoading,
-            onRefresh = {
-                viewModel.refreshLoans()
-            },
+            onRefresh = { viewModel.refreshLoans() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                } else {
-                    LazyColumn(
-                        contentPadding = innerPadding,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(loans.size) { index ->
-                            val loan = loans[index]
-                            Card(
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                                modifier = Modifier
-                                    .clickable {
-                                        viewModel.setLoanSelected(loan)
-                                        viewModel.setLoanDetailsDialog(true)
-                                    }
-                            ) {
-                                LoanItem(loan, viewModel)
-                            }
+            if (isLoading) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(vertical = 12.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(loans.size) { index ->
+                        val loan = loans[index]
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            modifier = Modifier
+                                .clickable {
+                                    viewModel.setLoanSelected(loan)
+                                    viewModel.setLoanDetailsDialog(true)
+                                }
+                        ) {
+                            LoanItem(loan, viewModel)
                         }
                     }
                 }
@@ -221,14 +203,13 @@ fun LoanContent(
             viewModel = viewModel,
             onDismiss = { viewModel.setShowCreationDialog(false) },
             onSubmit = { customerId, routeId, amount, interest, feesQuantity ->
-                var loan = LoanModel()
                 try {
-                    loan = LoanModel(
+                    val loan = LoanModel(
                         customerId = customerId,
                         routeId = routeId,
                         amount = amount.toDouble(),
                         interest = interest.toDouble(),
-                        feesQuantity = feesQuantity.toInt(),
+                        feesQuantity = feesQuantity.toInt()
                     )
                     viewModel.createNewLoan(loan)
                 } catch (e: Exception) {
@@ -241,11 +222,9 @@ fun LoanContent(
     if (viewModel.showFilterLoanDialog.observeAsState().value == true) {
         FilterLoanBottomSheet(
             onDismiss = { viewModel.setShowFilterLoanDialog(false) },
-            onApplyFilters = { field, query ->
-                viewModel.fetchLoans(field, query)
-            },
+            onApplyFilters = { field, query -> viewModel.fetchLoans(field, query) },
             routesList = routesList,
-            usersList = customers,
+            usersList = customers
         )
     }
 

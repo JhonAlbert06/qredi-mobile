@@ -2,17 +2,17 @@ package com.pixelbrew.qredi.ui.customer
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
@@ -67,18 +67,19 @@ fun CustomerContent(
     modifier: Modifier = Modifier,
     navController: NavHostController
 ) {
-    val customerList by viewModel.customerList.observeAsState(initial = emptyList())
-    val isLoading by viewModel.isLoading.observeAsState(initial = false)
-    val showFilterDialog by viewModel.showFilterCustomerDialog.observeAsState(initial = false)
-    val fieldSelected by viewModel.fieldSelected.observeAsState(initial = Field("NONE", "NONE"))
-    val query by viewModel.query.observeAsState(initial = "")
-    val showCreationDialog by viewModel.showCreationDialog.observeAsState(initial = false)
+    val customerList by viewModel.customerList.observeAsState(emptyList())
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val showFilterDialog by viewModel.showFilterCustomerDialog.observeAsState(false)
+    val fieldSelected by viewModel.fieldSelected.observeAsState(Field("NONE", "NONE"))
+    val query by viewModel.query.observeAsState("")
+    val showCreationDialog by viewModel.showCreationDialog.observeAsState(false)
 
     var isFabExpanded by remember { mutableStateOf(false) }
 
     val refreshState = rememberPullToRefreshState()
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
                 if (isFabExpanded) {
@@ -86,39 +87,38 @@ fun CustomerContent(
                         text = { Text("Filtrar") },
                         icon = {
                             Icon(
-                                imageVector = ImageVector.vectorResource(id = R.drawable.filter_solid),
+                                imageVector = ImageVector.vectorResource(R.drawable.filter_solid),
                                 contentDescription = null,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(8.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         },
                         onClick = {
                             isFabExpanded = false
                             viewModel.showFilterCustomerDialog(true)
                         },
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                     ExtendedFloatingActionButton(
                         text = { Text("Crear") },
                         icon = {
                             Icon(
-                                imageVector = ImageVector.vectorResource(id = R.drawable.square_plus_regular),
+                                imageVector = ImageVector.vectorResource(R.drawable.square_plus_regular),
                                 contentDescription = null,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(8.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         },
                         onClick = {
                             isFabExpanded = false
                             viewModel.showCreationDialog()
                         },
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
                 FloatingActionButton(
-                    onClick = { isFabExpanded = !isFabExpanded }
+                    onClick = { isFabExpanded = !isFabExpanded },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
                         imageVector = if (isFabExpanded) Icons.Default.Close else Icons.Default.Menu,
@@ -127,7 +127,7 @@ fun CustomerContent(
                 }
             }
         },
-        modifier = modifier
+        modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         PullToRefreshBox(
             state = refreshState,
@@ -137,30 +137,18 @@ fun CustomerContent(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                } else {
-                    LazyColumn(
-                        contentPadding = innerPadding,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(customerList.size) { index ->
-                            val customer = customerList[index]
-                            CustomerItem(
-                                customer = customer,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
+            LazyColumn(
+                contentPadding = PaddingValues(vertical = 12.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(customerList.size) { index ->
+                    val customer = customerList[index]
+                    CustomerItem(
+                        customer = customer
+                    )
                 }
             }
         }
@@ -169,9 +157,7 @@ fun CustomerContent(
     if (showFilterDialog) {
         FilterCustomerBottomSheet(
             onDismiss = { viewModel.showFilterCustomerDialog(false) },
-            onApplyFilters = { field, query ->
-                viewModel.onSearchButtonClicked(field, query)
-            },
+            onApplyFilters = { field, query -> viewModel.onSearchButtonClicked(field, query) },
             fields = viewModel.fields,
             selectedField = fieldSelected,
             query = query
@@ -182,17 +168,11 @@ fun CustomerContent(
         CreateCustomerBottomSheet(
             onDismiss = { viewModel.hideCreationDialog() },
             onSubmit = { cedula, names, lastNames, address, phone, reference ->
-                viewModel.createCustomer(
-                    cedula = cedula,
-                    names = names,
-                    lastNames = lastNames,
-                    address = address,
-                    phone = phone,
-                    reference = reference,
+                viewModel.createCustomer(cedula, names, lastNames, address, phone, reference)
+                navController.previousBackStackEntry?.savedStateHandle?.set(
+                    "refreshCustomers",
+                    true
                 )
-                navController.previousBackStackEntry
-                    ?.savedStateHandle
-                    ?.set("refreshCustomers", true)
             }
         )
     }

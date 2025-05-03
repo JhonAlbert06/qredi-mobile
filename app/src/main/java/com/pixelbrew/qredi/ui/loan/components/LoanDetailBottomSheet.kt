@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -32,9 +33,7 @@ fun LoanDetailBottomSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -43,9 +42,8 @@ fun LoanDetailBottomSheet(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(4.dp)
+                .padding(16.dp)
         ) {
-            // Título
             Text(
                 text = "Detalles del Préstamo",
                 style = MaterialTheme.typography.titleLarge
@@ -53,21 +51,19 @@ fun LoanDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Información del préstamo
             LoanSummary(loan)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Información del cliente
             CustomerInfo(loan)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Cuotas
             Text(
                 text = "Cuotas",
                 style = MaterialTheme.typography.titleMedium
             )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
@@ -81,12 +77,14 @@ fun LoanDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón de cerrar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                     Text("Cerrar")
                 }
             }
@@ -98,15 +96,25 @@ fun LoanDetailBottomSheet(
 fun LoanSummary(loan: LoanModelRes) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text("Monto: \$${loan.amount}")
-            Text("Interés: ${loan.interest}%")
-            Text("Cantidad de cuotas: ${loan.feesQuantity}")
-            Text("Pagado: ${if (loan.loanIsPaid) "Sí" else "No"}")
-            Text("Préstamo actual: ${if (loan.isCurrentLoan) "Sí" else "No"}")
+            Text("Monto: \$${loan.amount}", style = MaterialTheme.typography.bodyLarge)
+            Text("Interés: ${loan.interest}%", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "Cantidad de cuotas: ${loan.feesQuantity}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                "Pagado: ${if (loan.loanIsPaid) "Sí" else "No"}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                "Préstamo actual: ${if (loan.isCurrentLoan) "Sí" else "No"}",
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }
@@ -115,8 +123,9 @@ fun LoanSummary(loan: LoanModelRes) {
 fun CustomerInfo(loan: LoanModelRes) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
@@ -124,11 +133,17 @@ fun CustomerInfo(loan: LoanModelRes) {
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Nombre: ${loan.customer.firstName} ${loan.customer.lastName}")
-            Text("Cédula: ${loan.customer.cedula}")
-            Text("Teléfono: ${loan.customer.phone}")
-            Text("Dirección: ${loan.customer.address}")
-            Text("Referencia: ${loan.customer.reference}")
+            Text(
+                "Nombre: ${loan.customer.firstName} ${loan.customer.lastName}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text("Cédula: ${loan.customer.cedula}", style = MaterialTheme.typography.bodyLarge)
+            Text("Teléfono: ${loan.customer.phone}", style = MaterialTheme.typography.bodyLarge)
+            Text("Dirección: ${loan.customer.address}", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "Referencia: ${loan.customer.reference}",
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }
@@ -137,8 +152,9 @@ fun CustomerInfo(loan: LoanModelRes) {
 fun FeeItem(fee: FeeModelRes) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
@@ -146,21 +162,28 @@ fun FeeItem(fee: FeeModelRes) {
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text("Fecha esperada: ${fee.expectedDate.day}/${fee.expectedDate.month}/${fee.expectedDate.year}")
+            Text(
+                text = "Fecha esperada: ${fee.expectedDate.day}/${fee.expectedDate.month}/${fee.expectedDate.year}",
+                style = MaterialTheme.typography.bodySmall
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
-            Divider()
+            Divider(
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
 
             if (!fee.payments.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Pagos:",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text("Pagos:", style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(4.dp))
                 fee.payments.forEach { payment ->
                     PaymentItem(payment)
-                    Divider(Modifier.padding(vertical = 8.dp))
+                    Divider(
+                        Modifier.padding(vertical = 8.dp),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+                    )
                 }
             } else {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -177,9 +200,12 @@ fun PaymentItem(payment: Payments) {
             .fillMaxWidth()
             .padding(start = 8.dp)
     ) {
-        Text("Monto pagado: \$${payment.paidAmount}", style = MaterialTheme.typography.bodySmall)
         Text(
-            "Fecha: ${payment.paidDate.day}/${payment.paidDate.month}/${payment.paidDate.year}",
+            text = "Monto pagado: \$${payment.paidAmount}",
+            style = MaterialTheme.typography.bodySmall
+        )
+        Text(
+            text = "Fecha: ${payment.paidDate.day}/${payment.paidDate.month}/${payment.paidDate.year}",
             style = MaterialTheme.typography.bodySmall
         )
     }

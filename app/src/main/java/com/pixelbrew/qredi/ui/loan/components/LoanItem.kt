@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -35,9 +36,9 @@ fun LoanItem(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = MaterialTheme.shapes.medium
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
@@ -131,8 +132,8 @@ fun LoanItem(
                     StatusTag(
                         text = "Finalizado",
                         icon = R.drawable.check_solid,
-                        backgroundColor = Color(0xFFEEFFFA),
-                        contentColor = Color(0xFF00D455)
+                        backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        contentColor = MaterialTheme.colorScheme.primary
                     )
                 } else {
                     StatusTag(
@@ -144,7 +145,7 @@ fun LoanItem(
                 }
 
                 if (loan.isCurrentLoan) {
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     StatusTag(
                         text = "Actual",
                         icon = R.drawable.check_to_slot_solid,
@@ -164,7 +165,7 @@ fun IconCircle(icon: Int, tint: Color) {
             .size(32.dp)
             .background(
                 color = tint.copy(alpha = 0.1f),
-                shape = MaterialTheme.shapes.small
+                shape = RoundedCornerShape(8.dp)
             ),
         contentAlignment = Alignment.Center
     ) {
@@ -188,7 +189,7 @@ fun StatusTag(
         modifier = Modifier
             .background(
                 color = backgroundColor,
-                shape = MaterialTheme.shapes.small
+                shape = RoundedCornerShape(8.dp)
             )
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically

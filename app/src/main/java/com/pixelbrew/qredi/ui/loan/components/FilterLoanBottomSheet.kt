@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,9 +45,7 @@ fun FilterLoanBottomSheet(
     var selectedField by remember { mutableStateOf<String?>(null) }
     var selectedQuery by remember { mutableStateOf<String?>(null) }
 
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true // 👈 Esto lo fuerza a abrirse completamente
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -58,8 +57,12 @@ fun FilterLoanBottomSheet(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text("Filtrar Préstamos", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Filtrar Préstamos",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             GenericDropdown(
                 items = listOf("Cliente", "Ruta", "Pagado", "Préstamo Actual"),
@@ -77,7 +80,7 @@ fun FilterLoanBottomSheet(
                 label = "Filtrar por",
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             when (selectedFilter) {
                 "Cliente" -> {
@@ -89,7 +92,7 @@ fun FilterLoanBottomSheet(
                             selectedField = "customerId"
                             selectedQuery = it.id
                         },
-                        itemLabel = { it.firstName + " " + it.lastName },
+                        itemLabel = { "${it.firstName} ${it.lastName}" },
                         label = "Cliente",
                     )
                 }
@@ -109,7 +112,10 @@ fun FilterLoanBottomSheet(
                 }
 
                 "Pagado" -> {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
                         Checkbox(
                             checked = isPaidAux == true,
                             onCheckedChange = {
@@ -119,12 +125,15 @@ fun FilterLoanBottomSheet(
                             }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Pagado")
+                        Text("Pagado", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
 
                 "Préstamo Actual" -> {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
                         Checkbox(
                             checked = isCurrentLoanAux == true,
                             onCheckedChange = {
@@ -134,18 +143,21 @@ fun FilterLoanBottomSheet(
                             }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Préstamo Actual")
+                        Text("Préstamo Actual", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                     Text("Cancelar")
                 }
 
@@ -157,7 +169,8 @@ fun FilterLoanBottomSheet(
                             onApplyFilters(selectedField!!, selectedQuery!!)
                         }
                         onDismiss()
-                    }
+                    },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Aplicar")
                 }

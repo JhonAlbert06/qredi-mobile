@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -50,9 +51,8 @@ fun CreateLoanBottomSheet(
         feesQuantity: String
     ) -> Unit = { _, _, _, _, _ -> }
 ) {
-
-    val customers by viewModel.customerList.observeAsState(initial = emptyList())
-    val routes by viewModel.routesList.observeAsState(initial = emptyList())
+    val customers by viewModel.customerList.observeAsState(emptyList())
+    val routes by viewModel.routesList.observeAsState(emptyList())
 
     var customerId by remember { mutableStateOf("") }
     var routeId by remember { mutableStateOf("") }
@@ -64,10 +64,7 @@ fun CreateLoanBottomSheet(
     var routeSelected by remember { mutableStateOf(RouteModel()) }
 
     val scrollState = rememberScrollState()
-
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true // 👈 Esto lo fuerza a abrirse completamente
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -80,9 +77,12 @@ fun CreateLoanBottomSheet(
                 .verticalScroll(scrollState)
                 .padding(16.dp)
         ) {
-            Text("Crear Préstamo", style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = "Crear Préstamo",
+                style = MaterialTheme.typography.titleLarge
+            )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             GenericDropdown(
                 items = customers,
@@ -91,11 +91,11 @@ fun CreateLoanBottomSheet(
                     customerSelected = customer
                     customerId = customer.id
                 },
-                itemLabel = { it.firstName + " " + it.lastName },
+                itemLabel = { "${it.firstName} ${it.lastName}" },
                 label = "Cliente",
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             GenericDropdown(
                 items = routes,
@@ -108,55 +108,42 @@ fun CreateLoanBottomSheet(
                 label = "Ruta",
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            AmountField(
-                amount = amount,
-                onValueChange = { amount = it }
-            )
+            AmountField(amount = amount, onValueChange = { amount = it })
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            InterestField(
-                interest = interest,
-                onValueChange = { interest = it }
-            )
+            InterestField(interest = interest, onValueChange = { interest = it })
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            FeesQuantityField(
-                feesQuantity = feesQuantity,
-                onValueChange = { feesQuantity = it }
-            )
+            FeesQuantityField(feesQuantity = feesQuantity, onValueChange = { feesQuantity = it })
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 TextButton(
-                    onClick = onDismiss
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Cancelar")
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(
+                    onClick = {
+                        onSubmit(customerId, routeId, amount, interest, feesQuantity)
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF00BCD4),
                         contentColor = Color.Black,
                         disabledContainerColor = Color(0x2C00BCD4),
                         disabledContentColor = Color(0xFF0C0C0C)
                     ),
-                    onClick = {
-                        onSubmit(
-                            customerId,
-                            routeId,
-                            amount,
-                            interest,
-                            feesQuantity
-                        )
-                    }
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Guardar")
                 }
@@ -166,54 +153,45 @@ fun CreateLoanBottomSheet(
 }
 
 @Composable
-fun FeesQuantityField(
-    feesQuantity: String,
-    onValueChange: (String) -> Unit
-) {
-    OutlinedTextField(
-        value = feesQuantity,
-        onValueChange = onValueChange,
-        label = { Text("Cantidad de Cuotas") },
-        modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = KeyboardType.Number
-        ),
-        singleLine = true,
-        maxLines = 1
-    )
-}
-
-@Composable
-fun InterestField(
-    interest: String,
-    onValueChange: (String) -> Unit
-) {
-    OutlinedTextField(
-        value = interest,
-        onValueChange = onValueChange,
-        label = { Text("Interés") },
-        modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = KeyboardType.Number
-        ),
-        singleLine = true,
-        maxLines = 1
-    )
-}
-
-@Composable
-fun AmountField(
-    amount: String,
-    onValueChange: (String) -> Unit
-) {
+fun AmountField(amount: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = amount,
         onValueChange = onValueChange,
         label = { Text("Monto") },
-        modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = KeyboardType.Number
-        ),
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        singleLine = true,
+        maxLines = 1
+    )
+}
+
+@Composable
+fun InterestField(interest: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = interest,
+        onValueChange = onValueChange,
+        label = { Text("Interés") },
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        singleLine = true,
+        maxLines = 1
+    )
+}
+
+@Composable
+fun FeesQuantityField(feesQuantity: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = feesQuantity,
+        onValueChange = onValueChange,
+        label = { Text("Cantidad de Cuotas") },
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true,
         maxLines = 1
     )
