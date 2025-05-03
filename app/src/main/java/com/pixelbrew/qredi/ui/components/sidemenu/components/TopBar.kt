@@ -2,6 +2,7 @@ package com.pixelbrew.qredi.ui.components.sidemenu.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Menu
@@ -19,8 +20,11 @@ import kotlinx.coroutines.Job
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(onOpenDrawer: () -> Unit, currentScreen: Screen, onProfileClick: () -> Job) {
-
+fun TopBar(
+    onOpenDrawer: () -> Unit,
+    currentScreen: Screen,
+    onProfileClick: () -> Job
+) {
     val drawerItems = listOf(
         Triple("Administrar", R.drawable.gear_solid, Screen.Admin),
         Triple("Cobrar", R.drawable.wallet_solid, Screen.Collect),
@@ -31,43 +35,37 @@ fun TopBar(onOpenDrawer: () -> Unit, currentScreen: Screen, onProfileClick: () -
         Triple("Configuración", R.drawable.gears_solid, Screen.Settings),
     )
 
-
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             titleContentColor = MaterialTheme.colorScheme.onSurface,
-            actionIconContentColor = MaterialTheme.colorScheme.onSurface,
-            navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurface
         ),
         navigationIcon = {
             Icon(
                 imageVector = Icons.Default.Menu,
                 contentDescription = "Menu",
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 8.dp)
-                    .clickable {
-                        onOpenDrawer()
-                    }
+                    .padding(start = 16.dp)
+                    .size(28.dp)
+                    .clickable { onOpenDrawer() }
             )
         },
         title = {
-            // Screen name or logo can be added here
             Text(
                 text = drawerItems.first { it.third == currentScreen }.first,
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                style = MaterialTheme.typography.headlineSmall
             )
         },
         actions = {
             Icon(
                 imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Menu",
+                contentDescription = "Perfil",
                 modifier = Modifier
-                    .padding(start = 8.dp, end = 16.dp)
-                    .clickable {
-                        onProfileClick()
-                    }
-
+                    .padding(end = 16.dp)
+                    .size(28.dp)
+                    .clickable { onProfileClick() }
             )
         }
     )

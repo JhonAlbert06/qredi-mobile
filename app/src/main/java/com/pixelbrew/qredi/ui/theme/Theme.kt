@@ -11,22 +11,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-// 🎨 Definición de colores pastel verdes
-val GreenPrimary = Color(0xFFA8D5BA)       // Verde pastel suave
-val GreenSecondary = Color(0xFFBEE3C1)     // Verde más claro
-val GreenTertiary = Color(0xFFD4ECDD)      // Verde grisáceo muy suave
-val GreenContainer = Color(0xFFEAF7EF)     // Casi blanco verdoso
+// 🎨 Paleta pastel verde ajustada y optimizada
+val GreenPrimary = Color(0xFFA2D9A0)       // Verde pastel más vivo (mejora contraste)
+val GreenSecondary = Color(0xFFBEE8C3)     // Verde más claro
+val GreenTertiary = Color(0xFFDFF5E1)      // Verde grisáceo muy suave
+val GreenContainer = Color(0xFFF4FBF6)     // Casi blanco verdoso
 
-val OnGreenDark = Color(0xFF1E2F23)        // Para texto en fondos claros
-val OnGreenLight = Color(0xFFFFFFFF)       // Para texto en fondos oscuros
+val OnGreenDark = Color(0xFF233123)        // Más oscuro para texto sobre fondo verde
+val OnGreenLight = Color(0xFFFFFFFF)       // Blanco para texto sobre primarios oscuros
 
 // 🌙 Tema Oscuro
 val DarkColorScheme = darkColorScheme(
     primary = GreenPrimary,
     secondary = GreenSecondary,
     tertiary = GreenTertiary,
-    background = Color(0xFF121212),
-    surface = Color(0xFF000000),
+    background = Color(0xFF121212),        // Mantengo negro profundo
+    surface = Color(0xFF1C1C1C),           // Un gris oscuro menos duro
     onPrimary = OnGreenLight,
     onSecondary = OnGreenLight,
     onTertiary = OnGreenLight,
@@ -39,13 +39,13 @@ val LightColorScheme = lightColorScheme(
     primary = GreenPrimary,
     secondary = GreenSecondary,
     tertiary = GreenTertiary,
-    background = Color(0xB2676767),
-    surface = GreenContainer,
+    background = Color(0xFFF9FAF9),        // Muy claro, casi blanco → mejor contraste
+    surface = GreenContainer,               // Mantengo claro para cards/dialogs
     onPrimary = OnGreenDark,
     onSecondary = OnGreenDark,
     onTertiary = OnGreenDark,
-    onBackground = Color.Black,
-    onSurface = Color.Black
+    onBackground = Color(0xFF222222),      // Más suave que negro puro
+    onSurface = Color(0xFF222222)          // Igual que onBackground
 )
 
 @Composable

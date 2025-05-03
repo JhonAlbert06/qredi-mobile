@@ -1,10 +1,8 @@
 package com.pixelbrew.qredi.ui.components.sidemenu.components
 
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,54 +33,39 @@ fun DrawerContent(
     )
 
     ModalDrawerSheet(
-        drawerShape = MaterialTheme.shapes.large,
-        drawerContentColor = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.padding(0.dp),
-        windowInsets = WindowInsets(0.dp)
-            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+        drawerShape = RoundedCornerShape(16.dp),
+        drawerContentColor = MaterialTheme.colorScheme.surface
     ) {
         Text(
             "Qredi",
-            modifier = Modifier
-                .padding(16.dp),
+            modifier = Modifier.padding(20.dp),
             fontWeight = FontWeight.Bold,
-            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.8f)
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        HorizontalDivider(modifier = Modifier.padding(bottom = 10.dp))
+        HorizontalDivider(Modifier.padding(bottom = 10.dp))
 
         drawerItems.forEach { (label, iconRes, screen) ->
             NavigationDrawerItem(
                 label = {
-                    if (currentScreen::class == screen::class) {
-                        Text(
-                            label,
-                            color = MaterialTheme.colorScheme.inverseOnSurface,
-                        )
-                    } else {
-                        Text(
-                            label,
-                            color = MaterialTheme.colorScheme.onBackground,
-                        )
-                    }
+                    Text(
+                        label,
+                        color = if (currentScreen::class == screen::class) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onBackground
+                    )
                 },
                 selected = currentScreen::class == screen::class,
                 icon = {
                     Icon(
                         painter = painterResource(id = iconRes),
                         contentDescription = label,
-                        modifier = Modifier.size(32.dp),
-                        tint = if (currentScreen::class == screen::class) {
-                            MaterialTheme.colorScheme.inverseOnSurface
-                        } else {
-                            MaterialTheme.colorScheme.onBackground
-                        }
+                        modifier = Modifier.size(28.dp),
+                        tint = if (currentScreen::class == screen::class) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onBackground
                     )
                 },
                 onClick = { onItemSelected(screen) },
-                modifier = Modifier.padding(horizontal = 5.dp, vertical = 5.dp),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 colors = NavigationDrawerItemDefaults.colors(
-                    selectedContainerColor = MaterialTheme.colorScheme.onSurface,
+                    selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
         }

@@ -44,24 +44,13 @@ fun SideMenu(
     modifier: Modifier = Modifier,
     context: android.content.Context
 ) {
-
     val settingsViewModel: SettingsViewModel = hiltViewModel()
-
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var currentScreen by rememberSaveable(stateSaver = ScreenSaver) {
-        mutableStateOf(Screen.Admin)
-    }
-
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true,
-        confirmValueChange = { true }
-    )
-
+    var currentScreen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf(Screen.Admin) }
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
-
     val user = settingsViewModel.getUser() ?: UserModel()
-
     val navController = rememberNavController()
 
     if (showBottomSheet) {
@@ -83,14 +72,14 @@ fun SideMenu(
                 },
                 currentScreen = currentScreen
             )
-        },
+        }
     ) {
         Scaffold(
             topBar = {
                 TopBar(
                     onOpenDrawer = {
                         scope.launch {
-                            drawerState.apply { if (isClosed) open() else close() }
+                            if (drawerState.isClosed) drawerState.open() else drawerState.close()
                         }
                     },
                     onProfileClick = { scope.launch { showBottomSheet = true } },
@@ -99,11 +88,7 @@ fun SideMenu(
             }
         ) { padding ->
             when (currentScreen) {
-                Screen.Admin -> AdminScreen(
-                    modifier = modifier,
-                    context = context as MainActivity
-                )
-
+                Screen.Admin -> AdminScreen(modifier = modifier, context = context as MainActivity)
                 Screen.Collect -> CollectScreen(
                     modifier = modifier.padding(padding),
                     context = context as MainActivity
@@ -127,7 +112,6 @@ fun SideMenu(
                 )
 
                 Screen.Statistics -> StatisticsScreen(modifier = modifier.padding(padding))
-
                 Screen.Settings -> SettingsScreen(
                     viewModel = settingsViewModel,
                     modifier = modifier.padding(padding),

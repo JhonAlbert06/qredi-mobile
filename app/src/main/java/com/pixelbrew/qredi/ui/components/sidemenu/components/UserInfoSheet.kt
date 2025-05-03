@@ -7,9 +7,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -35,55 +36,41 @@ fun UserInfoSheet(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Avatar
         Surface(
-            modifier = Modifier
-                .size(80.dp),
+            modifier = Modifier.size(80.dp),
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.user_solid), // usa tu ícono
+                painter = painterResource(id = R.drawable.user_solid),
                 contentDescription = "Avatar",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(16.dp)
             )
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Nombre
+        Spacer(Modifier.height(12.dp))
         Text(
-            text = "${user.firstName} ${user.lastName}",
+            "${user.firstName} ${user.lastName}",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
-
-        // Username
         Text(
-            text = "@${user.userName}",
+            "@${user.userName}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Divider
-        Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Datos de Empresa
+        Spacer(Modifier.height(20.dp))
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+        )
+        Spacer(Modifier.height(16.dp))
         InfoItem(title = "Empresa", value = user.company.name)
         InfoItem(title = "Teléfono 1", value = user.company.phone1)
         if (user.company.phone2.isNotBlank()) {
             InfoItem(title = "Teléfono 2", value = user.company.phone2)
         }
         InfoItem(title = "Rol", value = user.role.name)
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Botón de Cerrar Sesión
+        Spacer(Modifier.height(24.dp))
         if (onLogoutClick != null) {
             Button(
                 onClick = onLogoutClick,
@@ -93,7 +80,8 @@ fun UserInfoSheet(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Text("Cerrar sesión")
             }
@@ -104,15 +92,14 @@ fun UserInfoSheet(
 @Composable
 fun InfoItem(title: String, value: String) {
     Column(
-        modifier = Modifier
+        Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Bold
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = value,
