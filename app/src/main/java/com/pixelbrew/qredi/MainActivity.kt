@@ -9,8 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
 import com.pixelbrew.qredi.ui.components.sidemenu.SideMenu
@@ -29,12 +27,10 @@ class MainActivity : ComponentActivity() {
             QrediTheme(
                 darkTheme = false,
             ) {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SideMenu(
-                        modifier = Modifier.padding(innerPadding),
-                        context = this
-                    )
-                }
+                SideMenu(
+                    modifier = Modifier.fillMaxSize(),
+                    context = this
+                )
             }
         }
 

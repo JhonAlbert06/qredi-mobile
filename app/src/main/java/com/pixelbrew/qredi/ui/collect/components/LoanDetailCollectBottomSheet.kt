@@ -23,59 +23,31 @@ import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.ui.collect.CollectViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoanDetailCollectBottomSheet(
     showBottomSheet: Boolean,
     onDismiss: () -> Unit,
     loan: LoanDownloadModel,
-    viewModel: CollectViewModel,
-    modifier: Modifier = Modifier
+    viewModel: CollectViewModel
 ) {
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = onDismiss,
-            sheetState = sheetState,
-            dragHandle = null
+            sheetState = sheetState
         ) {
-            Column(
-                modifier = modifier
-                    .padding(16.dp)
-            ) {
-                // Título
-                Text(
-                    text = "Préstamo",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Mostrar detalles del préstamo
-                LoanItemCollect(
-                    loan = loan,
-                    viewModel = viewModel
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Mostrar cuotas
-                FeeItems(
-                    viewModel = viewModel,
-                    loan = loan
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Botones de acción
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    // Botón de cancelar
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancelar")
-                    }
+            Column(Modifier.padding(16.dp)) {
+                Text("Préstamo", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(8.dp))
+                LoanItemCollect(loan, viewModel)
+                Spacer(Modifier.height(8.dp))
+                FeeItems(viewModel, loan)
+                Spacer(Modifier.height(16.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onDismiss) { Text("Cancelar") }
                 }
             }
         }

@@ -17,7 +17,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.pixelbrew.qredi.MainActivity
@@ -106,24 +105,24 @@ fun SideMenu(
                 )
 
                 Screen.Collect -> CollectScreen(
-                    modifier = modifier.padding(top = 20.dp),
+                    modifier = modifier.padding(padding),
                     context = context as MainActivity
                 )
 
                 Screen.Customer -> CustomerScreen(
-                    modifier = modifier.padding(top = 18.dp),
+                    modifier = modifier.padding(padding),
                     context = context as MainActivity,
                     navController = navController
                 )
 
                 Screen.Loan -> LoanScreen(
-                    modifier = modifier.padding(top = 18.dp),
+                    modifier = modifier.padding(padding),
                     context = context as MainActivity,
                     navController = navController
                 )
 
                 Screen.Reprint -> ReprintScreen(
-                    modifier = modifier.padding(top = 20.dp),
+                    modifier = modifier.padding(padding),
                     context = context as MainActivity
                 )
 
@@ -131,7 +130,7 @@ fun SideMenu(
 
                 Screen.Settings -> SettingsScreen(
                     viewModel = settingsViewModel,
-                    modifier = modifier.padding(top = 45.dp),
+                    modifier = modifier.padding(padding),
                     context = context as MainActivity
                 )
             }

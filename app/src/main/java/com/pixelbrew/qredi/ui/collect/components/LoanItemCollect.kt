@@ -15,51 +15,35 @@ import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.ui.collect.CollectViewModel
 
 @Composable
-fun LoanItemCollect(
-    loan: LoanDownloadModel,
-    viewModel: CollectViewModel
-) {
-
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-    ) {
+fun LoanItemCollect(loan: LoanDownloadModel, viewModel: CollectViewModel) {
+    Column(Modifier
+        .fillMaxWidth()
+        .padding(8.dp)) {
+        LoanLabel(ImageVector.vectorResource(R.drawable.user_solid), loan.customer.name)
+        Spacer(Modifier.height(8.dp))
         LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.user_solid),
-            text = loan.customer.name
+            ImageVector.vectorResource(R.drawable.address_card_solid),
+            viewModel.formatCedula(loan.customer.cedula)
         )
-        Spacer(modifier = Modifier.height(8.dp))
-
+        Spacer(Modifier.height(8.dp))
         LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.address_card_solid),
-            text = viewModel.formatCedula(loan.customer.cedula)
+            ImageVector.vectorResource(R.drawable.coins_solid),
+            "${viewModel.formatNumber(loan.amount)} $"
         )
-        Spacer(modifier = Modifier.height(8.dp))
-
+        Spacer(Modifier.height(8.dp))
         LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.coins_solid),
-            text = "${viewModel.formatNumber(loan.amount)} $"
+            ImageVector.vectorResource(R.drawable.hashtag_solid),
+            "${loan.feesQuantity} cuotas"
         )
-        Spacer(modifier = Modifier.height(8.dp))
-
+        Spacer(Modifier.height(8.dp))
         LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.hashtag_solid),
-            text = "${loan.feesQuantity} cuotas"
+            ImageVector.vectorResource(R.drawable.percent_solid),
+            "${viewModel.formatNumber(loan.interest)}% interés"
         )
-        Spacer(modifier = Modifier.height(8.dp))
-
+        Spacer(Modifier.height(8.dp))
         LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.percent_solid),
-            text = "${viewModel.formatNumber(loan.interest)} interes"
+            ImageVector.vectorResource(R.drawable.wallet_solid),
+            "${viewModel.formatNumber(loan.amount + ((loan.interest / 100) * loan.amount) * loan.feesQuantity)} $"
         )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        LoanLabel(
-            icon = ImageVector.vectorResource(id = R.drawable.wallet_solid),
-            text = "${viewModel.formatNumber(loan.amount + ((loan.interest / 100) * loan.amount) * loan.feesQuantity)} $"
-        )
-
     }
-
 }

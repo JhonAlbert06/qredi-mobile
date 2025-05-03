@@ -18,23 +18,13 @@ fun RouteSelectionDialog(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = {
-                Text(text = "Selecciona una ruta")
-            },
+            title = { Text("Selecciona una ruta") },
             text = {
-                RoutesList(
-                    routes = routes,
-                    viewModel = viewModel,
-                    onRouteSelected = onRouteSelected
-                )
+                RoutesList(routes, viewModel, onRouteSelected)
             },
             confirmButton = {},
             dismissButton = {
-                TextButton(
-                    onClick = onDismiss
-                ) {
-                    Text("Cancelar")
-                }
+                TextButton(onClick = onDismiss) { Text("Cancelar") }
             }
         )
     }
