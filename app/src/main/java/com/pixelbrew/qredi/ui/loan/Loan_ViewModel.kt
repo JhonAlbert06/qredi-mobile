@@ -35,8 +35,6 @@ class LoanViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    private val baseUrl = sessionManager.fetchApiUrl()
-
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> get() = _isLoading
 
@@ -100,7 +98,7 @@ class LoanViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val url = buildString {
-                    append("$baseUrl/loan?")
+                    append("${sessionManager.fetchApiUrl()}/loan?")
                     if (!field.isNullOrEmpty() && !query.isNullOrEmpty()) {
                         append("$field=$query")
                     }
@@ -132,7 +130,7 @@ class LoanViewModel @Inject constructor(
     fun fetchCustomers(query: String = "", field: String = "") {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val url = "$baseUrl/customer?query=$query&field=$field"
+                val url = "${sessionManager.fetchApiUrl()}/customer?query=$query&field=$field"
                 val response = apiService.getCustomers(url)
 
                 val customers = if (response.isSuccessful) {
@@ -163,7 +161,7 @@ class LoanViewModel @Inject constructor(
     fun getRoutes() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val routesUrl = "$baseUrl/routes"
+                val routesUrl = "${sessionManager.fetchApiUrl()}/routes"
                 val response = apiService.getRoutes(routesUrl)
 
                 withContext(Dispatchers.Main) {
@@ -192,7 +190,7 @@ class LoanViewModel @Inject constructor(
         _isLoading.value = true
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val url = "$baseUrl/loan"
+                val url = "${sessionManager.fetchApiUrl()}/loan"
                 val response = apiService.createLoan(url, loan)
 
                 withContext(Dispatchers.Main) {

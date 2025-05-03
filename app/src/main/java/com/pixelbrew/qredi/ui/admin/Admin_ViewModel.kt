@@ -23,8 +23,6 @@ class AdminViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    private val baseUrl = sessionManager.fetchApiUrl()
-
     private val _email = MutableLiveData<String>("")
     val email: LiveData<String> = _email
 
@@ -61,7 +59,7 @@ class AdminViewModel @Inject constructor(
                 val loginRequest = LoginRequest(_email.value.orEmpty(), _password.value.orEmpty())
                 Log.d("API_REQUEST", "Login attempt: ${loginRequest.username}")
 
-                val loginUrl = "$baseUrl/user/login"
+                val loginUrl = "${sessionManager.fetchApiUrl()}/user/login"
                 val response = apiService.login(loginUrl, loginRequest)
 
                 if (response.isSuccessful) {
@@ -94,7 +92,7 @@ class AdminViewModel @Inject constructor(
 
     private suspend fun loadUser() {
         try {
-            val userUrl = "$baseUrl/user/loadUser"
+            val userUrl = "${sessionManager.fetchApiUrl()}/user/loadUser"
             val response = apiService.loadUser(userUrl)
 
             if (response.isSuccessful) {

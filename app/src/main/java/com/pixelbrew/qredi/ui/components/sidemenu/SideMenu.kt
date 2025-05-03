@@ -50,7 +50,6 @@ fun SideMenu(
     var currentScreen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf(Screen.Admin) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val user = settingsViewModel.getUser() ?: UserModel()
     val navController = rememberNavController()
 
     if (showBottomSheet) {
@@ -58,7 +57,7 @@ fun SideMenu(
             onDismissRequest = { showBottomSheet = false },
             sheetState = bottomSheetState
         ) {
-            UserInfoSheet(user = user)
+            UserInfoSheet(user = settingsViewModel.getUser() ?: UserModel())
         }
     }
 
@@ -88,11 +87,20 @@ fun SideMenu(
             }
         ) { padding ->
             when (currentScreen) {
-                Screen.Admin -> AdminScreen(modifier = modifier, context = context as MainActivity)
-                Screen.Collect -> CollectScreen(
-                    modifier = modifier.padding(padding),
-                    context = context as MainActivity
-                )
+                Screen.Admin -> {
+                    settingsViewModel.reloadSettings()
+                    AdminScreen(
+                        modifier = modifier, context = context as MainActivity
+                    )
+                }
+
+                Screen.Collect -> {
+                    settingsViewModel.reloadSettings()
+                    CollectScreen(
+                        modifier = modifier.padding(padding),
+                        context = context as MainActivity
+                    )
+                }
 
                 Screen.Customer -> CustomerScreen(
                     modifier = modifier.padding(padding),
@@ -104,19 +112,30 @@ fun SideMenu(
                     modifier = modifier.padding(padding),
                     context = context as MainActivity,
                     navController = navController
-                )
+                ).also {
+                    settingsViewModel.reloadSettings()
+                }
 
                 Screen.Reprint -> ReprintScreen(
                     modifier = modifier.padding(padding),
                     context = context as MainActivity
-                )
+                ).also {
+                    settingsViewModel.reloadSettings()
+                }
 
-                Screen.Statistics -> StatisticsScreen(modifier = modifier.padding(padding))
+                Screen.Statistics -> StatisticsScreen(
+                    modifier = modifier.padding(padding)
+                ).also {
+                    settingsViewModel.reloadSettings()
+                }
+
                 Screen.Settings -> SettingsScreen(
                     viewModel = settingsViewModel,
                     modifier = modifier.padding(padding),
                     context = context as MainActivity
-                )
+                ).also {
+                    settingsViewModel.reloadSettings()
+                }
             }
         }
     }

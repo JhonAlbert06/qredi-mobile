@@ -36,8 +36,6 @@ class ReprintViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    private val baseUrl = sessionManager.fetchApiUrl()
-    private val user = sessionManager.fetchUser()
 
     private val _newFees = MutableLiveData<List<NewFeeEntity>>(emptyList())
     val newFees: LiveData<List<NewFeeEntity>> get() = _newFees
@@ -115,7 +113,7 @@ class ReprintViewModel @Inject constructor(
                     )
                 } ?: emptyList()
 
-                val uploadUrl = "$baseUrl/fee/uploadFees"
+                val uploadUrl = "${sessionManager.fetchApiUrl()}/fee/uploadFees"
 
                 if (uploadFeeModel.isNotEmpty()) {
                     val response = apiService.uploadFees(uploadUrl, uploadFeeModel)
@@ -181,7 +179,7 @@ class ReprintViewModel @Inject constructor(
 
         val cierre = DayCloseData(
             date = "${dateModelAux.day}/${dateModelAux.month}/${dateModelAux.year}  ${dateModelAux.hour}:${dateModelAux.minute}",
-            cashierName = "${user?.firstName} ${user?.lastName}",
+            cashierName = "${sessionManager.fetchUser()?.firstName} ${sessionManager.fetchUser()?.lastName}",
             initialBalance = 0.0,
             totalLoans = 0.0,
             payments = payments

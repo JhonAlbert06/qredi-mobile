@@ -38,8 +38,6 @@ class CustomerViewModel @Inject constructor(
 
     private val _newCustomer = MutableLiveData<CustomerModel>()
 
-    private val baseUrl = sessionManager.fetchApiUrl()
-
     val userSession: UserModel?
         get() = sessionManager.fetchUser()
 
@@ -91,7 +89,7 @@ class CustomerViewModel @Inject constructor(
     private fun fetchCustomers(query: String = "", field: String = "") {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val url = "$baseUrl/customer?query=$query&field=$field"
+                val url = "${sessionManager.fetchApiUrl()}/customer?query=$query&field=$field"
                 val response = apiService.getCustomers(url)
                 val customers = if (response.isSuccessful) {
                     response.body() ?: emptyList()
@@ -116,7 +114,7 @@ class CustomerViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun showCreationDialog() {
         _showCreationDialog.value = true
     }
@@ -146,7 +144,7 @@ class CustomerViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val url = "$baseUrl/customer"
+                val url = "${sessionManager.fetchApiUrl()}/customer"
                 val response = apiService.createCustomer(url, customer)
 
                 if (response.isSuccessful) {

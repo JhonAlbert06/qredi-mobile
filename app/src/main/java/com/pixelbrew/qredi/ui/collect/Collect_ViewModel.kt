@@ -20,7 +20,6 @@ import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.FeeDownloadModel
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.data.network.model.RouteModel
-import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
 import com.pixelbrew.qredi.utils.Event
@@ -42,13 +41,8 @@ class CollectViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    private val baseUrl = sessionManager.fetchApiUrl()
-
     private val _cuote = MutableLiveData<Double>(0.0)
     val cuote: LiveData<Double> get() = _cuote
-
-    val userSession: UserModel?
-        get() = sessionManager.fetchUser()
 
     private val _routes = MutableLiveData<List<RouteModel>>(emptyList())
     val routes: LiveData<List<RouteModel>> get() = _routes
@@ -74,7 +68,7 @@ class CollectViewModel @Inject constructor(
     init {
         observeLoansFromDatabase()
         Log.d("DEBUG", "CollectViewModel initialized")
-        Log.d("DEBUG", "${userSession?.firstName}")
+        Log.d("DEBUG", "${sessionManager.fetchUser()?.firstName}")
     }
 
     private fun showToast(message: String) {
@@ -121,9 +115,9 @@ class CollectViewModel @Inject constructor(
                     dateSecond = date.second,
                     dateTimezone = ZoneId.systemDefault().id,
                     clientName = downloadLoanSelected.value?.customer?.name.toString(),
-                    companyName = userSession?.company?.name ?: "J & J Prestamos",
+                    companyName = sessionManager.fetchUser()?.company?.name ?: "J & J Prestamos",
                     numberTotal = downloadLoanSelected.value?.feesQuantity ?: 0,
-                    companyNumber = "${userSession?.company?.phone1}/${userSession?.company?.phone2}"
+                    companyNumber = "${sessionManager.fetchUser()?.company?.phone1}/${sessionManager.fetchUser()?.company?.phone2}"
                 )
                 loanRepository.insertNewFee(newFeeEntity)
                 showToast("Cuota cobrada correctamente")
@@ -137,7 +131,7 @@ class CollectViewModel @Inject constructor(
     fun getRoutes() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val routesUrl = "$baseUrl/routes"
+                val routesUrl = "${sessionManager.fetchApiUrl()}/routes"
                 val response = withContext(Dispatchers.Main) { apiService.getRoutes(routesUrl) }
                 if (response.isSuccessful) {
                     _routes.postValue(response.body() ?: emptyList())
@@ -205,7 +199,7 @@ class CollectViewModel @Inject constructor(
         _isLoading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val downloadUrl = "$baseUrl/route/download/$id"
+                val downloadUrl = "${sessionManager.fetchApiUrl()}/route/download/$id"
                 val response = apiService.downloadRoute(downloadUrl)
                 if (response.isSuccessful) {
                     response.body()?.forEach { saveLoansOnDatabase(it) }
@@ -269,8 +263,9 @@ class CollectViewModel @Inject constructor(
                             dateTimezone = ZoneId.systemDefault().id,
                             number = fee.number,
                             numberTotal = loan.feesQuantity,
-                            companyName = userSession?.company?.name ?: "J & J Prestamos",
-                            companyNumber = "${userSession?.company?.phone1}/${userSession?.company?.phone2}",
+                            companyName = sessionManager.fetchUser()?.company?.name
+                                ?: "J & J Prestamos",
+                            companyNumber = "${sessionManager.fetchUser()?.company?.phone1}/${sessionManager.fetchUser()?.company?.phone2}",
                             clientName = loan.customer.name
                         )
                     )

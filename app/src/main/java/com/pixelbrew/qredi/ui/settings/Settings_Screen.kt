@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -43,11 +44,17 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     context: MainActivity,
 ) {
-
     val printerName by viewModel.printerName.observeAsState("")
     val apiUrl by viewModel.apiUrl.observeAsState("")
     val pairedDevices by viewModel.pairedDevices.observeAsState(emptyList())
     val selectedDevice by viewModel.selectedDevice.observeAsState()
+    val toastEvent by viewModel.toastMessage.observeAsState()
+
+    LaunchedEffect(toastEvent) {
+        toastEvent?.getContentIfNotHandled()?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Column(
         modifier = modifier
@@ -55,11 +62,14 @@ fun SettingsScreen(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Impresora", style = MaterialTheme.typography.titleLarge)
+        Text(
+            text = "Impresora",
+            style = MaterialTheme.typography.titleLarge
+        )
+
         PrinterField(
-            name = printerName,
+            name = printerName ?: "",
             onValueChange = { viewModel.onPrinterNameChange(it) },
             onRefresh = { viewModel.refreshPairedDevices() }
         )
@@ -72,34 +82,25 @@ fun SettingsScreen(
             },
             modifier = Modifier.fillMaxWidth(),
             label = "Seleccionar impresora",
-            itemLabel = {
-                it?.name ?: ""
-            },
+            itemLabel = { it?.name ?: "" }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Seguridad", style = MaterialTheme.typography.titleLarge)
+        Text(
+            text = "Seguridad",
+            style = MaterialTheme.typography.titleLarge
+        )
+
         ApiUrlField(
-            apiUrl,
+            url = apiUrl ?: "",
             onValueChange = { viewModel.onApiUrlChange(it) }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
         SaveButton(
             modifier = Modifier.padding(top = 16.dp),
-            onLoginSelected = {
-                viewModel.saveSettings()
-            }
+            onLoginSelected = { viewModel.saveSettings() }
         )
-    }
-
-    val viewModel: SettingsViewModel = viewModel
-    val toastEvent by viewModel.toastMessage.observeAsState()
-
-    LaunchedEffect(toastEvent) {
-        toastEvent?.getContentIfNotHandled()?.let { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
     }
 }
 
@@ -107,14 +108,9 @@ fun SettingsScreen(
 fun PrinterField(name: String, onValueChange: (String) -> Unit, onRefresh: () -> Unit) {
     TextField(
         value = name,
-        onValueChange = { onValueChange(it) },
+        onValueChange = onValueChange,
         modifier = Modifier.fillMaxWidth(),
-        placeholder = {
-            Text(
-                text = "Impresora",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        },
+        placeholder = { Text("Impresora", style = MaterialTheme.typography.bodyLarge) },
         trailingIcon = {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.arrows_rotate_solid),
@@ -123,20 +119,21 @@ fun PrinterField(name: String, onValueChange: (String) -> Unit, onRefresh: () ->
                     .size(24.dp)
                     .clickable { onRefresh() }
                     .padding(4.dp),
-                tint = Color(0xFF00BCD4)
+                tint = MaterialTheme.colorScheme.primary
             )
         },
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Email,
+            keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Next
         ),
         singleLine = true,
         maxLines = 1,
+        readOnly = true,
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
         ),
-        readOnly = true
+        shape = RoundedCornerShape(12.dp)
     )
 }
 
@@ -144,14 +141,9 @@ fun PrinterField(name: String, onValueChange: (String) -> Unit, onRefresh: () ->
 fun ApiUrlField(url: String, onValueChange: (String) -> Unit) {
     TextField(
         value = url,
-        onValueChange = { onValueChange(it) },
+        onValueChange = onValueChange,
         modifier = Modifier.fillMaxWidth(),
-        placeholder = {
-            Text(
-                text = "URL de la API",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        },
+        placeholder = { Text("URL de la API", style = MaterialTheme.typography.bodyLarge) },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Uri,
             imeAction = ImeAction.Done
@@ -160,30 +152,30 @@ fun ApiUrlField(url: String, onValueChange: (String) -> Unit) {
         maxLines = 1,
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        )
+            unfocusedIndicatorColor = Color.Transparent
+        ),
+        shape = RoundedCornerShape(12.dp)
     )
 }
 
 @Composable
 fun SaveButton(modifier: Modifier, onLoginSelected: () -> Unit) {
     Button(
-        onClick = { onLoginSelected() },
+        onClick = onLoginSelected,
         modifier = modifier
             .fillMaxWidth()
             .height(48.dp),
-        shape = MaterialTheme.shapes.large,
+        shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF00BCD4),
-            contentColor = Color.Black,
-            disabledContainerColor = Color(0x2C00BCD4),
-            disabledContentColor = Color(0xFF0C0C0C)
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+            disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
         )
     ) {
         Text(
             text = "Guardar Configuración",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color.White
+            style = MaterialTheme.typography.titleMedium
         )
     }
 }

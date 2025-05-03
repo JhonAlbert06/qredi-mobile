@@ -24,17 +24,6 @@ class SessionManager(context: Context) {
         const val USER = "user"
         const val PRINTER_NAME = "printer_name"
         const val API_URL = "api_url"
-        const val IS_DARK_THEME = "is_dark_theme"
-    }
-
-    fun saveDarkTheme(isDarkTheme: Boolean) {
-        prefs.edit() {
-            putBoolean(IS_DARK_THEME, isDarkTheme)
-        }
-    }
-
-    fun fetchDarkTheme(): Boolean? {
-        return prefs.getBoolean(IS_DARK_THEME, false)
     }
 
     fun savePrinterName(printerName: String) {

@@ -32,10 +32,10 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    private val _printerName = MutableLiveData<String>()
+    private val _printerName = MutableLiveData<String>("")
     val printerName: LiveData<String> get() = _printerName
 
-    private val _apiUrl = MutableLiveData<String>()
+    private val _apiUrl = MutableLiveData<String>("")
     val apiUrl: LiveData<String> get() = _apiUrl
 
     private val _pairedDevices = MutableLiveData<List<BluetoothDevice>>()
@@ -77,6 +77,11 @@ class SettingsViewModel @Inject constructor(
             Log.w("SettingsViewModel", "getUser() devolvió null")
         }
         return user
+    }
+
+    fun reloadSettings() {
+        _printerName.value = sessionManager.fetchPrinterName()
+        _apiUrl.value = sessionManager.fetchApiUrl()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
