@@ -31,76 +31,60 @@ import com.pixelbrew.qredi.ui.admin.components.PasswordField
 
 @Composable
 fun AdminScreen(modifier: Modifier = Modifier, context: MainActivity) {
-    
     val viewModel: AdminViewModel = hiltViewModel()
 
     Box(
         modifier = modifier
-            .background(
-                color = MaterialTheme.colorScheme.background,
-                shape = MaterialTheme.shapes.large
-            )
             .fillMaxSize()
-            .padding(16.dp),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Login(viewModel, modifier.align(Alignment.Center))
+        Login(viewModel)
     }
 
     val toastEvent by viewModel.toastMessage.observeAsState()
-
     LaunchedEffect(toastEvent) {
         toastEvent?.getContentIfNotHandled()?.let { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
-
 }
 
 @Composable
 fun Login(viewModel: AdminViewModel, modifier: Modifier = Modifier) {
-
-    val email: String by viewModel.email.observeAsState(initial = "")
-    val password: String by viewModel.password.observeAsState(initial = "")
-    val isLoginEnabled: Boolean by viewModel.isLoginEnabled.observeAsState(initial = false)
-    val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = false)
+    val email by viewModel.email.observeAsState("")
+    val password by viewModel.password.observeAsState("")
+    val isLoginEnabled by viewModel.isLoginEnabled.observeAsState(false)
+    val isLoading by viewModel.isLoading.observeAsState(false)
 
     if (isLoading) {
-        // Show loading indicator
         Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
+            CircularProgressIndicator()
         }
     } else {
-
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState()) // <- Permite scroll si se necesita
+                .verticalScroll(rememberScrollState())
                 .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            HeaderImage(modifier)
-            Spacer(modifier = Modifier.height(16.dp))
+            HeaderImage()
+            Spacer(Modifier.height(24.dp))
             EmailField(email) { viewModel.onLoginChange(it, password) }
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(Modifier.height(12.dp))
             PasswordField(password) { viewModel.onLoginChange(email, it) }
-            Spacer(modifier = Modifier.height(8.dp))
-            ForgotPassword(modifier.align(Alignment.End))
-            Spacer(modifier = Modifier.height(16.dp))
-            LoginButton(modifier, isLoginEnabled) {
-                viewModel.onLoginSelected()
-            }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
+            ForgotPassword()
+            Spacer(Modifier.height(24.dp))
+            LoginButton(isLoginEnabled) { viewModel.onLoginSelected() }
         }
     }
 }
-
-
 
 
 
