@@ -17,11 +17,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -50,7 +51,6 @@ fun ReprintScreen(
     modifier: Modifier = Modifier,
     context: MainActivity
 ) {
-
     val viewModel: ReprintViewModel = hiltViewModel()
     val toastEvent by viewModel.toastMessage.observeAsState()
 
@@ -63,12 +63,9 @@ fun ReprintScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+            .padding(16.dp)
     ) {
-        Reprint(
-            viewModel = viewModel,
-            modifier = modifier
-        )
+        Reprint(viewModel)
     }
 }
 
@@ -76,98 +73,79 @@ fun ReprintScreen(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Reprint(
-    viewModel: ReprintViewModel,
-    modifier: Modifier = Modifier
+    viewModel: ReprintViewModel
 ) {
-
     val newFees by viewModel.newFees.observeAsState(emptyList())
     val showReprintDialog by viewModel.showReprintDialog.observeAsState(false)
 
     val sortedFees = newFees.sortedByDescending { fee ->
         LocalDateTime.of(
-            fee.dateYear,
-            fee.dateMonth,
-            fee.dateDay,
-            fee.dateHour,
-            fee.dateMinute,
-            fee.dateSecond
+            fee.dateYear, fee.dateMonth, fee.dateDay,
+            fee.dateHour, fee.dateMinute, fee.dateSecond
         )
     }
 
     Column {
-
-        HeaderReprint(
-            viewModel = viewModel,
-            modifier = modifier
-        )
+        HeaderReprint(viewModel)
 
         LazyColumn {
             items(sortedFees) { fee ->
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     modifier = Modifier
-                        .padding(bottom = 16.dp)
                         .fillMaxWidth()
+                        .padding(vertical = 8.dp)
                         .clickable {
                             viewModel.setShowReprintDialog(true)
                             viewModel.setFeeSelected(fee)
-                        }
+                        },
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(2.dp),
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-
+                    Column(Modifier.padding(16.dp)) {
                         Text(
                             "Cuota #${fee.number}",
-                            style = MaterialTheme.typography.titleLarge
+                            style = MaterialTheme.typography.titleMedium
                         )
 
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
                                 viewModel.formatDate(fee.dateDay, fee.dateMonth, fee.dateYear),
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold
+                                style = MaterialTheme.typography.bodySmall
                             )
                             Text(
                                 viewModel.formatTime(fee.dateHour, fee.dateMinute, fee.dateSecond),
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(Modifier.height(8.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Text(
+                            fee.clientName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
 
-                        ) {
-                            Text(
-                                fee.clientName,
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        }
+                        Spacer(Modifier.height(8.dp))
 
-                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             "Monto: $${fee.paymentAmount}",
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
             }
         }
-
     }
 
     if (showReprintDialog) {
         RePrintDialogConfirmation(
-            onDismiss = {
-                viewModel.setShowReprintDialog(false)
-            },
+            onDismiss = { viewModel.setShowReprintDialog(false) },
             onConfirm = {
                 viewModel.setShowReprintDialog(false)
                 viewModel.printCollect()
@@ -179,51 +157,38 @@ fun Reprint(
 @RequiresApi(Build.VERSION_CODES.O)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
-fun HeaderReprint(
-    viewModel: ReprintViewModel,
-    modifier: Modifier
-) {
-
+fun HeaderReprint(viewModel: ReprintViewModel) {
     val showUploadDialog by viewModel.showUploadDialog.observeAsState(false)
     val fees by viewModel.newFees.observeAsState(emptyList())
 
     Row(
-        modifier = modifier
-            .fillMaxWidth(),
+        Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            "",
-            style = MaterialTheme.typography.headlineMedium,
+            "Reimpresiones",
+            style = MaterialTheme.typography.titleLarge
         )
 
         Button(
-            onClick = {
-                viewModel.setShowUploadDialog(true)
-            },
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .align(Alignment.CenterVertically),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            enabled = fees.isNotEmpty()
+            onClick = { viewModel.setShowUploadDialog(true) },
+            enabled = fees.isNotEmpty(),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Sincronizar")
             Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.cloud_arrow_up_solid),
-                contentDescription = "Download Route",
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(20.dp),
+                imageVector = ImageVector.vectorResource(R.drawable.cloud_arrow_up_solid),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
             )
+            Spacer(Modifier.width(8.dp))
+            Text("Sincronizar")
         }
     }
 
     if (showUploadDialog) {
         UploadDialogConfirmation(
-            onDismiss = {
-                viewModel.setShowUploadDialog(false)
-            },
+            onDismiss = { viewModel.setShowUploadDialog(false) },
             onConfirm = {
                 viewModel.uploadFees()
                 viewModel.setShowUploadDialog(false)
@@ -233,72 +198,30 @@ fun HeaderReprint(
 }
 
 @Composable
-fun RePrintDialogConfirmation(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit
-) {
+fun RePrintDialogConfirmation(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
-        title = {
-            Text(text = "Seguro que quieres reimprimir la cuota?")
-        },
-        onDismissRequest = {
-            onDismiss()
-        },
+        title = { Text("¿Seguro que quieres reimprimir la cuota?") },
+        onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirm()
-                }
-            ) {
-                Text("SI")
-            }
+            TextButton(onClick = onConfirm) { Text("Sí") }
         },
         dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismiss()
-                }
-            ) {
-                Text("NO")
-            }
+            TextButton(onClick = onDismiss) { Text("No") }
         }
     )
 }
 
-
 @Composable
-fun UploadDialogConfirmation(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit
-) {
+fun UploadDialogConfirmation(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
-        title = {
-            Text(text = "Seguro que quieres subir la data?")
-        },
-        text = {
-            Text(text = "Al subir la data, se eliminará la información local")
-        },
-        onDismissRequest = {
-            onDismiss()
-        },
+        title = { Text("¿Seguro que quieres subir la data?") },
+        text = { Text("Al subir la data, se eliminará la información local") },
+        onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirm()
-                }
-            ) {
-                Text("SI")
-            }
+            TextButton(onClick = onConfirm) { Text("Sí") }
         },
         dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismiss()
-                }
-            ) {
-                Text("NO")
-            }
+            TextButton(onClick = onDismiss) { Text("No") }
         }
     )
-
 }
