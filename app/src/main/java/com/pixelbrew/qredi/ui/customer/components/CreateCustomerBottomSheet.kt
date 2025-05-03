@@ -73,9 +73,11 @@ fun CreateCustomerBottomSheet(
             CityField(city) { city = it }
             SectorField(sector) { sector = it }
             Row(Modifier.fillMaxWidth()) {
-                StreetField(street, { street = it }, Modifier
-                    .weight(1f)
-                    .padding(end = 4.dp))
+                StreetField(
+                    street, { street = it }, Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp)
+                )
                 HouseNumberField(
                     houseNumber,
                     { houseNumber = it },
@@ -138,7 +140,13 @@ fun StreetField(value: String, onChange: (String) -> Unit, modifier: Modifier) =
 
 @Composable
 fun HouseNumberField(value: String, onChange: (String) -> Unit, modifier: Modifier) =
-    OutlinedField("Número de casa", value, onChange, KeyboardType.Text, modifier)
+    OutlinedField(
+        "Número de casa", value, onChange, KeyboardType.Text, modifier,
+        KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        )
+    )
 
 @Composable
 fun OutlinedField(
@@ -146,16 +154,17 @@ fun OutlinedField(
     value: String,
     onChange: (String) -> Unit,
     keyboardType: KeyboardType,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(
+        keyboardType = keyboardType,
+        imeAction = ImeAction.Next
+    ),
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onChange,
         label = { Text(label) },
-        keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = keyboardType,
-            imeAction = ImeAction.Next
-        ),
+        keyboardOptions = keyboardOptions,
         singleLine = true,
         maxLines = 1,
         shape = RoundedCornerShape(12.dp),

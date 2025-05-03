@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
@@ -161,7 +162,10 @@ fun AmountField(amount: String, onValueChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Next
+        ),
         singleLine = true,
         maxLines = 1
     )
@@ -176,7 +180,10 @@ fun InterestField(interest: String, onValueChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Next
+        ),
         singleLine = true,
         maxLines = 1
     )
@@ -191,7 +198,10 @@ fun FeesQuantityField(feesQuantity: String, onValueChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
         singleLine = true,
         maxLines = 1
     )
