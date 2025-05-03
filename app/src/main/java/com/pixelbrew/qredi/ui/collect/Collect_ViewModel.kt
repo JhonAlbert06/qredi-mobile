@@ -97,7 +97,6 @@ class CollectViewModel @Inject constructor(
         _amount.postValue(amount)
     }
 
-
     fun setFeeSelected(feeDownloadModel: FeeDownloadModel) {
         _selectedFeeDownloadModel.postValue(feeDownloadModel)
     }
@@ -127,6 +126,7 @@ class CollectViewModel @Inject constructor(
                     companyNumber = "${userSession?.company?.phone1}/${userSession?.company?.phone2}"
                 )
                 loanRepository.insertNewFee(newFeeEntity)
+                showToast("Cuota cobrada correctamente")
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error al insertar cuota: ${e.message}")
                 showToast(e.message.toString())
@@ -156,7 +156,6 @@ class CollectViewModel @Inject constructor(
             loanRepository.deleteAllFees()
         }
     }
-
 
     fun saveLoansOnDatabase(loan: LoanDownloadModel) {
         viewModelScope.launch(Dispatchers.IO) {

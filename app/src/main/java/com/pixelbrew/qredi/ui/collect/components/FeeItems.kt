@@ -66,7 +66,7 @@ fun FeeItems(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 modifier = Modifier
-                    .padding(bottom = 8.dp)
+                    .padding(top = 8.dp, bottom = 8.dp)
                     .fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
