@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +49,8 @@ fun CreateCustomerBottomSheet(
 
     val scrollState = rememberScrollState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var showConfirmationDialog by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -92,16 +95,47 @@ fun CreateCustomerBottomSheet(
                 Spacer(Modifier.width(16.dp))
                 Button(
                     onClick = {
-                        val fullAddress =
-                            "${city.trim()}, ${sector.trim()}, Calle ${street.trim()}, Casa #${houseNumber.trim()}"
-                        onSubmit(cedula, names, lastNames, fullAddress, phone, reference)
-                        onDismiss()
+                        showConfirmationDialog = true
                     },
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.height(50.dp)
-                ) { Text("Guardar") }
+                ) {
+                    Text("Guardar")
+                }
             }
         }
+    }
+
+    if (showConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            title = { Text("Confirmar Cliente") },
+            text = {
+                Column {
+                    Text("Cédula: $cedula")
+                    Text("Nombres: $names $lastNames")
+                    Text("Teléfono: $phone")
+                    Text("Referencia: $reference")
+                    Text("Dirección: ${city.trim()}, ${sector.trim()}, Calle ${street.trim()}, Casa #${houseNumber.trim()}")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val fullAddress =
+                        "${city.trim()}, ${sector.trim()}, Calle ${street.trim()}, Casa #${houseNumber.trim()}"
+                    onSubmit(cedula, names, lastNames, fullAddress, phone, reference)
+                    showConfirmationDialog = false
+                    //onDismiss() // cerrar el BottomSheet tras confirmar
+                }) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmationDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 

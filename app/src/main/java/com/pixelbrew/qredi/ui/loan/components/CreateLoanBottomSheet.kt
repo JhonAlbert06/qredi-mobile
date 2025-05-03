@@ -1,6 +1,7 @@
 package com.pixelbrew.qredi.ui.loan.components
 
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +36,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
+import com.pixelbrew.qredi.data.network.model.LoanModel
 import com.pixelbrew.qredi.data.network.model.RouteModel
 import com.pixelbrew.qredi.ui.components.dropdown.GenericDropdown
 import com.pixelbrew.qredi.ui.loan.LoanViewModel
@@ -66,6 +69,9 @@ fun CreateLoanBottomSheet(
 
     val scrollState = rememberScrollState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+    var loanToConfirm by remember { mutableStateOf<LoanModel?>(null) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -136,7 +142,19 @@ fun CreateLoanBottomSheet(
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(
                     onClick = {
-                        onSubmit(customerId, routeId, amount, interest, feesQuantity)
+                        try {
+                            val loan = LoanModel(
+                                customerId = customerId,
+                                routeId = routeId,
+                                amount = amount.toDouble(),
+                                interest = interest.toDouble(),
+                                feesQuantity = feesQuantity.toInt()
+                            )
+                            loanToConfirm = loan
+                            showConfirmationDialog = true
+                        } catch (e: Exception) {
+                            Log.e("LoanScreen", "Error al preparar el préstamo: ${e.message}")
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF00BCD4),
@@ -150,6 +168,48 @@ fun CreateLoanBottomSheet(
                 }
             }
         }
+    }
+
+    if (showConfirmationDialog && loanToConfirm != null) {
+        AlertDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            title = { Text("Confirmar Préstamo") },
+            text = {
+                Column {
+                    Text(
+                        "Cliente: ${
+                            customers.find { it.id == loanToConfirm!!.customerId }
+                                ?.let { "${it.firstName} ${it.lastName}" } ?: "Desconocido"
+                        }")
+                    Text("Ruta: ${routes.find { it.id == loanToConfirm!!.routeId }?.name ?: "Desconocido"}")
+                    Text("Monto: ${loanToConfirm!!.amount}")
+                    Text("Interés: ${loanToConfirm!!.interest}")
+                    Text("Cuotas: ${loanToConfirm!!.feesQuantity}")
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onSubmit(
+                            loanToConfirm!!.customerId,
+                            loanToConfirm!!.routeId,
+                            loanToConfirm!!.amount.toString(),
+                            loanToConfirm!!.interest.toString(),
+                            loanToConfirm!!.feesQuantity.toString()
+                        )
+                        showConfirmationDialog = false
+                        onDismiss() // cerrar el BottomSheet tras confirmar
+                    }
+                ) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmationDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
