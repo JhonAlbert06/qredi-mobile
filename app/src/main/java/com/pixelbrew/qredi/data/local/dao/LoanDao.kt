@@ -53,4 +53,5 @@ interface LoanDao {
     @Query("SELECT * FROM loans")
     fun getLoansWithFeesAndNewFees(): Flow<List<LoanWithFeesAndNewFees>>
 
+
 }

@@ -1,5 +1,6 @@
 package com.pixelbrew.qredi.data.network.api
 
+import com.pixelbrew.qredi.data.network.model.CloseCashModel
 import com.pixelbrew.qredi.data.network.model.CustomerModel
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
@@ -67,4 +68,10 @@ interface ApiService {
     suspend fun getLoans(
         @Url url: String
     ): Response<List<LoanModelRes>>
+
+    @POST
+    suspend fun closeCashRegister(
+        @Url url: String,
+        @Body closeCashModel: CloseCashModel
+    ): Response<Unit>
 }

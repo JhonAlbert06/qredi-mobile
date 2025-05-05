@@ -14,6 +14,7 @@ import com.pixelbrew.qredi.data.local.entities.LoanWithNewFees
 import com.pixelbrew.qredi.data.local.entities.NewFeeEntity
 import com.pixelbrew.qredi.data.local.repository.LoanRepository
 import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.data.network.model.CloseCashModel
 import com.pixelbrew.qredi.data.network.model.DateModel
 import com.pixelbrew.qredi.data.network.model.UploadFee
 import com.pixelbrew.qredi.ui.components.services.SessionManager
@@ -36,10 +37,8 @@ class ReprintViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-
     private val _newFees = MutableLiveData<List<NewFeeEntity>>(emptyList())
     val newFees: LiveData<List<NewFeeEntity>> get() = _newFees
-
 
     private val _showUploadDialog = MutableLiveData<Boolean>(false)
     val showUploadDialog: LiveData<Boolean> get() = _showUploadDialog
@@ -61,7 +60,6 @@ class ReprintViewModel @Inject constructor(
     private fun showToast(message: String) {
         _toastMessage.postValue(Event(message))
     }
-
 
     fun getLoanById(loanId: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -118,8 +116,39 @@ class ReprintViewModel @Inject constructor(
                 if (uploadFeeModel.isNotEmpty()) {
                     val response = apiService.uploadFees(uploadUrl, uploadFeeModel)
                     if (response.isSuccessful) {
-                        resetDatabase()
-                        showToast("Recibos subidos correctamente")
+                        val uniqueClients: Int = uploadFeeModel.map { it.feeId }.distinct().count()
+                        val totalPayments: Double = uploadFeeModel.sumOf { it.amount.toDouble() }
+                        val initialBalance = 0.0 // pon el valor real si tienes uno
+                        val finalBalance: Double = initialBalance + totalPayments
+                        val transactionsCount: Int = uploadFeeModel.size
+
+                        val closeCashModel = CloseCashModel(
+                            date = formatDate(
+                                day = LocalDateTime.now().dayOfMonth,
+                                month = LocalDateTime.now().monthValue,
+                                year = LocalDateTime.now().year
+                            ),
+                            userId = sessionManager.fetchUser()?.id ?: "",
+                            customerAttended = uniqueClients,
+                            paymentsReceived = transactionsCount,
+                            totalAmount = totalPayments.toFloat(),
+                            loansGranted = 0, // cámbialo si tienes préstamos
+                            finalBalance = finalBalance.toFloat(),
+                            cashRegisterDetail = uploadFeeModel
+                        )
+
+                        val cashRegisterUrl = "${sessionManager.fetchApiUrl()}/cashRegister"
+                        val response1 =
+                            apiService.closeCashRegister(cashRegisterUrl, closeCashModel)
+
+                        if (response1.isSuccessful) {
+                            showToast("Recibos y cierre de caja subidos correctamente")
+                            resetDatabase()
+                        } else {
+                            val errorBody = response1.errorBody()?.string()
+                            Log.d("API_RESPONSE", "Error cierre: $errorBody")
+                            showToast("Error cierre: $errorBody")
+                        }
                     } else {
                         val errorBody = response.errorBody()?.string()
                         Log.d("API_RESPONSE", "Error: $errorBody")
