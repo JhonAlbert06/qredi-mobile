@@ -90,7 +90,8 @@ fun SideMenu(
                 Screen.Admin -> {
                     settingsViewModel.reloadSettings()
                     AdminScreen(
-                        modifier = modifier, context = context as MainActivity
+                        modifier = modifier,
+                        context = context as MainActivity
                     )
                 }
 
@@ -102,39 +103,46 @@ fun SideMenu(
                     )
                 }
 
-                Screen.Customer -> CustomerScreen(
-                    modifier = modifier.padding(padding),
-                    context = context as MainActivity,
-                    navController = navController
-                )
-
-                Screen.Loan -> LoanScreen(
-                    modifier = modifier.padding(padding),
-                    context = context as MainActivity,
-                    navController = navController
-                ).also {
+                Screen.Customer -> {
                     settingsViewModel.reloadSettings()
+                    CustomerScreen(
+                        modifier = modifier.padding(padding),
+                        context = context as MainActivity,
+                        navController = navController
+                    )
                 }
 
-                Screen.Reprint -> ReprintScreen(
-                    modifier = modifier.padding(padding),
-                    context = context as MainActivity
-                ).also {
+                Screen.Loan -> {
                     settingsViewModel.reloadSettings()
+                    LoanScreen(
+                        modifier = modifier.padding(padding),
+                        context = context as MainActivity,
+                        navController = navController
+                    )
                 }
 
-                Screen.Statistics -> StatisticsScreen(
-                    modifier = modifier.padding(padding)
-                ).also {
+                Screen.Reprint -> {
                     settingsViewModel.reloadSettings()
+                    ReprintScreen(
+                        modifier = modifier.padding(padding),
+                        context = context as MainActivity
+                    )
                 }
 
-                Screen.Settings -> SettingsScreen(
-                    viewModel = settingsViewModel,
-                    modifier = modifier.padding(padding),
-                    context = context as MainActivity
-                ).also {
+                Screen.Statistics -> {
                     settingsViewModel.reloadSettings()
+                    StatisticsScreen(
+                        modifier = modifier.padding(padding)
+                    )
+                }
+
+                Screen.Settings -> {
+                    settingsViewModel.reloadSettings()
+                    SettingsScreen(
+                        viewModel = settingsViewModel,
+                        modifier = modifier.padding(padding),
+                        context = context as MainActivity
+                    )
                 }
             }
         }

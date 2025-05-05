@@ -15,6 +15,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pixelbrew.qredi.data.network.model.DashboardResponse
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.utils.Event
@@ -47,6 +48,9 @@ class SettingsViewModel @Inject constructor(
     private val _toastMessage = MutableLiveData<Event<String>>()
     val toastMessage: LiveData<Event<String>> get() = _toastMessage
 
+    private val _dashboard = MutableLiveData<DashboardResponse>()
+    val dashboard: LiveData<DashboardResponse> get() = _dashboard
+
     init {
         try {
             _printerName.value = sessionManager.fetchPrinterName() ?: ""
@@ -62,6 +66,25 @@ class SettingsViewModel @Inject constructor(
             Log.e("SettingsViewModel", "Error al cargar configuración inicial", e)
         }
     }
+
+    fun getDashboard(): DashboardResponse {
+        return _dashboard.value ?: DashboardResponse(
+            amountCollected = "",
+            percentageCollected = "",
+            newLoansCount = 0,
+            newLoansAmount = "",
+            missingPaymentsAmount = 0,
+            missingPaymentsMoney = "",
+            firstPaymentTime = null,
+            lastPaymentTime = null,
+            topCustomers = emptyList()
+        )
+    }
+
+    fun setDashboard(dashboard: DashboardResponse) {
+        _dashboard.value = dashboard
+    }
+
 
     private fun showToast(message: String) {
         _toastMessage.postValue(Event(message))
