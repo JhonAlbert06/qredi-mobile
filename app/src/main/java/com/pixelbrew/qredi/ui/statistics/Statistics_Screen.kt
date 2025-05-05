@@ -3,6 +3,7 @@ package com.pixelbrew.qredi.ui.statistics
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -21,34 +23,51 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.pixelbrew.qredi.data.network.model.DashboardResponse
-import com.pixelbrew.qredi.data.network.model.TopCustomer
+import androidx.hilt.navigation.compose.hiltViewModel
+import java.text.NumberFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun StatisticsScreen(
     modifier: Modifier = Modifier
 ) {
-    val stats = DashboardResponse(
-        amountCollected = "1000.00",
-        percentageCollected = "50%",
-        newLoansCount = 5,
-        newLoansAmount = "500.00",
-        missingPaymentsAmount = 2,
-        missingPaymentsMoney = "200.00",
-        firstPaymentTime = LocalDateTime.now().minusDays(1),
-        lastPaymentTime = LocalDateTime.now(),
-        topCustomers = listOf(
-            TopCustomer("Cliente 1", 100.0),
-            TopCustomer("Cliente 2", 200.0)
-        )
-    )
+    val viewModel: StatisticsViewModel = hiltViewModel()
+    val state by viewModel.statisticsState.collectAsState()
+
+    var source by remember { mutableStateOf("Local") }
+    var apiLoaded by remember { mutableStateOf(false) }
+
+    // REFRESCA cada vez que abres la pantalla
+    LaunchedEffect(Unit) {
+        viewModel.loadLocalStatistics()
+    }
+
+    // Si selecciona API por primera vez, cargar
+    LaunchedEffect(source) {
+        if (source == "API" && !apiLoaded) {
+            // viewModel.loadApiStatistics()
+            apiLoaded = true
+        }
+    }
+
+    val stats = when (source) {
+        "API" -> state.apiStats ?: DashboardResponse()
+        else -> state.localStats ?: DashboardResponse()
+    }
 
     Column(
         modifier = modifier
@@ -56,8 +75,17 @@ fun StatisticsScreen(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(modifier = Modifier.height(12.dp))
+        // Selector de fuente
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            SourceSelector(selectedSource = source, onSourceChange = { source = it })
+        }
 
+        // Primer y último cobro
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth()
@@ -67,7 +95,6 @@ fun StatisticsScreen(
                 content = stats.firstPaymentTime?.let { formatTime(it) } ?: "Sin cobros",
                 modifier = Modifier.weight(1f)
             )
-
             StatisticCard(
                 title = "Último cobro",
                 content = stats.lastPaymentTime?.let { formatTime(it) } ?: "Sin cobros",
@@ -77,6 +104,7 @@ fun StatisticsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Indicador de progreso
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -90,11 +118,11 @@ fun StatisticsScreen(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    "Cobrado: ${stats.amountCollected}",
+                    "Cobrado: ${formatCurrency(stats.amountCollected)}",
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Text(
-                    "Faltante: ${stats.missingPaymentsMoney}",
+                    "Faltante: ${formatCurrency(stats.missingPaymentsMoney)}",
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -116,7 +144,7 @@ fun StatisticsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Prestamos", style = MaterialTheme.typography.titleMedium)
+        Text("Préstamos", style = MaterialTheme.typography.titleMedium)
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth()
@@ -124,17 +152,15 @@ fun StatisticsScreen(
             StatisticCard(
                 title = "Nuevos",
                 content = "${stats.newLoansCount}",
-                subconten = stats.newLoansAmount,
+                subconten = formatCurrency(stats.newLoansAmount),
                 modifier = Modifier.weight(1f)
             )
-
             StatisticCard(
                 title = "Faltantes",
                 content = "${stats.missingPaymentsAmount}",
-                subconten = stats.missingPaymentsMoney,
+                subconten = formatCurrency(stats.missingPaymentsMoney),
                 modifier = Modifier.weight(1f)
             )
-
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -146,18 +172,51 @@ fun StatisticsScreen(
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                elevation = CardDefaults.cardElevation(2.dp)
+                elevation = CardDefaults.cardElevation(2.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
                     modifier = Modifier.padding(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(customer.customerName, style = MaterialTheme.typography.bodyLarge)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "$${"%.2f".format(customer.amountPaid)}",
+                        formatCurrency(customer.amountPaid),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun SourceSelector(selectedSource: String, onSourceChange: (String) -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(50))
+            .padding(4.dp)
+    ) {
+        listOf("Local", "API").forEach { option ->
+            val selected = option == selectedSource
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    .clickable { onSourceChange(option) }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    option,
+                    color = if (selected) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
     }
@@ -179,14 +238,10 @@ fun StatisticCard(title: String, content: String, subconten: String = "", modifi
             Text(
                 title,
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-
-                )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                content,
-                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
             )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(content, style = MaterialTheme.typography.titleLarge)
             if (subconten.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -203,4 +258,23 @@ fun StatisticCard(title: String, content: String, subconten: String = "", modifi
 fun formatTime(time: LocalDateTime): String {
     val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
     return time.format(formatter)
+}
+
+fun formatCurrency(amount: Double): String {
+    val formatter = NumberFormat.getNumberInstance(Locale.US)
+    formatter.minimumFractionDigits = 2
+    formatter.maximumFractionDigits = 2
+    return "$${formatter.format(amount)}"
+}
+
+fun formatCurrency(amount: String): String {
+    val cleanedAmount = amount.replace("[^\\d.]".toRegex(), "")
+
+    val value = cleanedAmount.toDoubleOrNull() ?: 0.0
+
+    val formatter = NumberFormat.getNumberInstance(Locale.US)
+    formatter.minimumFractionDigits = 2
+    formatter.maximumFractionDigits = 2
+
+    return "$${formatter.format(value)}"
 }

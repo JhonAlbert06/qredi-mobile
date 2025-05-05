@@ -1,6 +1,7 @@
 package com.pixelbrew.qredi.data.local.repository
 
 import android.content.Context
+import com.pixelbrew.qredi.data.dtos.TopCustomerDto
 import com.pixelbrew.qredi.data.local.AppDatabase
 import com.pixelbrew.qredi.data.local.entities.FeeEntity
 import com.pixelbrew.qredi.data.local.entities.LoanEntity
@@ -25,18 +26,6 @@ class LoanRepository(context: Context) {
         loanDao.insertNewFee(fee)
     }
 
-    fun getAllLoans(): Flow<List<LoanEntity>> {
-        return loanDao.getAllLoans()
-    }
-
-    fun getFeesByLoanId(loanId: String): Flow<List<FeeEntity>> {
-        return loanDao.getFeesByLoanId(loanId)
-    }
-
-    fun getNewFeesByLoanId(loanId: String): Flow<List<NewFeeEntity>> {
-        return loanDao.getNewFeesByLoanId(loanId)
-    }
-
     fun getAllNewFees(): Flow<List<NewFeeEntity>> {
         return loanDao.getAllNewFees()
     }
@@ -59,6 +48,47 @@ class LoanRepository(context: Context) {
 
     fun getLoansWithFeesAndNewFees(): Flow<List<LoanWithFeesAndNewFees>> {
         return loanDao.getLoansWithFeesAndNewFees()
+    }
+
+
+    suspend fun getAmountCollectedToday(day: Int, month: Int, year: Int): Double {
+        return loanDao.getAmountCollectedToday(day, month, year)
+    }
+
+    suspend fun getTotalFeesToday(day: Int, month: Int, year: Int): Int {
+        return loanDao.getTotalFeesToday(day, month, year)
+    }
+
+    suspend fun getPaidFeesToday(day: Int, month: Int, year: Int): Int {
+        return loanDao.getPaidFeesToday(day, month, year)
+    }
+
+    suspend fun getNewLoansAmountToday(day: Int, month: Int, year: Int): Double {
+        return loanDao.getNewLoansAmountToday(day, month, year)
+    }
+
+    suspend fun getMissingFeesCount(day: Int, month: Int, year: Int): Int {
+        return loanDao.getMissingFeesCount(day, month, year)
+    }
+
+    suspend fun getMissingFeesAmount(day: Int, month: Int, year: Int): Double {
+        return loanDao.getMissingFeesAmount(day, month, year)
+    }
+
+    suspend fun getTopCustomers(day: Int, month: Int, year: Int): List<TopCustomerDto> {
+        return loanDao.getTopCustomers(day, month, year)
+    }
+
+    suspend fun getLargestLoan(): LoanEntity? {
+        return loanDao.getLargestLoan()
+    }
+
+    suspend fun getFirstPaymentTime(day: Int, month: Int, year: Int): String? {
+        return loanDao.getFirstPaymentTimestamp(day, month, year)
+    }
+
+    suspend fun getLastPaymentTime(day: Int, month: Int, year: Int): String? {
+        return loanDao.getLastPaymentTimestamp(day, month, year)
     }
 
 }
