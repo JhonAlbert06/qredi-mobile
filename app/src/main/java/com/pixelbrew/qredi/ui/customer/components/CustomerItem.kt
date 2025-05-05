@@ -24,8 +24,9 @@ import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 
 @Composable
-fun CustomerItem(customer: CustomerModelRes) {
+fun CustomerItem(customer: CustomerModelRes, onSelect: () -> Unit) {
     Card(
+        onClick = onSelect,
         modifier = Modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),

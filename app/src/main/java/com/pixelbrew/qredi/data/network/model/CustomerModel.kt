@@ -40,3 +40,17 @@ class CustomerModelRes {
 
     constructor() {}
 }
+
+class CustomerModelResWithDetail {
+    var id: String = ""
+    var company: CompanyModel = CompanyModel()
+    var cedula: String = ""
+    var firstName: String = ""
+    var lastName: String = ""
+    var address: String = ""
+    var phone: String = ""
+    var reference: String = ""
+    var loans: List<LoanModelRes> = emptyList()
+
+    constructor() {}
+}

@@ -10,6 +10,7 @@ import com.pixelbrew.qredi.data.network.api.ApiService
 import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.CustomerModel
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
+import com.pixelbrew.qredi.data.network.model.CustomerModelResWithDetail
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.utils.Event
@@ -56,6 +57,12 @@ class CustomerViewModel @Inject constructor(
     private val _toastMessage = MutableLiveData<Event<String>>()
     val toastMessage: LiveData<Event<String>> get() = _toastMessage
 
+    private val _selectedCustomer = MutableLiveData<CustomerModelResWithDetail?>()
+    val selectedCustomer: LiveData<CustomerModelResWithDetail?> get() = _selectedCustomer
+
+    private val _showCustomerDetail = MutableLiveData<Boolean>(false)
+    val showCustomerDetail: LiveData<Boolean> get() = _showCustomerDetail
+
     val fields = listOf(
         Field("Nombre", "names"),
         Field("Cedula", "cedula"),
@@ -65,6 +72,10 @@ class CustomerViewModel @Inject constructor(
     init {
         _isLoading.value = true
         fetchCustomers()
+    }
+
+    fun showCustomerDetail(value: Boolean) {
+        _showCustomerDetail.value = value
     }
 
     private fun showToast(message: String) {
@@ -170,6 +181,31 @@ class CustomerViewModel @Inject constructor(
                 Log.e("CustomerViewModel", "Error creating customer: ${e.message}", e)
                 withContext(Dispatchers.Main) {
                     showToast("Error al crear cliente: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun getCustomerById(customerId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val url = "${sessionManager.fetchApiUrl()}/customer/$customerId"
+                val response = apiService.getCustomerWithDetail(url)
+
+                if (response.isSuccessful) {
+                    val customer = response.body()
+                    _selectedCustomer.postValue(customer)
+                    _showCustomerDetail.postValue(true)
+                    Log.d("CustomerViewModel", "Customer loaded: $customer")
+                    withContext(Dispatchers.Main) {
+                        showToast("Cliente cargado correctamente")
+                    }
+                }
+
+            } catch (e: Exception) {
+                Log.e("CustomerViewModel", "Error fetching customer: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error al obtener cliente: ${e.message}")
                 }
             }
         }

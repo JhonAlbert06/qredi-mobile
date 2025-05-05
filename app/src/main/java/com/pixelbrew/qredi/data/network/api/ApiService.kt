@@ -3,6 +3,7 @@ package com.pixelbrew.qredi.data.network.api
 import com.pixelbrew.qredi.data.network.model.CloseCashModel
 import com.pixelbrew.qredi.data.network.model.CustomerModel
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
+import com.pixelbrew.qredi.data.network.model.CustomerModelResWithDetail
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
 import com.pixelbrew.qredi.data.network.model.LoanModel
 import com.pixelbrew.qredi.data.network.model.LoanModelRes
@@ -74,4 +75,9 @@ interface ApiService {
         @Url url: String,
         @Body closeCashModel: CloseCashModel
     ): Response<Unit>
+    
+    @GET
+    suspend fun getCustomerWithDetail(
+        @Url url: String
+    ): Response<CustomerModelResWithDetail>
 }

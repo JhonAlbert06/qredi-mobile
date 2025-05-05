@@ -1,5 +1,7 @@
 package com.pixelbrew.qredi.ui.loan.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,11 +22,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.data.network.model.FeeModelRes
 import com.pixelbrew.qredi.data.network.model.LoanModelRes
 import com.pixelbrew.qredi.data.network.model.Payments
+import com.pixelbrew.qredi.ui.customer.components.InfoRow
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +42,7 @@ fun LoanDetailBottomSheet(
     modifier: Modifier = Modifier
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -66,12 +75,16 @@ fun LoanDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(loan.fees) { fee ->
-                    FeeItem(fee)
+            if (loan.fees.isEmpty()) {
+                Text("No hay cuotas registradas.", style = MaterialTheme.typography.bodySmall)
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(loan.fees) { fee ->
+                        ExpandableFeeItem(fee)
+                    }
                 }
             }
 
@@ -149,45 +162,53 @@ fun CustomerInfo(loan: LoanModelRes) {
 }
 
 @Composable
-fun FeeItem(fee: FeeModelRes) {
+fun ExpandableFeeItem(fee: FeeModelRes) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = !expanded },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Info principal
             Text(
                 text = "Cuota #${fee.number}",
                 style = MaterialTheme.typography.titleMedium
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Fecha esperada: ${fee.expectedDate.day}/${fee.expectedDate.month}/${fee.expectedDate.year}",
-                style = MaterialTheme.typography.bodySmall
+            InfoRow(
+                "Fecha esperada",
+                "${fee.expectedDate.day}/${fee.expectedDate.month}/${fee.expectedDate.year}"
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Divider(
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-            )
-
-            if (!fee.payments.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Pagos:", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(4.dp))
-                fee.payments.forEach { payment ->
-                    PaymentItem(payment)
+            AnimatedVisibility(visible = expanded) {
+                Column {
+                    Spacer(modifier = Modifier.height(8.dp))
                     Divider(
-                        Modifier.padding(vertical = 8.dp),
                         thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (fee.payments.orEmpty().isEmpty()) {
+                        Text("Sin pagos registrados.", style = MaterialTheme.typography.bodySmall)
+                    } else {
+                        Text("Pagos:", style = MaterialTheme.typography.bodyMedium)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        fee.payments.forEach { payment ->
+                            PaymentItem(payment)
+                            Divider(
+                                Modifier.padding(vertical = 4.dp),
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+                            )
+                        }
+                    }
                 }
-            } else {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Sin pagos registrados.", style = MaterialTheme.typography.bodySmall)
             }
         }
     }

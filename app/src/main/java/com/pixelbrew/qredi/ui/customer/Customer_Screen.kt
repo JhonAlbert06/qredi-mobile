@@ -38,6 +38,7 @@ import androidx.navigation.NavHostController
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.ui.customer.components.CreateCustomerBottomSheet
+import com.pixelbrew.qredi.ui.customer.components.CustomerDetailBottomSheet
 import com.pixelbrew.qredi.ui.customer.components.CustomerItem
 import com.pixelbrew.qredi.ui.customer.components.FilterCustomerBottomSheet
 
@@ -73,6 +74,8 @@ fun CustomerContent(
     val fieldSelected by viewModel.fieldSelected.observeAsState(Field("NONE", "NONE"))
     val query by viewModel.query.observeAsState("")
     val showCreationDialog by viewModel.showCreationDialog.observeAsState(false)
+
+    val showCustomerDetail by viewModel.showCustomerDetail.observeAsState(false)
 
     var isFabExpanded by remember { mutableStateOf(false) }
 
@@ -147,11 +150,21 @@ fun CustomerContent(
                 items(customerList.size) { index ->
                     val customer = customerList[index]
                     CustomerItem(
+                        onSelect = {
+                            viewModel.getCustomerById(customer.id)
+                        },
                         customer = customer
                     )
                 }
             }
         }
+    }
+
+    if (showCustomerDetail) {
+        CustomerDetailBottomSheet(
+            customer = viewModel.selectedCustomer.value!!,
+            onDismiss = { viewModel.showCustomerDetail(false) }
+        )
     }
 
     if (showFilterDialog) {
