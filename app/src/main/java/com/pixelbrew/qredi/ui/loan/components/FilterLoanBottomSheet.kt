@@ -26,7 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
-import com.pixelbrew.qredi.data.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.RouteModelRes
 import com.pixelbrew.qredi.ui.components.dropdown.GenericDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,11 +35,11 @@ fun FilterLoanBottomSheet(
     onDismiss: () -> Unit,
     onApplyFilters: (String, String) -> Unit,
     usersList: List<CustomerModelRes> = emptyList(),
-    routesList: List<RouteModel> = emptyList(),
+    routesList: List<RouteModelRes> = emptyList(),
 ) {
     var selectedFilter by remember { mutableStateOf<String?>(null) }
     var userSelected by remember { mutableStateOf(CustomerModelRes()) }
-    var routeSelected by remember { mutableStateOf(RouteModel()) }
+    var routeSelected by remember { mutableStateOf(RouteModelRes()) }
     var isPaidAux by remember { mutableStateOf<Boolean?>(null) }
     var isCurrentLoanAux by remember { mutableStateOf<Boolean?>(null) }
     var selectedField by remember { mutableStateOf<String?>(null) }
@@ -70,7 +70,7 @@ fun FilterLoanBottomSheet(
                 onItemSelected = { filter ->
                     selectedFilter = filter
                     userSelected = CustomerModelRes()
-                    routeSelected = RouteModel()
+                    routeSelected = RouteModelRes()
                     isPaidAux = null
                     isCurrentLoanAux = null
                     selectedField = null

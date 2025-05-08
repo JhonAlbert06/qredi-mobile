@@ -16,13 +16,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.pixelbrew.qredi.data.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.RouteModelRes
 import com.pixelbrew.qredi.ui.collect.CollectViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun RoutesList(
-    routes: List<RouteModel>,
+    routes: List<RouteModelRes>,
     viewModel: CollectViewModel,
     onRouteSelected: () -> Unit
 ) {

@@ -37,7 +37,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 import com.pixelbrew.qredi.data.network.model.LoanModel
-import com.pixelbrew.qredi.data.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.RouteModelRes
 import com.pixelbrew.qredi.ui.components.dropdown.GenericDropdown
 import com.pixelbrew.qredi.ui.loan.LoanViewModel
 
@@ -65,7 +65,7 @@ fun CreateLoanBottomSheet(
     var feesQuantity by remember { mutableStateOf("") }
 
     var customerSelected by remember { mutableStateOf(CustomerModelRes()) }
-    var routeSelected by remember { mutableStateOf(RouteModel()) }
+    var routeSelected by remember { mutableStateOf(RouteModelRes()) }
 
     val scrollState = rememberScrollState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)

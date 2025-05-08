@@ -19,7 +19,7 @@ import com.pixelbrew.qredi.data.network.api.ApiService
 import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.FeeDownloadModel
 import com.pixelbrew.qredi.data.network.model.LoanDownloadModel
-import com.pixelbrew.qredi.data.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.RouteModelRes
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
 import com.pixelbrew.qredi.utils.Event
@@ -44,8 +44,8 @@ class CollectViewModel @Inject constructor(
     private val _cuote = MutableLiveData<Double>(0.0)
     val cuote: LiveData<Double> get() = _cuote
 
-    private val _routes = MutableLiveData<List<RouteModel>>(emptyList())
-    val routes: LiveData<List<RouteModel>> get() = _routes
+    private val _routes = MutableLiveData<List<RouteModelRes>>(emptyList())
+    val routes: LiveData<List<RouteModelRes>> get() = _routes
 
     private val _downloadedLoans = MutableLiveData<List<LoanDownloadModel>>()
     val downloadedLoans: LiveData<List<LoanDownloadModel>> get() = _downloadedLoans

@@ -4,14 +4,14 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import com.pixelbrew.qredi.data.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.RouteModelRes
 import com.pixelbrew.qredi.ui.collect.CollectViewModel
 
 @Composable
 fun RouteSelectionDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
-    routes: List<RouteModel>,
+    routes: List<RouteModelRes>,
     viewModel: CollectViewModel,
     onRouteSelected: () -> Unit
 ) {

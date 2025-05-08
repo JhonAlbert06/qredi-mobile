@@ -33,7 +33,7 @@ class LoanModelRes {
     val isCurrentLoan = false
     val date = DateModel()
     val customer = CustomerModelRes()
-    val route = RouteModel()
+    val route = RouteModelRes()
     val fees = listOf<FeeModelRes>()
 }
 

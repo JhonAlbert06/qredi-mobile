@@ -16,7 +16,7 @@ import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.CustomerModelRes
 import com.pixelbrew.qredi.data.network.model.LoanModel
 import com.pixelbrew.qredi.data.network.model.LoanModelRes
-import com.pixelbrew.qredi.data.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.RouteModelRes
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.ui.components.services.invoice.BluetoothPrinter
 import com.pixelbrew.qredi.utils.Event
@@ -50,8 +50,8 @@ class LoanViewModel @Inject constructor(
     private val _customerList = MutableLiveData<List<CustomerModelRes>>()
     val customerList: LiveData<List<CustomerModelRes>> get() = _customerList
 
-    private val _routes = MutableLiveData<List<RouteModel>>()
-    val routesList: LiveData<List<RouteModel>> get() = _routes
+    private val _routes = MutableLiveData<List<RouteModelRes>>()
+    val routesList: LiveData<List<RouteModelRes>> get() = _routes
 
     private val _loans = MutableLiveData<List<LoanModelRes>>()
     val loans: LiveData<List<LoanModelRes>> get() = _loans
