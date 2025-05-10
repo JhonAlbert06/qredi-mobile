@@ -8,6 +8,7 @@ sealed class Screen(val route: String) {
     object Settings : Screen("settings")
     object Customer : Screen("customer")
     object Loan : Screen("loan")
+    object Spent : Screen("spent")
 
     companion object {
         fun fromRoute(route: String): Screen {
@@ -19,6 +20,7 @@ sealed class Screen(val route: String) {
                 "loan" -> Loan
                 "statistics" -> Statistics
                 "settings" -> Settings
+                "spent" -> Spent
                 else -> Admin // default
             }
         }

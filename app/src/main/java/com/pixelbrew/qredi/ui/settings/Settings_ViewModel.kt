@@ -20,6 +20,8 @@ import com.pixelbrew.qredi.data.network.api.ApiService
 import com.pixelbrew.qredi.data.network.model.ApiError
 import com.pixelbrew.qredi.data.network.model.RouteModel
 import com.pixelbrew.qredi.data.network.model.RouteModelRes
+import com.pixelbrew.qredi.data.network.model.SpentTypeModel
+import com.pixelbrew.qredi.data.network.model.SpentTypeModelRes
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.utils.Event
@@ -56,9 +58,11 @@ class SettingsViewModel @Inject constructor(
     private val _routes = MutableLiveData<List<RouteModelRes>>()
     val routesList: LiveData<List<RouteModelRes>> get() = _routes
 
+    private val _spentTypes = MutableLiveData<List<SpentTypeModelRes>>()
+    val spentTypesList: LiveData<List<SpentTypeModelRes>> get() = _spentTypes
+
     init {
         try {
-
             getRoutes()
             _printerName.value = sessionManager.fetchPrinterName() ?: ""
             _apiUrl.value = sessionManager.fetchApiUrl() ?: ""
@@ -71,6 +75,91 @@ class SettingsViewModel @Inject constructor(
             _printerName.value = ""
             _apiUrl.value = ""
             Log.e("SettingsViewModel", "Error al cargar configuración inicial", e)
+        }
+    }
+
+    fun getSpentTypes() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val spentTypesUrl = "${sessionManager.fetchApiUrl()}/spent/type"
+                val response = apiService.getSpentTypes(spentTypesUrl)
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        _spentTypes.value = response.body() ?: emptyList()
+                        Log.d("API_RESPONSE", "Fetched spent types: ${_spentTypes.value?.size}")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        val error = Gson().fromJson(errorBody, ApiError::class.java)
+                        Log.e("API_RESPONSE", "Fetch spent types error: ${error.message}")
+                        showToast("Error: ${error.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception fetching spent types: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error de red al obtener tipos de gasto: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun createSpentType(spentTypeName: String) {
+        val spentType = SpentTypeModel()
+        spentType.name = spentTypeName
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val url = "${sessionManager.fetchApiUrl()}/spent/type"
+                val response = apiService.createSpentType(url, spentType)
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        val createdSpentType = response.body()
+                        showToast("Tipo de gasto ${createdSpentType.toString()} creado con éxito")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        val error = Gson().fromJson(errorBody, ApiError::class.java)
+                        Log.e("API_RESPONSE", "Create spent type error: ${error.message}")
+                        showToast("Error: ${error.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception creating spent type: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error de red al crear el tipo de gasto: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun createRoute(routeName: String) {
+        val route = RouteModel()
+        route.name = routeName
+        route.companyId = sessionManager.fetchUser()?.company?.id ?: ""
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val url = "${sessionManager.fetchApiUrl()}/route"
+                val response = apiService.createRoute(url = url, route = route)
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        val createdRoute = response.body()
+                        showToast("Ruta ${createdRoute.toString()} creada con éxito")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        val error = Gson().fromJson(errorBody, ApiError::class.java)
+                        Log.e("API_RESPONSE", "Create route error: ${error.message}")
+                        showToast("Error: ${error.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Exception creating route: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error de red al crear la ruta: ${e.message}")
+                }
+            }
         }
     }
 
@@ -92,40 +181,9 @@ class SettingsViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("LoanViewModel", "Exception fetching routes: ${e.message}", e)
+                Log.e("SettingsViewModel", "Exception fetching routes: ${e.message}", e)
                 withContext(Dispatchers.Main) {
-                    showToast("Error al obtener rutas: ${e.message}")
-                }
-            }
-        }
-    }
-
-    fun createRoute(routeName: String) {
-
-        var route = RouteModel()
-        route.name = routeName
-        route.companyId = sessionManager.fetchUser()?.company?.id ?: ""
-
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                var url = "${sessionManager.fetchApiUrl()}/route"
-                val response = apiService.createRoute(
-                    url = url,
-                    route = route
-                )
-                if (response.isSuccessful) {
-                    val route = response.body()
-                    withContext(Dispatchers.Main) {
-                        showToast("Ruta ${route.toString()} creada con éxito")
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        showToast("Error al crear la ruta")
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    showToast("Error de red al crear la ruta")
+                    showToast("Error de red al obtener rutas: ${e.message}")
                 }
             }
         }

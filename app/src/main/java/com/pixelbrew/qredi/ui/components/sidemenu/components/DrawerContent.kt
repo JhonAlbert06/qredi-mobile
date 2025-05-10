@@ -29,7 +29,8 @@ fun DrawerContent(
         Triple("Cliente", R.drawable.user_solid, Screen.Customer),
         Triple("Préstamo", R.drawable.coins_solid, Screen.Loan),
         Triple("Estadísticas", R.drawable.chart_simple_solid, Screen.Statistics),
-        Triple("Configuración", R.drawable.gears_solid, Screen.Settings),
+        Triple("Gastos", R.drawable.money_bill_transfer_solid, Screen.Spent),
+        Triple("Configuración", R.drawable.gears_solid, Screen.Settings)
     )
 
     ModalDrawerSheet(

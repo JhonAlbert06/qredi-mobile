@@ -14,6 +14,19 @@ class SpentModel {
     var typeId: String = ""
     var note: String = ""
     var cost = 0.0
+
+    constructor(
+        companyId: String,
+        typeId: String,
+        note: String,
+        cost: Double
+    ) {
+        this.companyId = companyId
+        this.typeId = typeId
+        this.note = note
+        this.cost = cost
+    }
+
 }
 
 class SpentModelRes {

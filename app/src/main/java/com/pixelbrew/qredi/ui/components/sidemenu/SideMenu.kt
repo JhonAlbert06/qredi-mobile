@@ -32,6 +32,7 @@ import com.pixelbrew.qredi.ui.loan.LoanScreen
 import com.pixelbrew.qredi.ui.reprint.ReprintScreen
 import com.pixelbrew.qredi.ui.settings.SettingsScreen
 import com.pixelbrew.qredi.ui.settings.SettingsViewModel
+import com.pixelbrew.qredi.ui.spent.SpentScreen
 import com.pixelbrew.qredi.ui.statistics.StatisticsScreen
 import kotlinx.coroutines.launch
 
@@ -140,6 +141,15 @@ fun SideMenu(
                         context = context as MainActivity
                     )
                 }
+
+                Screen.Spent -> {
+                    settingsViewModel.reloadSettings()
+                    SpentScreen(
+                        modifier = modifier.padding(padding),
+                        context = context as MainActivity
+                    )
+                }
+                
             }
         }
     }
