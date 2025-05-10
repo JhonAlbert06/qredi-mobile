@@ -4,39 +4,60 @@ import android.Manifest
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
+import com.pixelbrew.qredi.data.network.model.RouteModelRes
 import com.pixelbrew.qredi.ui.components.dropdown.GenericDropdown
+import com.pixelbrew.qredi.ui.customer.components.OutlinedField
+import kotlinx.coroutines.launch
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun SettingsScreen(
@@ -49,6 +70,12 @@ fun SettingsScreen(
     val pairedDevices by viewModel.pairedDevices.observeAsState(emptyList())
     val selectedDevice by viewModel.selectedDevice.observeAsState()
     val toastEvent by viewModel.toastMessage.observeAsState()
+
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val coroutineScope = rememberCoroutineScope()
+    var showSheet by remember { mutableStateOf(false) }
+
+    val routesList by viewModel.routesList.observeAsState(emptyList())
 
     LaunchedEffect(toastEvent) {
         toastEvent?.getContentIfNotHandled()?.let { message ->
@@ -95,12 +122,156 @@ fun SettingsScreen(
             url = apiUrl ?: "",
             onValueChange = { viewModel.onApiUrlChange(it) }
         )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    viewModel.getRoutes()
+                    showSheet = true
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            )
+        ) {
+            Text(text = "Crear Nueva Ruta")
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
         SaveButton(
             modifier = Modifier.padding(top = 16.dp),
             onLoginSelected = { viewModel.saveSettings() }
+
         )
+    }
+
+
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false },
+            sheetState = bottomSheetState
+        ) {
+            CreateRouteBottomSheet(
+                onDismiss = { showSheet = false },
+                onSubmit = { routeName ->
+                    viewModel.createRoute(routeName)
+                    showSheet = false
+                },
+                routeList = routesList,
+                onEditRoute = { route ->
+                    // Ejemplo: abrir otra hoja para editar
+                    Toast.makeText(context, "Editar: ${route.name}", Toast.LENGTH_SHORT).show()
+                },
+                onDeleteRoute = { route ->
+                    // viewModel.deleteRoute(route.id)
+                    Toast.makeText(context, "Eliminado: ${route.name}", Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
+    }
+}
+
+
+@Composable
+fun CreateRouteBottomSheet(
+    onDismiss: () -> Unit,
+    onSubmit: (String) -> Unit,
+    routeList: List<RouteModelRes>,
+    onEditRoute: (RouteModelRes) -> Unit,
+    onDeleteRoute: (RouteModelRes) -> Unit
+) {
+    var routeName by remember { mutableStateOf("") }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        Text("Crear Nueva Ruta", style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(8.dp))
+
+        OutlinedField("Nombre de la ruta", routeName, { routeName = it }, KeyboardType.Text)
+
+        Spacer(Modifier.height(24.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            Spacer(Modifier.width(16.dp))
+            Button(
+                onClick = { onSubmit(routeName) },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.height(50.dp)
+            ) {
+                Text("Guardar")
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        if (routeList.isNotEmpty()) {
+            Text("Rutas Existentes", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(8.dp))
+
+            routeList.forEach { route ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            route.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Row {
+                            IconButton(
+                                onClick = { onEditRoute(route) },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.pen_solid),
+                                    contentDescription = "Editar",
+                                    modifier = Modifier.size(24.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Spacer(Modifier.width(4.dp))
+                            IconButton(
+                                onClick = { onDeleteRoute(route) },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.trash_can_solid),
+                                    contentDescription = "Eliminar",
+                                    modifier = Modifier.size(24.dp),
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            Text("No hay rutas existentes", style = MaterialTheme.typography.bodyLarge)
+        }
     }
 }
 

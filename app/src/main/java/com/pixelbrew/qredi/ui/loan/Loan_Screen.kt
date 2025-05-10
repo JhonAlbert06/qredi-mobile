@@ -43,8 +43,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.navigation.NavHostController
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.data.network.model.LoanModel
@@ -58,26 +56,14 @@ import com.pixelbrew.qredi.ui.loan.components.LoanItem
 @Composable
 fun LoanScreen(
     modifier: Modifier = Modifier,
-    context: MainActivity,
-    navController: NavHostController
+    context: MainActivity
 ) {
     val viewModel: LoanViewModel = hiltViewModel()
     val toastEvent by viewModel.toastMessage.observeAsState()
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val refreshCustomers =
-        navController.currentBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("refreshCustomers")
-
-    LaunchedEffect(refreshCustomers) {
-        refreshCustomers?.observe(lifecycleOwner) { shouldRefresh ->
-            if (shouldRefresh == true) {
-                viewModel.fetchCustomers()
-                navController.currentBackStackEntry?.savedStateHandle?.set(
-                    "refreshCustomers",
-                    false
-                )
-            }
-        }
+    LaunchedEffect(Unit) {
+        viewModel.fetchCustomers()
+        viewModel.getRoutes()
     }
 
     LaunchedEffect(toastEvent) {
@@ -105,6 +91,10 @@ fun LoanContent(
 
     var isFabExpanded by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchLoans()
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),

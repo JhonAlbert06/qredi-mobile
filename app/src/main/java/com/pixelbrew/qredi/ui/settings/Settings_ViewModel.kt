@@ -15,7 +15,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pixelbrew.qredi.data.network.model.DashboardResponse
+import com.google.gson.Gson
+import com.pixelbrew.qredi.data.network.api.ApiService
+import com.pixelbrew.qredi.data.network.model.ApiError
+import com.pixelbrew.qredi.data.network.model.RouteModel
+import com.pixelbrew.qredi.data.network.model.RouteModelRes
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.components.services.SessionManager
 import com.pixelbrew.qredi.utils.Event
@@ -30,6 +34,7 @@ import javax.inject.Inject
 @SuppressLint("StaticFieldLeak")
 class SettingsViewModel @Inject constructor(
     private val sessionManager: SessionManager,
+    private val apiService: ApiService,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -48,11 +53,13 @@ class SettingsViewModel @Inject constructor(
     private val _toastMessage = MutableLiveData<Event<String>>()
     val toastMessage: LiveData<Event<String>> get() = _toastMessage
 
-    private val _dashboard = MutableLiveData<DashboardResponse>()
-    val dashboard: LiveData<DashboardResponse> get() = _dashboard
+    private val _routes = MutableLiveData<List<RouteModelRes>>()
+    val routesList: LiveData<List<RouteModelRes>> get() = _routes
 
     init {
         try {
+
+            getRoutes()
             _printerName.value = sessionManager.fetchPrinterName() ?: ""
             _apiUrl.value = sessionManager.fetchApiUrl() ?: ""
             refreshPairedDevices()
@@ -67,24 +74,62 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun getDashboard(): DashboardResponse {
-        return _dashboard.value ?: DashboardResponse(
-            amountCollected = "",
-            percentageCollected = "",
-            newLoansCount = 0,
-            newLoansAmount = "",
-            missingPaymentsAmount = 0,
-            missingPaymentsMoney = "",
-            firstPaymentTime = null,
-            lastPaymentTime = null,
-            topCustomers = emptyList()
-        )
+    fun getRoutes() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val routesUrl = "${sessionManager.fetchApiUrl()}/routes"
+                val response = apiService.getRoutes(routesUrl)
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        _routes.value = response.body() ?: emptyList()
+                        Log.d("API_RESPONSE", "Fetched routes: ${_routes.value?.size}")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        val error = Gson().fromJson(errorBody, ApiError::class.java)
+                        Log.e("API_RESPONSE", "Fetch routes error: ${error.message}")
+                        showToast("Error: ${error.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("LoanViewModel", "Exception fetching routes: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    showToast("Error al obtener rutas: ${e.message}")
+                }
+            }
+        }
     }
 
-    fun setDashboard(dashboard: DashboardResponse) {
-        _dashboard.value = dashboard
-    }
+    fun createRoute(routeName: String) {
 
+        var route = RouteModel()
+        route.name = routeName
+        route.companyId = sessionManager.fetchUser()?.company?.id ?: ""
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                var url = "${sessionManager.fetchApiUrl()}/route"
+                val response = apiService.createRoute(
+                    url = url,
+                    route = route
+                )
+                if (response.isSuccessful) {
+                    val route = response.body()
+                    withContext(Dispatchers.Main) {
+                        showToast("Ruta ${route.toString()} creada con éxito")
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        showToast("Error al crear la ruta")
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showToast("Error de red al crear la ruta")
+                }
+            }
+        }
+    }
 
     private fun showToast(message: String) {
         _toastMessage.postValue(Event(message))

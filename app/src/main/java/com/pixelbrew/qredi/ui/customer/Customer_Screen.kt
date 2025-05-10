@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.R
 import com.pixelbrew.qredi.ui.customer.components.CreateCustomerBottomSheet
@@ -46,8 +45,7 @@ import com.pixelbrew.qredi.ui.customer.components.FilterCustomerBottomSheet
 @Composable
 fun CustomerScreen(
     modifier: Modifier = Modifier,
-    context: MainActivity,
-    navController: NavHostController
+    context: MainActivity
 ) {
     val viewModel: CustomerViewModel = hiltViewModel()
     val toastEvent by viewModel.toastMessage.observeAsState()
@@ -58,15 +56,14 @@ fun CustomerScreen(
         }
     }
 
-    CustomerContent(viewModel = viewModel, modifier = modifier, navController = navController)
+    CustomerContent(viewModel = viewModel, modifier = modifier)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerContent(
     viewModel: CustomerViewModel,
-    modifier: Modifier = Modifier,
-    navController: NavHostController
+    modifier: Modifier = Modifier
 ) {
     val customerList by viewModel.customerList.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
@@ -182,10 +179,6 @@ fun CustomerContent(
             onDismiss = { viewModel.hideCreationDialog() },
             onSubmit = { cedula, names, lastNames, address, phone, reference ->
                 viewModel.createCustomer(cedula, names, lastNames, address, phone, reference)
-                navController.previousBackStackEntry?.savedStateHandle?.set(
-                    "refreshCustomers",
-                    true
-                )
             }
         )
     }

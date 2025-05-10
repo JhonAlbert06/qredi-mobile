@@ -18,7 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
 import com.pixelbrew.qredi.MainActivity
 import com.pixelbrew.qredi.data.network.model.UserModel
 import com.pixelbrew.qredi.ui.admin.AdminScreen
@@ -50,7 +49,6 @@ fun SideMenu(
     var currentScreen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf(Screen.Admin) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val navController = rememberNavController()
 
     if (showBottomSheet) {
         ModalBottomSheet(
@@ -107,8 +105,7 @@ fun SideMenu(
                     settingsViewModel.reloadSettings()
                     CustomerScreen(
                         modifier = modifier.padding(padding),
-                        context = context as MainActivity,
-                        navController = navController
+                        context = context as MainActivity
                     )
                 }
 
@@ -116,8 +113,7 @@ fun SideMenu(
                     settingsViewModel.reloadSettings()
                     LoanScreen(
                         modifier = modifier.padding(padding),
-                        context = context as MainActivity,
-                        navController = navController
+                        context = context as MainActivity
                     )
                 }
 
