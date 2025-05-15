@@ -6,6 +6,7 @@ class LoanModel {
     var amount = 0.0
     var interest = 0.0
     var feesQuantity = 0
+    var moraInterest = 0.0
 
     constructor() {}
 
@@ -14,13 +15,15 @@ class LoanModel {
         routeId: String,
         amount: Double,
         interest: Double,
-        feesQuantity: Int
+        feesQuantity: Int,
+        moraInterest: Double
     ) {
         this.customerId = customerId
         this.routeId = routeId
         this.amount = amount
         this.interest = interest
         this.feesQuantity = feesQuantity
+        this.moraInterest = moraInterest
     }
 }
 

@@ -52,8 +52,9 @@ fun CreateLoanBottomSheet(
         routeId: String,
         amount: String,
         interest: String,
-        feesQuantity: String
-    ) -> Unit = { _, _, _, _, _ -> }
+        feesQuantity: String,
+        moraInterest: String
+    ) -> Unit = { _, _, _, _, _, _ -> }
 ) {
     val customers by viewModel.customerList.observeAsState(emptyList())
     val routes by viewModel.routesList.observeAsState(emptyList())
@@ -63,6 +64,7 @@ fun CreateLoanBottomSheet(
     var amount by remember { mutableStateOf("") }
     var interest by remember { mutableStateOf("") }
     var feesQuantity by remember { mutableStateOf("") }
+    var moraInterest by remember { mutableStateOf("") }
 
     var customerSelected by remember { mutableStateOf(CustomerModelRes()) }
     var routeSelected by remember { mutableStateOf(RouteModelRes()) }
@@ -129,6 +131,10 @@ fun CreateLoanBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            MoraInterestField(moraInterest = moraInterest, onValueChange = { moraInterest = it })
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -148,7 +154,8 @@ fun CreateLoanBottomSheet(
                                 routeId = routeId,
                                 amount = amount.toDouble(),
                                 interest = interest.toDouble(),
-                                feesQuantity = feesQuantity.toInt()
+                                feesQuantity = feesQuantity.toInt(),
+                                moraInterest = moraInterest.toDouble()
                             )
                             loanToConfirm = loan
                             showConfirmationDialog = true
@@ -195,10 +202,11 @@ fun CreateLoanBottomSheet(
                             loanToConfirm!!.routeId,
                             loanToConfirm!!.amount.toString(),
                             loanToConfirm!!.interest.toString(),
-                            loanToConfirm!!.feesQuantity.toString()
+                            loanToConfirm!!.feesQuantity.toString(),
+                            loanToConfirm!!.moraInterest.toString()
                         )
                         showConfirmationDialog = false
-                        onDismiss() // cerrar el BottomSheet tras confirmar
+                        // onDismiss() // cerrar el BottomSheet tras confirmar
                     }
                 ) {
                     Text("Confirmar")
@@ -211,6 +219,24 @@ fun CreateLoanBottomSheet(
             }
         )
     }
+}
+
+@Composable
+fun MoraInterestField(moraInterest: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = moraInterest,
+        onValueChange = onValueChange,
+        label = { Text("Interés Mora") },
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        singleLine = true,
+        maxLines = 1
+    )
 }
 
 @Composable

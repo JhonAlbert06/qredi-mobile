@@ -57,11 +57,13 @@ fun LoanItem(
                             .size(20.dp)
                             .padding(end = 4.dp)
                     )
-                    Text(
-                        text = loan.route.name,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    loan.route?.let { route ->
+                        Text(
+                            text = route.name,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
 
                 Text(

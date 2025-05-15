@@ -185,14 +185,15 @@ fun LoanContent(
         CreateLoanBottomSheet(
             viewModel = viewModel,
             onDismiss = { viewModel.setShowCreationDialog(false) },
-            onSubmit = { customerId, routeId, amount, interest, feesQuantity ->
+            onSubmit = { customerId, routeId, amount, interest, feesQuantity, moraInte ->
                 try {
                     val loan = LoanModel(
                         customerId = customerId,
                         routeId = routeId,
                         amount = amount.toDouble(),
                         interest = interest.toDouble(),
-                        feesQuantity = feesQuantity.toInt()
+                        feesQuantity = feesQuantity.toInt(),
+                        moraInterest = moraInte.toDouble()
                     )
                     viewModel.createNewLoan(loan)
                 } catch (e: Exception) {
